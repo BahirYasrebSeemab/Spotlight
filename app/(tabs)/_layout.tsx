@@ -1,9 +1,6 @@
 import { Link, Tabs } from 'expo-router';
 import { Pressable } from 'react-native';
-import { useColorScheme } from 'nativewind';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-
-import Colors from '@/constants/Colors';
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: { name: React.ComponentProps<typeof FontAwesome>['name']; color: string }) {
@@ -11,12 +8,9 @@ function TabBarIcon(props: { name: React.ComponentProps<typeof FontAwesome>['nam
 }
 
 export default function TabLayout() {
-  const { colorScheme } = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         // Disable the static render of the header on web
         // to prevent a hydration error in React Navigation v6.
         headerShown: false,
@@ -29,12 +23,7 @@ export default function TabLayout() {
             <Link href="/modal" asChild>
               <Pressable>
                 {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
+                  <FontAwesome name="info-circle" size={25} style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }} />
                 )}
               </Pressable>
             </Link>
@@ -44,10 +33,67 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="messages"
         options={{
-          tabBarIcon: ({ color }) => <TabBarIcon name="cog" color={color} />,
-          title: 'Settings',
+          headerRight: () => (
+            <Link href="/modal" asChild>
+              <Pressable>
+                {({ pressed }) => (
+                  <FontAwesome name="info-circle" size={25} style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }} />
+                )}
+              </Pressable>
+            </Link>
+          ),
+          tabBarIcon: ({ color }) => <TabBarIcon name="telegram" color={color} />,
+          title: 'Messages',
+        }}
+      />
+      <Tabs.Screen
+        name="new"
+        options={{
+          headerRight: () => (
+            <Link href="/modal" asChild>
+              <Pressable>
+                {({ pressed }) => (
+                  <FontAwesome name="info-circle" size={25} style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }} />
+                )}
+              </Pressable>
+            </Link>
+          ),
+          tabBarIcon: ({ color }) => <TabBarIcon name="plus" color={color} />,
+          title: 'New',
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          headerRight: () => (
+            <Link href="/modal" asChild>
+              <Pressable>
+                {({ pressed }) => (
+                  <FontAwesome name="info-circle" size={25} style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }} />
+                )}
+              </Pressable>
+            </Link>
+          ),
+          tabBarIcon: ({ color }) => <TabBarIcon name="heart" color={color} />,
+          title: 'Notifications',
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          headerRight: () => (
+            <Link href="/modal" asChild>
+              <Pressable>
+                {({ pressed }) => (
+                  <FontAwesome name="info-circle" size={25} style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }} />
+                )}
+              </Pressable>
+            </Link>
+          ),
+          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
+          title: 'Profile',
         }}
       />
     </Tabs>
