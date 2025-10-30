@@ -26,7 +26,7 @@ export const SignupStep2 = ({ form, onChange, onNext, onBack }: SignupStep2Props
       <TouchableOpacity onPress={onBack}>
         <Text className="text-blue-500">Back</Text>
       </TouchableOpacity>
-      <PrimaryButton title="Next" onPress={onNext} />
+      <PrimaryButton px="px-4" title="Next" onPress={onNext} disabled={!form.username || !form.password || !form.confirmPass} />
     </View>
   </View>
 );
