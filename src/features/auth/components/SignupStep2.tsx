@@ -1,7 +1,6 @@
 import { View, TouchableOpacity, Text } from 'react-native';
 import { InputField } from '../../../shared/components/InputField';
 import { PrimaryButton } from '../../../shared/components/PrimaryButton';
-import { PasswordInput } from '../../../shared/components/PasswordInput';
 import { SignupForm } from '../../../shared/types/form.types';
 
 interface SignupStep2Props {
@@ -19,8 +18,8 @@ export const SignupStep2 = ({ form, onChange, onNext, onBack }: SignupStep2Props
       value={form.username}
       onChangeText={v => onChange('username', v)}
     />
-    <PasswordInput label="Password" value={form.password} onChangeText={v => onChange('password', v)} />
-    <PasswordInput label="Confirm Password" value={form.confirmPass} onChangeText={v => onChange('confirmPass', v)} />
+    <InputField password={true} label="Password" value={form.password} onChangeText={v => onChange('password', v)} />
+    <InputField password={true} label="Confirm Password" value={form.confirmPass} onChangeText={v => onChange('confirmPass', v)} />
 
     <View className="flex-row justify-between mt-4">
       <TouchableOpacity onPress={onBack}>
