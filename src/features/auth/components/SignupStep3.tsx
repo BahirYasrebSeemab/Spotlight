@@ -4,6 +4,7 @@ import { PrimaryButton } from '../../../shared/components/PrimaryButton';
 import { AvatarPicker } from '../../../shared/components/AvatarPicker';
 import { SignupForm } from '../../../shared/types/form.types';
 
+
 interface SignupStep3Props {
   form: SignupForm;
   onChange: (field: keyof SignupForm, value: string) => void;

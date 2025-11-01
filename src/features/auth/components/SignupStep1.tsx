@@ -2,12 +2,18 @@ import { View } from 'react-native';
 import { InputField } from '../../../shared/components/InputField';
 import { PrimaryButton } from '../../../shared/components/PrimaryButton';
 import { SignupForm } from '../../../shared/types/form.types';
+import { Divider } from '@/src/shared/components/Divider';
+import { GoogleButton } from '@/src/shared/components/GoogleButton';
 
 interface SignupStep1Props {
   form: SignupForm;
   onChange: (field: keyof SignupForm, value: string) => void;
   onNext: () => void;
 }
+
+const handleGoogleLogin = () => {
+  console.log('Google login (later with Supabase OAuth)');
+};
 
 export const SignupStep1 = ({ form, onChange, onNext }: SignupStep1Props) => (
   <View>
@@ -26,5 +32,7 @@ export const SignupStep1 = ({ form, onChange, onNext }: SignupStep1Props) => (
       onChangeText={v => onChange('email', v)}
     />
     <PrimaryButton title="Next" onPress={onNext} disabled={!form.fullName || !form.email} />
+    <Divider />
+    <GoogleButton onPress={handleGoogleLogin} />
   </View>
 );
