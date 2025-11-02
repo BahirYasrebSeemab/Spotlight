@@ -1,37 +1,49 @@
 import { useState } from 'react';
-import { LoginForm } from '@/src/shared/types/form.types';
-import { loginWithEmail, loginWithGoogle } from '@/src/features/auth/services/authServices';
+import { useDispatch } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loginWithEmail } from '../services/authServices';
+import { setUser, setLoading, setError } from '@/src/features/auth/slices/authSlice';
 
 export function useLogin() {
-  const [form, setForm] = useState<LoginForm>({ email: '', password: '' });
-  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
 
-  const updateField = (field: keyof LoginForm, value: string) =>
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const handleLogin = async () => {
-    setLoading(true);
+    if (!email || !password) {
+      setLocalError('Please fill in both fields.');
+      return;
+    }
+
     try {
-      const { user, error } = await loginWithEmail(form.email, form.password);
+      dispatch(setLoading(true));
+      dispatch(setError(null));
+
+      const { user, error } = await loginWithEmail(email, password);
       if (error) throw error;
+
+      dispatch(setUser(user));
+      await AsyncStorage.setItem('authState', JSON.stringify({ user }));
+
       console.log('Login success:', user);
-      // TODO: navigate or show toast
-    } catch (err) {
-      console.error('Login failed:', err);
+    } catch (err: any) {
+      const msg = err.message || 'Login failed';
+      dispatch(setError(msg));
+      setLocalError(msg);
+      console.error('Login error:', msg);
     } finally {
-      setLoading(false);
+      dispatch(setLoading(false));
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      const { data, error } = await loginWithGoogle();
-      if (error) throw error;
-      console.log('Google login success:', data);
-    } catch (err) {
-      console.error('Google login failed:', err);
-    }
+  return {
+    email,
+    password,
+    setEmail,
+    setPassword,
+    handleLogin,
+    localError,
   };
-
-  return { form, updateField, handleLogin, handleGoogleLogin, loading };
 }
