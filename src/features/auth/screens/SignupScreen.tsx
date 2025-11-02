@@ -4,7 +4,7 @@ import { useSignup } from '@/src/features/auth/hooks/useSignup';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function SignupScreen() {
-  const { form, step, nextStep, prevStep, updateField, handleSignup } = useSignup();
+  const { form, step, nextStep, prevStep, updateField, handleSignup, loading, error } = useSignup();
 
   return (
     <KeyboardAwareScrollView
@@ -15,9 +15,19 @@ export default function SignupScreen() {
     >
       <View className="flex-1 justify-center px-8 py-12">
         <AuthHeader title="Create Account" />
+
         {step === 1 && <SignupStep1 form={form} onChange={updateField} onNext={nextStep} />}
         {step === 2 && <SignupStep2 form={form} onChange={updateField} onNext={nextStep} onBack={prevStep} />}
-        {step === 3 && <SignupStep3 form={form} onChange={updateField} onBack={prevStep} onSubmit={handleSignup} />}
+        {step === 3 && (
+          <SignupStep3
+            form={form}
+            onChange={updateField}
+            onBack={prevStep}
+            onSubmit={handleSignup}
+            loading={loading}
+            error={error}
+          />
+        )}
       </View>
     </KeyboardAwareScrollView>
   );
