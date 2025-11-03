@@ -1,4 +1,6 @@
-import { supabase } from '@/src/shared/lib/supabase';
+import * as AuthSession from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
+import { supabase } from '@/src/lib/supabase'
 
 interface SignupPayload {
   email: string;
@@ -43,4 +45,35 @@ export async function loginWithGoogle() {
 export async function logout() {
   const { error } = await supabase.auth.signOut();
   return { error };
+}
+
+// src/features/auth/services/authServices.ts
+
+// Important for redirect handling
+WebBrowser.maybeCompleteAuthSession();
+
+const redirectTo = AuthSession.makeRedirectUri({
+  scheme: 'spotlight', // 👈 must match your app.json scheme!
+});
+
+export async function signInWithGoogle() {
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo },
+    });
+    if (error) throw error;
+
+    // Start OAuth flow in a web browser
+    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+
+    if (result.type === 'success') {
+      // The user successfully authenticated
+      return { data: result, error: null };
+    } else {
+      return { data: null, error: 'User canceled or auth failed' };
+    }
+  } catch (err: any) {
+    return { data: null, error: err.message };
+  }
 }

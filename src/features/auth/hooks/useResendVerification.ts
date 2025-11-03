@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '@/src/shared/lib/supabase';
+import { supabase } from '@/src/lib/supabase';
 
 export function useResendVerification() {
   const [loading, setLoading] = useState(false);

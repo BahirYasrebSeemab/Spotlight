@@ -9,13 +9,11 @@ interface SignupStep1Props {
   form: SignupForm;
   onChange: (field: keyof SignupForm, value: string) => void;
   onNext: () => void;
+  handleGoogleLogin: () => void;
+  loading: boolean;
 }
 
-const handleGoogleLogin = () => {
-  console.log('Google login (later with Supabase OAuth)');
-};
-
-export const SignupStep1 = ({ form, onChange, onNext }: SignupStep1Props) => (
+export const SignupStep1 = ({ form, onChange, onNext, handleGoogleLogin, loading }: SignupStep1Props) => (
   <View>
     <InputField
       label="Full Name"
@@ -33,6 +31,6 @@ export const SignupStep1 = ({ form, onChange, onNext }: SignupStep1Props) => (
     />
     <PrimaryButton title="Next" onPress={onNext} disabled={!form.fullName || !form.email} />
     <Divider />
-    <GoogleButton onPress={handleGoogleLogin} />
+    <GoogleButton loading={loading} handleGoogleLogin={handleGoogleLogin} />
   </View>
 );
