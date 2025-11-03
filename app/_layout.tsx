@@ -10,6 +10,7 @@ import 'react-native-reanimated';
 import '../global.css';
 import { Provider } from 'react-redux';
 import { store } from '@/src/store';
+import { useGlobalAuth } from '@/src/shared/hooks/useGlobalAuth';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -29,6 +30,8 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
+  const { colorScheme } = useColorScheme();
+
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
@@ -44,21 +47,23 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return (
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Provider store={store}>
+        <RootLayoutNav />
+      </Provider>
+    </ThemeProvider>
+  );
 }
 
 function RootLayoutNav() {
-  const { colorScheme } = useColorScheme();
+  useGlobalAuth();
 
   return (
-    <Provider store={store}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        </Stack>
-      </ThemeProvider>
-    </Provider>
+    <Stack>
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+    </Stack>
   );
 }

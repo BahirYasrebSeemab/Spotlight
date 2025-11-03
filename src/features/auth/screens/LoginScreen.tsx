@@ -95,16 +95,13 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { InputField } from '@/src/shared/components/InputField';
 import { Divider } from '@/src/shared/components/Divider';
 import { GoogleButton } from '@/src/shared/components/GoogleButton';
-import { useLogin } from '@/src/features/auth/hooks/useLogin';
+import { useLogin, useOAuth } from '@/src/features/auth/hooks';
 import { useAppSelector } from '@/src/shared/hooks/redux';
 
 export default function LoginScreen() {
   const { email, password, setEmail, setPassword, handleLogin, localError } = useLogin();
   const { loading, error } = useAppSelector(state => state.auth);
-
-  const handleGoogleLogin = () => {
-    console.log('TODO: Implement Google OAuth login');
-  };
+  const { handleGoogleLogin, loading: oAuthLoading } = useOAuth();
 
   return (
     <KeyboardAwareScrollView
@@ -153,7 +150,7 @@ export default function LoginScreen() {
           <Divider />
 
           {/* Google Login */}
-          <GoogleButton className="mb-4" onPress={handleGoogleLogin} />
+          <GoogleButton loading={oAuthLoading} className="mb-4" handleGoogleLogin={handleGoogleLogin} />
 
           {/* Signup link */}
           <View className="flex-row justify-center">
