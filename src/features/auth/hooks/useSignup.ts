@@ -2,11 +2,18 @@ import { useState } from 'react';
 import { SignupForm } from '@/src/shared/types/form.types';
 import { signupWithEmail } from '@/src/features/auth/services/authServices';
 import { useRouter } from 'expo-router';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUser, setLoading, setError } from '@/src/features/auth/slices/authSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { RootState } from '@/src/store';
 
 export function useSignup() {
   const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  const { loading, error } = useSelector((state: RootState) => state.auth);
 
   const [form, setForm] = useState<SignupForm>({
     fullName: '',
@@ -18,8 +25,6 @@ export function useSignup() {
     age: undefined,
   });
 
-  const router = useRouter();
-
   const updateField = (field: keyof SignupForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
@@ -28,10 +33,15 @@ export function useSignup() {
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
   const handleSignup = async () => {
-    if (!form.email || !form.password) return;
+    if (!form.email || !form.password) {
+      setLocalError('Please fill in both email and password.');
+      return;
+    }
 
-    setLoading(true);
-    setError(null);
+    dispatch(setLoading(true));
+    dispatch(setError(null));
+    setLocalError(null);
+
     try {
       const { user, error } = await signupWithEmail({
         email: form.email,
@@ -44,14 +54,30 @@ export function useSignup() {
 
       if (error) throw error;
 
+      dispatch(setUser(user));
+      await AsyncStorage.setItem('authState', JSON.stringify({ user }));
+
+      console.log('Signup success:', user);
       router.replace('/(tabs)');
     } catch (err: any) {
-      console.error('Signup failed:', err);
-      setError(err.message);
+      const msg = err.message || 'Signup failed';
+      console.error('Signup error:', msg);
+      dispatch(setError(msg));
+      setLocalError(msg);
     } finally {
-      setLoading(false);
+      dispatch(setLoading(false));
     }
   };
 
-  return { form, step, nextStep, prevStep, updateField, handleSignup, loading, error };
+  return {
+    form,
+    step,
+    nextStep,
+    prevStep,
+    updateField,
+    handleSignup,
+    localError,
+    loading,
+    error,
+  };
 }
