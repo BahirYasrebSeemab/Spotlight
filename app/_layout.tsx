@@ -1,69 +1,72 @@
-import { useEffect } from 'react';
-import { Stack } from 'expo-router';
-import { useFonts } from 'expo-font';
-import { useColorScheme } from 'nativewind';
-import * as SplashScreen from 'expo-splash-screen';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import 'react-native-reanimated';
-
-import '../global.css';
+import { useEffect, useState } from 'react';
+import { Stack, SplashScreen } from 'expo-router';
 import { Provider } from 'react-redux';
 import { store } from '@/src/store';
-import { useGlobalAuth } from '@/src/shared/hooks/useGlobalAuth';
+import { supabase } from '@/src/lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setUser } from '@/src/features/auth/slices/authSlice';
+import { useFonts } from 'expo-font';
+import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
+import { useColorScheme } from 'nativewind';
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
-
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
-};
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    ...FontAwesome.font,
+  const [loaded] = useFonts({
+    // your fonts
   });
 
   const { colorScheme } = useColorScheme();
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+  const [initialRoute, setInitialRoute] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (loaded) {
+    async function loadAuth() {
+      try {
+        // 1. load local cache
+        const stored = await AsyncStorage.getItem('authState');
+        const cachedUser = stored ? JSON.parse(stored)?.user : null;
+
+        // 2. load supabase session
+        const { data } = await supabase.auth.getSession();
+        const sessionUser = data.session?.user || null;
+
+        const finalUser = sessionUser || cachedUser;
+
+        // 3. set redux user
+        store.dispatch(setUser(finalUser));
+
+        // 4. choose initial route (NO NAVIGATION)
+        setInitialRoute(finalUser ? '(tabs)' : '(auth)');
+      } catch (e) {
+        console.log('Gate error:', e);
+        setInitialRoute('(auth)');
+      } finally {
+        setReady(true);
+      }
+    }
+
+    loadAuth();
+  }, []);
+
+  useEffect(() => {
+    if (ready && loaded && initialRoute) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [ready, loaded, initialRoute]);
 
-  if (!loaded) {
-    return null;
-  }
+  if (!ready || !loaded || !initialRoute) return null;
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Provider store={store}>
-        <RootLayoutNav />
+        <Stack initialRouteName={initialRoute}>
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        </Stack>
       </Provider>
     </ThemeProvider>
-  );
-}
-
-function RootLayoutNav() {
-  useGlobalAuth();
-
-  return (
-    <Stack>
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-    </Stack>
   );
 }
