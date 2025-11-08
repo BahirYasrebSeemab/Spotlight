@@ -1,69 +1,75 @@
-import { useEffect } from 'react';
-import { Stack } from 'expo-router';
-import { useFonts } from 'expo-font';
-import { useColorScheme } from 'nativewind';
-import * as SplashScreen from 'expo-splash-screen';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import 'react-native-reanimated';
-
-import '../global.css';
+import { useEffect, useState } from 'react';
+import { Stack, SplashScreen } from 'expo-router';
 import { Provider } from 'react-redux';
 import { store } from '@/src/store';
-import { useGlobalAuth } from '@/src/shared/hooks/useGlobalAuth';
+import { supabase } from '@/src/lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setUser } from '@/src/features/auth/slices/authSlice';
+import { useFonts } from 'expo-font';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
+import { useColorScheme } from 'nativewind';
+import 'react-native-reanimated';
+import '../global.css';
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
-
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
-};
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    ...FontAwesome.font,
-  });
-
+  const [fontsLoaded, fontError] = useFonts({ ...FontAwesome.font });
   const { colorScheme } = useColorScheme();
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+  const [initialRoute, setInitialRoute] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (loaded) {
+    if (fontError) throw fontError;
+  }, [fontError]);
+
+  useEffect(() => {
+    async function bootstrap() {
+      try {
+        // Load local cache first
+        const stored = await AsyncStorage.getItem('authState');
+        const cachedUser = stored ? JSON.parse(stored)?.user : null;
+
+        // Check Supabase session
+        const { data } = await supabase.auth.getSession();
+        const sessionUser = data.session?.user || null;
+
+        const finalUser = sessionUser || cachedUser;
+
+        // Preload Redux state BEFORE Provider mounts
+        store.dispatch(setUser(finalUser));
+
+        setInitialRoute(finalUser ? '(tabs)' : '(auth)');
+      } catch (e) {
+        console.log('Auth load error:', e);
+        setInitialRoute('(auth)');
+      } finally {
+        setReady(true);
+      }
+    }
+
+    bootstrap();
+  }, []);
+
+  // Wait for everything
+  useEffect(() => {
+    if (ready && fontsLoaded && initialRoute) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [ready, fontsLoaded, initialRoute]);
 
-  if (!loaded) {
-    return null;
-  }
+  if (!ready || !fontsLoaded || !initialRoute) return null;
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Provider store={store}>
-        <RootLayoutNav />
+        <Stack initialRouteName={initialRoute}>
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
       </Provider>
     </ThemeProvider>
-  );
-}
-
-function RootLayoutNav() {
-  useGlobalAuth();
-
-  return (
-    <Stack>
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-    </Stack>
   );
 }
