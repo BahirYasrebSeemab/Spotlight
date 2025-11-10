@@ -5,7 +5,8 @@ export default function AuthLayout() {
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="signup" options={{ headerShown: false }} />
-      <Stack.Screen name="verify-email" options={{ headerShown: false, presentation: "modal" }} />
+      <Stack.Screen name="verify-email" options={{ headerShown: false }} />
+      <Stack.Screen name="forget-password" options={{ headerShown: false }} />
     </Stack>
   );
 }
