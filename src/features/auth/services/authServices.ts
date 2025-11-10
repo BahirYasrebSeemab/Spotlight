@@ -85,3 +85,16 @@ export async function sendPasswordReset(email: string) {
 
   return { data, error };
 }
+
+export async function applyNewPassword(accessToken: string, newPassword: string) {
+  // First swap token for a session
+  const { data, error } = await supabase.auth.exchangeCodeForSession(accessToken);
+  if (error) return { error };
+
+  // Now update the password
+  const { data: updateData, error: updateError } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+
+  return { data: updateData, error: updateError };
+}
