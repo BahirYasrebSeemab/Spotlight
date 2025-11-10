@@ -1,6 +1,6 @@
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
-import { supabase } from '@/src/lib/supabase'
+import { supabase } from '@/src/lib/supabase';
 
 interface SignupPayload {
   email: string;
@@ -76,4 +76,12 @@ export async function signInWithGoogle() {
   } catch (err: any) {
     return { data: null, error: err.message };
   }
+}
+
+export async function sendPasswordReset(email: string) {
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: 'exp://127.0.0.1:8081/reset-password', // UPDATE LATER FOR PRODUCTION
+  });
+
+  return { data, error };
 }
