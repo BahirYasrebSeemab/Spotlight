@@ -80,21 +80,28 @@ export async function signInWithGoogle() {
 
 export async function sendPasswordReset(email: string) {
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: 'exp://127.0.0.1:8081/reset-password', // UPDATE LATER FOR PRODUCTION
+    redirectTo: 'exp://192.168.150.17:8081/reset-password',
   });
 
   return { data, error };
 }
 
-export async function applyNewPassword(accessToken: string, newPassword: string) {
-  // First swap token for a session
-  const { data, error } = await supabase.auth.exchangeCodeForSession(accessToken);
-  if (error) return { error };
+export async function applyNewPassword(accessToken: string, refreshToken: string, password: string) {
+  // Require both tokens because setSession expects { access_token, refresh_token }
+  if (!accessToken) return { error: new Error('No access token') };
+  if (!refreshToken) return { error: new Error('No refresh token') };
 
-  // Now update the password
-  const { data: updateData, error: updateError } = await supabase.auth.updateUser({
-    password: newPassword,
-  });
+  try {
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+    if (sessionError) return { error: sessionError };
 
-  return { data: updateData, error: updateError };
+    // Now update the user's password (no second arg with accessToken)
+    const { data, error } = await supabase.auth.updateUser({ password });
+    return { data, error };
+  } catch (err) {
+    return { error: err as Error };
+  }
 }

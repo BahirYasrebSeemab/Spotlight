@@ -17,49 +17,48 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({ ...FontAwesome.font });
   const { colorScheme } = useColorScheme();
-
   const [initialRoute, setInitialRoute] = useState<string | null>(null);
-  const [ready, setReady] = useState(false);
 
+  // Handle font errors
   useEffect(() => {
     if (fontError) throw fontError;
   }, [fontError]);
 
   useEffect(() => {
     async function bootstrap() {
-      try {
-        // Load local cache first
-        const stored = await AsyncStorage.getItem('authState');
-        const cachedUser = stored ? JSON.parse(stored)?.user : null;
+      // 1️⃣ Load cached session first
+      const stored = await AsyncStorage.getItem('authState');
+      const cachedUser = stored ? JSON.parse(stored)?.user : null;
+      store.dispatch(setUser(cachedUser));
+      setInitialRoute(cachedUser ? '(tabs)' : '(auth)');
 
-        // Check Supabase session
-        const { data } = await supabase.auth.getSession();
-        const sessionUser = data.session?.user || null;
+      // 2️⃣ Refresh Supabase session in the background
+      if (typeof window !== 'undefined') {
+        try {
+          const { data } = await supabase.auth.getSession();
+          const sessionUser = data.session?.user || null;
 
-        const finalUser = sessionUser || cachedUser;
-
-        // Preload Redux state BEFORE Provider mounts
-        store.dispatch(setUser(finalUser));
-
-        setInitialRoute(finalUser ? '(tabs)' : '(auth)');
-      } catch (e) {
-        console.log('Auth load error:', e);
-        setInitialRoute('(auth)');
-      } finally {
-        setReady(true);
+          // If Supabase session differs, update Redux & redirect if needed
+          if (sessionUser && sessionUser.id !== cachedUser?.id) {
+            store.dispatch(setUser(sessionUser));
+          } else if (!sessionUser && cachedUser) {
+            // session expired, log out
+            store.dispatch(setUser(null));
+            setInitialRoute('(auth)');
+          }
+        } catch (e) {
+          console.log('Supabase session refresh failed', e);
+        }
       }
+
+      // Hide splash screen now
+      await SplashScreen.hideAsync();
     }
 
     bootstrap();
   }, []);
 
-  useEffect(() => {
-    if (ready && fontsLoaded && initialRoute) {
-      SplashScreen.hideAsync();
-    }
-  }, [ready, fontsLoaded, initialRoute]);
-
-  if (!ready || !fontsLoaded || !initialRoute) return null;
+  if (!fontsLoaded || !initialRoute) return null;
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

@@ -31,7 +31,7 @@ export function useResetPassword() {
     setLocalError(null);
 
     try {
-      const { error } = await applyNewPassword(accessToken, password);
+      const { error } = await applyNewPassword(accessToken, password, confirm);
       if (error) throw error;
 
       setSuccess(true);
