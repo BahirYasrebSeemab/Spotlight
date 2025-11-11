@@ -80,7 +80,7 @@ export async function signInWithGoogle() {
 
 export async function sendPasswordReset(email: string) {
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: 'exp://192.168.150.17:8081/reset-password',
+    redirectTo: 'spotlight://reset-password',
   });
 
   return { data, error };
