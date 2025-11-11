@@ -3,15 +3,21 @@
   "compilerOptions": {
     "noImplicitAny": true,
     "strict": true,
+    "types": [],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./typings"
+    ],
+    "skipLibCheck": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     }
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts",
     "nativewind-env.d.ts"
   ]
 }
