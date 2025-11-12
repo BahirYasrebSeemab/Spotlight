@@ -10,7 +10,7 @@
     "scheme": "spotlight",
 
     "linking": {
-      "prefixes": ["spotlight://", "exp://192.168.150.17:8081"],
+      "prefixes": ["spotlight://"],
       "config": {
         "screens": {
           "(auth)": {

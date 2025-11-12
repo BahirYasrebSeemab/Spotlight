@@ -1,4 +1,5 @@
-import { View, Text, TouchableOpacity, TextInput } from 'react-native';
+import { Text, TouchableOpacity } from 'react-native';
+import { InputField } from '@/src/shared/components/InputField';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useResetPassword } from '../hooks/useResetPassword';
 import { useAppSelector } from '@/src/shared/hooks/redux';
@@ -15,23 +16,8 @@ export default function ResetPasswordScreen() {
     >
       <Text className="text-3xl font-extrabold text-center text-black dark:text-white mb-10">Reset Password</Text>
 
-      <TextInput
-        className="border px-4 py-2 rounded mb-4 bg-white dark:bg-gray-800 text-black dark:text-white"
-        placeholder="New Password"
-        placeholderTextColor="#888"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-
-      <TextInput
-        className="border px-4 py-2 rounded mb-4 bg-white dark:bg-gray-800 text-black dark:text-white"
-        placeholder="Confirm Password"
-        placeholderTextColor="#888"
-        secureTextEntry
-        value={confirm}
-        onChangeText={setConfirm}
-      />
+      <InputField password={true} label="Password" value={password} onChangeText={setPassword} />
+      <InputField password={true} label="Confirm Password" value={confirm} onChangeText={setConfirm} />
 
       {(localError || success) && (
         <Text className={`text-center mb-4 ${localError ? 'text-red-500' : 'text-green-500'}`}>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Stack, SplashScreen } from 'expo-router';
+import { Stack, SplashScreen, useRouter } from 'expo-router';
 import { Provider } from 'react-redux';
 import { store } from '@/src/store';
 import { supabase } from '@/src/lib/supabase';
@@ -19,41 +19,41 @@ export default function RootLayout() {
   const { colorScheme } = useColorScheme();
   const [initialRoute, setInitialRoute] = useState<string | null>(null);
 
-  // Handle font errors
+  
   useEffect(() => {
     if (fontError) throw fontError;
   }, [fontError]);
 
   useEffect(() => {
-    async function bootstrap() {
-      // 1️⃣ Load cached session first
+    const bootstrap = async () => {
       const stored = await AsyncStorage.getItem('authState');
       const cachedUser = stored ? JSON.parse(stored)?.user : null;
-      store.dispatch(setUser(cachedUser));
-      setInitialRoute(cachedUser ? '(tabs)' : '(auth)');
 
-      // 2️⃣ Refresh Supabase session in the background
-      if (typeof window !== 'undefined') {
-        try {
-          const { data } = await supabase.auth.getSession();
-          const sessionUser = data.session?.user || null;
-
-          // If Supabase session differs, update Redux & redirect if needed
-          if (sessionUser && sessionUser.id !== cachedUser?.id) {
-            store.dispatch(setUser(sessionUser));
-          } else if (!sessionUser && cachedUser) {
-            // session expired, log out
-            store.dispatch(setUser(null));
-            setInitialRoute('(auth)');
-          }
-        } catch (e) {
-          console.log('Supabase session refresh failed', e);
+      // ⏳ don’t set route yet — wait for Supabase to handle deep link
+      const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) {
+          store.dispatch(setUser(session.user));
+          setInitialRoute('(tabs)');
+        } else {
+          store.dispatch(setUser(null));
+          setInitialRoute('(auth)');
         }
+      });
+
+      // handle deep link session manually (in case user came from magic link)
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
+        store.dispatch(setUser(data.session.user));
+        setInitialRoute('(tabs)');
+      } else {
+        setInitialRoute('(auth)');
       }
 
-      // Hide splash screen now
       await SplashScreen.hideAsync();
-    }
+      return () => {
+        listener.subscription.unsubscribe();
+      };
+    };
 
     bootstrap();
   }, []);
