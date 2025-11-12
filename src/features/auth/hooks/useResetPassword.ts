@@ -6,6 +6,7 @@ import { setLoading, setError } from '@/src/features/auth/slices/authSlice';
 
 export function useResetPassword() {
   const params = useLocalSearchParams();
+  const refreshToken = params.refresh_token as string;
   const accessToken = params.access_token as string;
 
   const dispatch = useDispatch();
@@ -18,7 +19,7 @@ export function useResetPassword() {
 
   const handleSubmit = async () => {
     if (!password || !confirm) {
-      setLocalError("Fill both fields.");
+      setLocalError('Fill both fields.');
       return;
     }
     if (password !== confirm) {
@@ -31,13 +32,13 @@ export function useResetPassword() {
     setLocalError(null);
 
     try {
-      const { error } = await applyNewPassword(accessToken, password, confirm);
+      const { error } = await applyNewPassword(accessToken, refreshToken, password);
       if (error) throw error;
 
       setSuccess(true);
       router.replace('/(auth)');
     } catch (err: any) {
-      const msg = err.message || "Error resetting password";
+      const msg = err.message || 'Error resetting password';
       dispatch(setError(msg));
       setLocalError(msg);
     } finally {
