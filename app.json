@@ -4,13 +4,12 @@
     "slug": "spotlight",
     "version": "1.0.0",
     "orientation": "portrait",
-
     "icon": "./assets/images/android-icon-foreground.png",
-
     "scheme": "spotlight",
-
     "linking": {
-      "prefixes": ["spotlight://"],
+      "prefixes": [
+        "spotlight://"
+      ],
       "config": {
         "screens": {
           "(auth)": {
@@ -27,20 +26,16 @@
         }
       }
     },
-
     "userInterfaceStyle": "automatic",
-
     "splash": {
       "image": "./assets/images/android-icon-foreground.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.teczer.expo-nativewind-typescript-boilerplate"
     },
-
     "android": {
       "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
@@ -49,21 +44,30 @@
       },
       "package": "com.teczer.exponativewindtypescriptboilerplate"
     },
-
     "web": {
       "bundler": "metro",
       "output": "single"
     },
-
-    "plugins": ["expo-router", "expo-font", "expo-web-browser", "expo-sqlite"],
-
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-web-browser",
+      "expo-sqlite"
+    ],
     "experiments": {
       "typedRoutes": false,
-      "tsconfigPaths": true, 
+      "tsconfigPaths": true,
       "optimizedImage": true,
       "router": {
         "server": false
       }
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "845f1094-0a33-4d67-93d1-be902e2bd479"
+      }
+    },
+    "owner": "yasreb"
   }
 }
