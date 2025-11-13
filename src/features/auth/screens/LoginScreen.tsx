@@ -69,12 +69,12 @@ export default function LoginScreen() {
               Sign up
             </Link>
           </View>
-          <TouchableOpacity onPress={() => router.push('/forget-password')} className="self-end mb-6">
+          {/* <TouchableOpacity onPress={() => router.push('/forget-password')} className="self-end mb-6">
             <Text className="text-sm text-blue-500 dark:text-blue-400">Forgot password?</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/reset-password')} className="self-end mb-6">
             <Text className="text-sm text-blue-500 dark:text-blue-400">Reset Password?</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     </KeyboardAwareScrollView>
