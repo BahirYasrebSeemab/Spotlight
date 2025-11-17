@@ -53,7 +53,7 @@ export async function logout() {
 WebBrowser.maybeCompleteAuthSession();
 
 const redirectTo = AuthSession.makeRedirectUri({
-  scheme: 'spotlight', // 👈 must match your app.json scheme!
+  scheme: 'spotlight',
 });
 
 export async function signInWithGoogle() {
