@@ -18,13 +18,13 @@ export const SignupStep3 = ({ form, onChange, onBack, onSubmit, loading, error }
     {/* Avatar Picker */}
     <AvatarPicker avatar={form.avatar} onPick={uri => onChange('avatar', uri)} />
 
-    {/* Age Input */}
+    {/* DOB Input */}
     <InputField
-      label="Age (optional)"
-      placeholder="Enter your age"
-      keyboardType="numeric"
-      value={form.age?.toString() || ''}
-      onChangeText={v => onChange('age', v)}
+      label="Date of Birth (optional)"
+      placeholder="Date of birth (YYYY-MM-DD)"
+      keyboardType="default"
+      value={form.dob || ''}
+      onChangeText={v => onChange('dob', v)}
     />
 
     {/* Error message */}

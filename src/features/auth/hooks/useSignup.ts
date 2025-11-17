@@ -23,7 +23,7 @@ export function useSignup() {
     password: '',
     confirmPass: '',
     avatar: '',
-    age: undefined,
+    dob: '',
   });
 
   const updateField = (field: keyof SignupForm, value: string) => {
@@ -34,14 +34,7 @@ export function useSignup() {
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
   const handleSignup = async () => {
-    if (!form.email || !form.password) {
-      setLocalError('Please fill in both email and password.');
-      return;
-    }
-
     dispatch(setLoading(true));
-    dispatch(setError(null));
-    setLocalError(null);
 
     try {
       const { user, error } = await signupWithEmail({
@@ -50,43 +43,39 @@ export function useSignup() {
         fullName: form.fullName,
         username: form.username,
         avatar: form.avatar,
-        age: form.age,
+        dob: form.dob,
       });
 
       if (error) throw error;
+      if (!user) throw new Error('Auth signup returned no user');
 
-      // Ensure 'user' is not null/undefined before accessing properties
-      if (!user) {
-        throw new Error('Signup failed: no user returned from auth service.');
-      }
-
-      // Ensure necessary user properties exist (prevents passing `undefined` where a `string` is required)
-      if (!user.id || !user.email) {
-        throw new Error('Signup failed: incomplete user data returned from auth service.');
-      }
-
-      // Create minimal user record in DB
-      await createUser({
+      // Construct correct payload for your Prisma model
+      const profilePayload = {
         id: user.id,
-        email: user.email,
+        email: user.email!,
         username: form.username,
         name: form.fullName,
-      });
+        avatarUrl: form.avatar,
+        dob: form.dob,
+      };
 
-      dispatch(setUser(user));
-      await AsyncStorage.setItem('authState', JSON.stringify({ user }));
+      const { data: profile, error: dbError } = await createUser(profilePayload);
+      if (dbError) throw dbError;
 
-      console.log('Signup success:', user);
+      const combined = { ...user, profile };
+
+      dispatch(setUser(combined));
+      await AsyncStorage.setItem('authState', JSON.stringify({ user: combined }));
+
       router.replace('/(tabs)');
     } catch (err: any) {
-      const msg = err.message || 'Signup failed';
-      console.error('Signup error:', msg);
-      dispatch(setError(msg));
-      setLocalError(msg);
+      console.error('Signup error:', err);
+      dispatch(setError(err.message || 'Signup failed'));
     } finally {
       dispatch(setLoading(false));
     }
   };
+
 
   return {
     form,

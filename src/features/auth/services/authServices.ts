@@ -8,17 +8,17 @@ interface SignupPayload {
   fullName: string;
   username: string;
   avatar?: string;
-  age?: string | number;
+  dob?: string | null;
 }
 
 export async function signupWithEmail(payload: SignupPayload) {
-  const { email, password, fullName, username, avatar, age } = payload;
+  const { email, password, fullName, username, avatar, dob } = payload;
 
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { fullName, username, avatar, age },
+      data: { fullName, username, avatar, dob },
     },
   });
 

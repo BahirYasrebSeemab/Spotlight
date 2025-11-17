@@ -5,7 +5,7 @@ export interface SignupForm {
   password: string;
   confirmPass: string;
   avatar: string;
-  age?: string;
+  dob?: string;
 }
 
 export interface LoginForm {
