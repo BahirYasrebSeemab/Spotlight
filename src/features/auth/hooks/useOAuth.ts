@@ -64,32 +64,40 @@
 
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { signInWithGoogle } from '../services/authServices';
-import { setUser } from '@/src/features/auth/slices/authSlice';
-import { supabase } from '@/src/lib/supabase';
+import { setUser, setError } from '@/src/features/auth/slices/authSlice';
+import { useRouter } from 'expo-router';
 
 export function useOAuth() {
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
+      dispatch(setError(null));
+      setLocalError(null);
 
-      // Start OAuth flow — NO USER CHECKING HERE
       const { data, error } = await signInWithGoogle();
-      if (error) throw new Error(error);
+      if (error) throw error;
 
-      console.log('OAuth started, waiting for redirect...');
-      // After redirect the app reloads → root layout will handle session
+      // Use the returned data from openAuthSessionAsync directly
+      dispatch(setUser(data));
+      await AsyncStorage.setItem('authState', JSON.stringify({ data }));
+
+      console.log('Google OAuth success:', data);
+      router.replace('/(tabs)');
     } catch (err: any) {
-      console.error('OAuth Error:', err.message);
+      const msg = err.message || 'Google sign-in failed';
+      dispatch(setError(msg));
+      setLocalError(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  return { handleGoogleLogin, loading };
+  return { handleGoogleLogin, loading, localError };
 }
