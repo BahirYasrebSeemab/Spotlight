@@ -7,6 +7,7 @@ export interface User {
   dob?: string;
   isBrand?: boolean;
   createdAt: string;
+  onboardingComplete?: boolean;
 }
 
 export interface UserProfilePayload {
@@ -15,7 +16,6 @@ export interface UserProfilePayload {
   bio?: string;
   avatarUrl?: string;
 }
-
 
 export interface UserProfile {
   id: string;
@@ -42,14 +42,22 @@ export interface OnboardingData {
   dob?: string;
 }
 
-
 export interface CreateUserPayload {
   id: string;
   email: string;
-  username?: string;
-  name?: string;
-  avatarUrl?: string;
-  dob?: string | null; 
+  username: string;
+  name: string | null;
+  avatarUrl: string | null;
+  dob?: string | null;
   bio?: string | null;
 }
 
+export interface SupabaseAuthUser {
+  id: string;
+  email: string;
+  email_confirmed_at: string | null;
+  user_metadata?: {
+    avatar_url?: string;
+    full_name?: string;
+  };
+}
