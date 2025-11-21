@@ -23,7 +23,7 @@ export const SignupStep3 = ({ form, onChange, onBack, onSubmit, loading, error }
       label="Date of Birth (optional)"
       placeholder="Date of birth (YYYY-MM-DD)"
       keyboardType="default"
-      value={form.dob || ''}
+      value={form.dob}
       onChangeText={v => onChange('dob', v)}
     />
 
