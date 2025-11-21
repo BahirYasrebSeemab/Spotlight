@@ -49,6 +49,7 @@ export function useSignup() {
       if (error) throw error;
       if (!user) throw new Error('Auth signup returned no user');
 
+      // Construct correct payload for your Prisma model
       const profilePayload = {
         id: user.id,
         email: user.email!,
