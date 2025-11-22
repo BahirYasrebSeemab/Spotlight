@@ -51,5 +51,8 @@ export interface CreateUserPayload {
   avatarUrl?: string;
   dob?: string | null; 
   bio?: string | null;
+  provider?: string | null;
+  lastLoginAt?: Date | null;
+  email_confirmed_at?: any | null;
 }
 
