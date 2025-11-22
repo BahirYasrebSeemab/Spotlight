@@ -21,15 +21,18 @@ datasource db {
 // -----------------------------
 
 model User {
-  id        String    @id
-  username  String    @unique
-  email     String    @unique
-  name      String?
-  bio       String?
-  avatarUrl String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now()) @updatedAt
-  dob       DateTime? @default("1970-01-01T00:00:00.000Z")
+  id               String    @id
+  username         String    @unique
+  email            String    @unique
+  name             String?
+  bio              String?
+  avatarUrl        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @default(now()) @updatedAt
+  dob              DateTime? @default("1970-01-01T00:00:00.000Z")
+  lastLoginAt      DateTime?
+  provider         String?
+  emailConfirmedAt DateTime?
 
   // Relations
   closets    Closet[]

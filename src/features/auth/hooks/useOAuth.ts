@@ -89,7 +89,7 @@ export function useOAuth() {
       await AsyncStorage.setItem('authState', JSON.stringify({ data }));
 
       console.log('Google OAuth success:', data);
-      router.replace('/(tabs)');
+      router.replace('/');
     } catch (err: any) {
       const msg = err.message || 'Google sign-in failed';
       dispatch(setError(msg));

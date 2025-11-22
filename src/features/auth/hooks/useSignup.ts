@@ -53,10 +53,12 @@ export function useSignup() {
       const profilePayload = {
         id: user.id,
         email: user.email!,
-        username: form.username,
+        username: form.username.toLowerCase(),
         name: form.fullName,
         avatarUrl: form.avatar,
         dob: form.dob,
+        provider: user.app_metadata?.provider || 'email',
+        lastLoginAt: new Date(),
       };
 
       const { data: profile, error: dbError } = await createUser(profilePayload);

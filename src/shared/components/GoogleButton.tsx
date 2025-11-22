@@ -9,6 +9,7 @@ interface GoogleButtonProps {
 
 export const GoogleButton = ({ loading, handleGoogleLogin, className }: GoogleButtonProps) => (
   <TouchableOpacity
+    disabled
     onPress={handleGoogleLogin}
     className={`${className} w-full border border-gray-300 dark:border-gray-700 flex-row items-center justify-center py-3 rounded-xl`}
   >
