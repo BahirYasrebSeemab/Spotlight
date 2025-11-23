@@ -13,22 +13,15 @@ interface User {
 }
 
 interface InsertResult<T> {
-  data: T[] | null;
+  data: T | null;
   error: any;
-  status?: number;
-  statusText?: string;
 }
 
 export async function updateUser(
   id: string,
-  payload: UpdateUserPayload
+  payload: UpdateUserPayload,
 ): Promise<{ data: UserProfile | null; error: any }> {
-  const { data, error } = await supabase
-    .from('User')
-    .update(payload)
-    .eq('id', id)
-    .select()
-    .single();
+  const { data, error } = await supabase.from('User').update(payload).eq('id', id).select().single();
 
   return { data, error };
 }
@@ -36,11 +29,7 @@ export async function updateUser(
 export async function createUser(payload: CreateUserPayload) {
   console.log('Creating user with payload:', payload);
 
-  const { data, error } = await supabase
-    .from('User')
-    .upsert(payload, { onConflict: 'id' })
-    .select()
-    .single();
+  const { data, error } = await supabase.from('User').upsert(payload, { onConflict: 'id' }).select().single();
 
   console.log('DB response:', { data, error });
 
@@ -50,4 +39,3 @@ export async function createUser(payload: CreateUserPayload) {
 export async function getUser(id: string): Promise<InsertResult<User>> {
   return await supabase.from('User').select('*').eq('id', id).single();
 }
-
