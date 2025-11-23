@@ -1,24 +1,14 @@
-import { useDispatch } from 'react-redux';
-import { getUser } from '../services/userServices';
-import { setUser } from '@/src/features/auth/slices/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProfile } from '@/src/features/user/slices/userSlice';
 
 export function useLoadUser() {
   const dispatch = useDispatch();
 
-  const load = async (id: string) => {
-    const { data, error } = await getUser(id);
+  const { profile, loading, error } = useSelector((state: any) => state.profile);
 
-    if (error) {
-      console.error('Load user error:', error);
-      return null;
-    }
-
-    if (data) {
-      dispatch(setUser(data));
-    }
-
-    return data;
+  const load = (id: string) => {
+    dispatch(fetchProfile(id));
   };
 
-  return { load };
+  return { profile, loading, error, load };
 }
