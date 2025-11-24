@@ -5,7 +5,7 @@ import { useLoadUser } from '../hooks/useLoadUser';
 import IdentitySection from '../components/IdentitySection';
 
 export default function ProfileScreen() {
-  const { profile, loading, load } = useLoadUser();
+  const { user, loading, load } = useLoadUser();
 
   useEffect(() => {
     const user = supabase.auth.getUser().then(res => {
@@ -15,7 +15,7 @@ export default function ProfileScreen() {
     });
   }, []);
 
-  if (loading || !profile) {
+  if (loading || !user) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-black">
         <ActivityIndicator size="large" />
@@ -29,7 +29,7 @@ export default function ProfileScreen() {
         inverted
         data={[]}
         renderItem={() => null}
-        ListFooterComponent={<IdentitySection profile={profile} />}
+        ListFooterComponent={<IdentitySection profile={user} />}
         contentContainerStyle={{ paddingBottom: 40 }}
       />
     </View>

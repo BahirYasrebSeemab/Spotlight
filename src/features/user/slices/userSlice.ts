@@ -1,15 +1,15 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { getUser } from '../services/userServices';
-import { User } from '@/src/generated/prisma/wasm';
+import { User } from '@/src/shared/types/user.types';
 
-interface ProfileState {
-  profile: User | null;
+interface UserState {
+  user: User | null;
   loading: boolean;
   error: string | null;
 }
 
-const initialState: ProfileState = {
-  profile: null,
+const initialState: UserState = {
+  user: null,
   loading: false,
   error: null,
 };
@@ -17,8 +17,8 @@ const initialState: ProfileState = {
 export const fetchProfile = createAsyncThunk(
   'profile/fetch',
   
-  async (userId: string, {rejectWithValue}) => {
-    const { data, error } = await getUser(userId);
+  async (id: string, {rejectWithValue}) => {
+    const { data, error } = await getUser(id);
     if (error) return rejectWithValue(error.message || 'Failed to load user');
     return data;
   }
@@ -26,7 +26,7 @@ export const fetchProfile = createAsyncThunk(
 
 
 
-const profileSlice = createSlice({
+const userSlice = createSlice({
   name: 'profile',
   initialState,
   reducers: {},
@@ -38,7 +38,7 @@ const profileSlice = createSlice({
       })
       .addCase(fetchProfile.fulfilled, (state, action) => {
         state.loading = false;
-        state.profile = action.payload; // now TS knows it's User
+        state.user = action.payload; // now TS knows it's User
       })
       .addCase(fetchProfile.rejected, (state, action) => {
         state.loading = false;
@@ -47,5 +47,5 @@ const profileSlice = createSlice({
   },
 });
 
-export default profileSlice.reducer;
+export default userSlice.reducer;
 

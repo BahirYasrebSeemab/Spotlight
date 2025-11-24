@@ -4,11 +4,11 @@ import { fetchProfile } from '@/src/features/user/slices/userSlice';
 export function useLoadUser() {
   const dispatch = useDispatch();
 
-  const { profile, loading, error } = useSelector((state: any) => state.profile);
+  const { user, loading, error } = useSelector((state: any) => state.user);
 
   const load = (id: string) => {
-    dispatch(fetchProfile(id));
+    dispatch(fetchProfile(id) as any);
   };
 
-  return { profile, loading, error, load };
+  return { user, loading, error, load };
 }
