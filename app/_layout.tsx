@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Stack, SplashScreen, useRouter } from 'expo-router';
+import { Stack, SplashScreen } from 'expo-router';
 import { Provider } from 'react-redux';
 import { store } from '@/src/store';
 import { supabase } from '@/src/lib/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setUser } from '@/src/features/auth/slices/authSlice';
+import { fetchUser } from '@/src/features/user/slices/userSlice';
 import { useFonts } from 'expo-font';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useColorScheme } from 'nativewind';
-import 'react-native-reanimated';
 import '../global.css';
 
 SplashScreen.preventAutoHideAsync();
@@ -19,37 +19,47 @@ export default function RootLayout() {
   const { colorScheme } = useColorScheme();
   const [initialRoute, setInitialRoute] = useState<string | null>(null);
 
-  
   useEffect(() => {
     if (fontError) throw fontError;
   }, [fontError]);
 
   useEffect(() => {
     const bootstrap = async () => {
-      const stored = await AsyncStorage.getItem('authState');
-      const cachedUser = stored ? JSON.parse(stored)?.user : null;
-
-      // ⏳ don’t set route yet — wait for Supabase to handle deep link
-      const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      // 🔥 AUTH STATE LISTENER
+      const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
         if (session?.user) {
           store.dispatch(setUser(session.user));
+
+          // Always fetch FRESH profile
+          const result = await store.dispatch(fetchUser(session.user.id));
+
+          // Cache fresh version (NOT USED on startup)
+          await AsyncStorage.setItem('profile', JSON.stringify(result.payload));
+
           setInitialRoute('(tabs)');
         } else {
           store.dispatch(setUser(null));
+          await AsyncStorage.removeItem('profile');
           setInitialRoute('(auth)');
         }
       });
 
-      // handle deep link session manually (in case user came from magic link)
       const { data } = await supabase.auth.getSession();
+
       if (data.session?.user) {
         store.dispatch(setUser(data.session.user));
+
+        // Fetch fresh
+        const result = await store.dispatch(fetchUser(data.session.user.id));
+        await AsyncStorage.setItem('profile', JSON.stringify(result.payload));
+
         setInitialRoute('(tabs)');
       } else {
         setInitialRoute('(auth)');
       }
 
       await SplashScreen.hideAsync();
+
       return () => {
         listener.subscription.unsubscribe();
       };

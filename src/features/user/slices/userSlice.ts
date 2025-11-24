@@ -14,7 +14,7 @@ const initialState: UserState = {
   error: null,
 };
 
-export const fetchProfile = createAsyncThunk(
+export const fetchUser = createAsyncThunk(
   'profile/fetch',
   
   async (id: string, {rejectWithValue}) => {
@@ -32,15 +32,15 @@ const userSlice = createSlice({
   reducers: {},
   extraReducers: builder => {
     builder
-      .addCase(fetchProfile.pending, state => {
+      .addCase(fetchUser.pending, state => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchProfile.fulfilled, (state, action) => {
+      .addCase(fetchUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload; // now TS knows it's User
       })
-      .addCase(fetchProfile.rejected, (state, action) => {
+      .addCase(fetchUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

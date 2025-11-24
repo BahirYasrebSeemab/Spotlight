@@ -25,6 +25,19 @@ export async function signupWithEmail(payload: SignupPayload) {
   return { user: data.user, error };
 }
 
+export async function resendVerificationEmail(email: string) {
+  try {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+    });
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to resend verification email' };
+  }
+}
+
 export async function loginWithEmail(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
