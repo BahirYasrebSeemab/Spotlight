@@ -1,11 +1,13 @@
 import { View, Text, Image } from 'react-native';
 
-export default function IdentitySection({ profile } : any) {
+export default function IdentitySection({ profile }: any) {
   return (
-    <View className="items-center pb-16 pt-6 bg-white dark:bg-black">
+    <View className="items-center pb-16 pt-6 bg-white dark:bg-black border-gray-400 dark:border-gray-800 border rounded-lg w-full">
       {/* Avatar */}
-      <Image source={{ uri: profile.avatarUrl }} className="w-28 h-28 rounded-full mb-4" />
-
+      <View className="w-24 h-24 rounded-full overflow-hidden mb-4 bg-gray-800">
+        <Image source={{ uri: profile.avatarUrl }} className="w-28 h-28 rounded-full mb-4" />
+      </View>
+      
       {/* Name */}
       <Text className="text-2xl font-bold text-black dark:text-white">{profile.name || profile.username}</Text>
 

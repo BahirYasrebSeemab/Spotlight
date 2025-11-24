@@ -1,26 +1,21 @@
 import { useState } from 'react';
-import { supabase } from '@/src/lib/supabase';
+import { resendVerificationEmail } from '@/src/features/auth/services/authServices';
 
 export function useResendVerification() {
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState<string | null>(null);
 
-  const resendVerification = async (email: string) => {
+  const resend = async (email: string) => {
     setLoading(true);
-    setMessage('');
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email,
-      });
-      if (error) throw error;
-      setMessage('Verification email resent successfully.');
-    } catch (err: any) {
-      setMessage(err.message || 'Failed to resend verification email.');
-    } finally {
-      setLoading(false);
+    setMessage(null);
+    const result = await resendVerificationEmail(email);
+    if (result.success) {
+      setMessage('Verification email sent successfully.');
+    } else {
+      setMessage(result.error);
     }
+    setLoading(false);
   };
 
-  return { resendVerification, loading, message };
+  return { resend, loading, message };
 }
