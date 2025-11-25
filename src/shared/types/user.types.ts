@@ -6,16 +6,14 @@ export interface User {
   avatar?: string;
   dob?: string;
   isBrand?: boolean;
-  createdAt: string;
+  createdAt?: string; // make optional
 }
-
 export interface UserProfilePayload {
   username?: string;
   name?: string;
   bio?: string;
   avatarUrl?: string;
 }
-
 
 export interface UserProfile {
   id: string;
@@ -42,17 +40,15 @@ export interface OnboardingData {
   dob?: string;
 }
 
-
 export interface CreateUserPayload {
   id: string;
   email: string;
   username?: string;
   name?: string;
   avatarUrl?: string;
-  dob?: string | null; 
+  dob?: string | null;
   bio?: string | null;
   provider?: string | null;
   lastLoginAt?: Date | null;
   email_confirmed_at?: any | null;
 }
-

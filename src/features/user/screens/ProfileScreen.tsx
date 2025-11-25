@@ -3,6 +3,10 @@ import { useAppSelector } from '@/src/shared/hooks/redux';
 import IdentitySection from '../components/IdentitySection';
 import { PrimaryButton } from '@/src/shared/components/PrimaryButton';
 import { useLogout } from '../../auth/hooks';
+import { useNavigation, useRouter } from 'expo-router';
+import { useLayoutEffect } from 'react';
+import { Pressable } from 'react-native';
+import { MoreVertical } from 'lucide-react-native';
 
 export default function ProfileScreen() {
   const { user, loading } = useAppSelector(state => state.user);
@@ -16,6 +20,21 @@ export default function ProfileScreen() {
       </View>
     );
   }
+
+    const navigation = useNavigation();
+
+   const router = useRouter();
+
+   useLayoutEffect(() => {
+     navigation.setOptions({
+       headerRight: () => (
+         <Pressable onPress={() => router.push('/(tabs)/profile/settings')} className="p-2">
+           <MoreVertical size={22} color={'white'} />
+         </Pressable>
+       ),
+     });
+   }, [router]);
+
 
   // If email is not confirmed
   // if (!authUser.emailConfirmedAt) {
