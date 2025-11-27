@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { useAppDispatch } from '@/src/shared/hooks/redux';
-import { updateUser, uploadAvatar } from '@/src/features/user/services/userServices';
+import { updateUser } from '@/src/features/user/services/userServices';
 import { useValidation } from '@/src/shared/hooks/validation';
 import { updateUserLocal } from '../slices/userSlice';
 import { useRouter } from 'expo-router';
+import { useUploadImage } from '@/src/shared/hooks/useUploadImage';
 
 export function useEditProfile(userId: string, defaultValues: any) {
   const [name, setName] = useState(defaultValues.name || '');
@@ -17,6 +18,8 @@ export function useEditProfile(userId: string, defaultValues: any) {
   const { validateUsername, error, setError } = useValidation();
   const dispatch = useAppDispatch();
   const router = useRouter();
+
+  const { uploadImage } = useUploadImage();
 
   const pickAvatar = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -46,12 +49,16 @@ export function useEditProfile(userId: string, defaultValues: any) {
     try {
       let finalAvatar = avatarUrl;
 
+      // 🔥 compress + upload avatar
       if (avatarFile) {
-        const uploaded = await uploadAvatar(userId, avatarFile);
+        const uploaded = await uploadImage(avatarFile.uri, {
+          bucket: 'media',
+          folder: `profiles/${userId}`,
+        });
+
         if (uploaded) finalAvatar = uploaded;
       }
 
-      // 🔥 only send changed fields
       const payload: any = {};
 
       if (name !== defaultValues.name) payload.name = name;
