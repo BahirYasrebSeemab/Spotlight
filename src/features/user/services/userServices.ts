@@ -1,16 +1,5 @@
 import { supabase } from '@/src/lib/supabase';
-import { UpdateUserPayload, UserProfile, CreateUserPayload } from '@/src/shared/types/user.types';
-
-interface User {
-  id: string;
-  email: string;
-  username: string;
-  name?: string;
-  bio?: string;
-  avatarUrl?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { UpdateUserPayload, UserProfile, User, CreateUserPayload } from '@/src/shared/types/user.types';
 
 interface InsertResult<T> {
   data: T | null;

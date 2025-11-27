@@ -1,11 +1,13 @@
 export interface User {
   id: string;
-  fullName?: string;
+  name?: string;
   username?: string;
   email: string;
   avatar?: string;
   dob?: string;
+  bio?: string;
   isBrand?: boolean;
+  updatedAt?: string;
   createdAt?: string; // make optional
 }
 export interface UserProfilePayload {
