@@ -17,9 +17,10 @@ export default function EditProfileScreen() {
 
   const { name, setName, username, setUsername, bio, setBio, avatarUrl, pickAvatar, submit, loading, error } =
     useEditProfile(user.id, {
-      name: user.fullName,
+      name: user.name,
       username: user.username,
       avatarUrl: user.avatar,
+      bio: user.bio,
     });
 
   const handleAvatarPress = async () => {
@@ -29,7 +30,7 @@ export default function EditProfileScreen() {
 
   const handleSave = async () => {
     const success = await submit();
-    // maybe add toast? idc for now
+    
   };
 
   return (

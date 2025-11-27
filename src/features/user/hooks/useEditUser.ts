@@ -4,15 +4,19 @@ import { useAppDispatch } from '@/src/shared/hooks/redux';
 import { updateUser, uploadAvatar } from '@/src/features/user/services/userServices';
 import { useValidation } from '@/src/shared/hooks/validation';
 import { updateUserLocal } from '../slices/userSlice';
+import { useRouter } from 'expo-router';
 
 export function useEditProfile(userId: string, defaultValues: any) {
   const [name, setName] = useState(defaultValues.name || '');
   const [username, setUsername] = useState(defaultValues.username || '');
   const [bio, setBio] = useState(defaultValues.bio || '');
   const [avatarUrl, setAvatarUrl] = useState(defaultValues.avatarUrl || '');
+  const [avatarFile, setAvatarFile] = useState<any>(null);
+
   const [loading, setLoading] = useState(false);
   const { validateUsername, error, setError } = useValidation();
   const dispatch = useAppDispatch();
+  const router = useRouter();
 
   const pickAvatar = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -25,12 +29,14 @@ export function useEditProfile(userId: string, defaultValues: any) {
     if (!result.canceled) {
       const file = result.assets[0];
       setAvatarUrl(file.uri);
+      setAvatarFile(file);
       return file;
     }
   };
 
-  const submit = async (avatarFile?: any) => {
+  const submit = async () => {
     setLoading(true);
+    setError(null);
 
     if (!validateUsername(username)) {
       setLoading(false);
@@ -38,33 +44,38 @@ export function useEditProfile(userId: string, defaultValues: any) {
     }
 
     try {
-      let finalAvatarUrl = avatarUrl;
+      let finalAvatar = avatarUrl;
 
       if (avatarFile) {
-        const uploadedUrl = await uploadAvatar(userId, avatarFile);
-        if (uploadedUrl) finalAvatarUrl = uploadedUrl;
+        const uploaded = await uploadAvatar(userId, avatarFile);
+        if (uploaded) finalAvatar = uploaded;
       }
 
-      const { data, error: updateError } = await updateUser(userId, {
-        name,
-        username,
-        bio,
-        avatarUrl: finalAvatarUrl,
-      });
+      // 🔥 only send changed fields
+      const payload: any = {};
 
-      if (updateError) throw updateError;
+      if (name !== defaultValues.name) payload.name = name;
+      if (username !== defaultValues.username) payload.username = username;
+      if (bio !== defaultValues.bio) payload.bio = bio;
+      if (finalAvatar !== defaultValues.avatarUrl) payload.avatarUrl = finalAvatar;
 
-      // Update Redux slice correctly
+      const { data, error: updateErr } = await updateUser(userId, payload);
+      if (updateErr) throw updateErr;
+
       dispatch(
         updateUserLocal({
           id: data.id,
           email: data.email,
           username: data.username,
-          fullName: data.name,
+          name: data.name,
           avatar: data.avatarUrl,
+          bio: data.bio,
           createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
         }),
       );
+
+      router.back();
 
       setLoading(false);
       return true;
@@ -75,7 +86,6 @@ export function useEditProfile(userId: string, defaultValues: any) {
     }
   };
 
-
   return {
     name,
     setName,
@@ -84,7 +94,6 @@ export function useEditProfile(userId: string, defaultValues: any) {
     bio,
     setBio,
     avatarUrl,
-    setAvatarUrl,
     pickAvatar,
     submit,
     loading,
