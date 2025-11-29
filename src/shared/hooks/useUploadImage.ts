@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Image } from 'react-native-compressor';
 import * as FileSystem from 'expo-file-system';
 import { supabase } from '@/src/lib/supabase';
-import { v4 as uuid } from 'uuid';
+import uuid from 'react-native-uuid';
 
 type UploadOptions = {
   bucket: string;
@@ -30,7 +30,7 @@ export function useUploadImage() {
 
       // 3️⃣ Generate filename
       const extension = compressed.includes('.png') ? 'png' : 'webp';
-      const filename = `${uuid()}.${extension}`;
+      const filename = `${uuid.v4()}.${extension}`;
       const path = `${folder}/${filename}`;
 
       // 4️⃣ Read file as binary
