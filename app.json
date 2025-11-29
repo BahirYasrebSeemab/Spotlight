@@ -38,11 +38,25 @@
     },
     "android": {
       "edgeToEdgeEnabled": true,
+      "package": "com.teczer.exponativewindtypescriptboilerplate",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ],
+          "data": [
+            {
+              "scheme": "spotlight"
+            }
+          ]
+        }
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundColor": "#ffffff"
-      },
-      "package": "com.teczer.exponativewindtypescriptboilerplate"
+      }
     },
     "web": {
       "bundler": "metro",
