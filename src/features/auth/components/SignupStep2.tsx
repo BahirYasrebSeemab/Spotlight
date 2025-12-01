@@ -14,7 +14,6 @@ export const SignupStep2 = ({ form, onChange, onNext, onBack }: SignupStep2Props
   <View>
     <InputField
       label="Username"
-      placeholder="Choose a username"
       value={form.username}
       onChangeText={v => onChange('username', v)}
     />
