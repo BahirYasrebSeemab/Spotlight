@@ -7,6 +7,7 @@ export interface InputFieldProps extends TextInputProps {
   label: string;
   error?: string;
   password?: boolean;
+  value?: string;
 }
 
 export const InputField = ({ label, error, password, value, ...props }: InputFieldProps) => {

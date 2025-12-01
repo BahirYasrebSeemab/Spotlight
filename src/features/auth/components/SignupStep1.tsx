@@ -17,13 +17,11 @@ export const SignupStep1 = ({ form, onChange, onNext, handleGoogleLogin, loading
   <View>
     <InputField
       label="Full Name"
-      placeholder="Your full name"
       value={form.fullName}
       onChangeText={v => onChange('fullName', v)}
     />
     <InputField
       label="Email"
-      placeholder="Your email"
       keyboardType="email-address"
       autoCapitalize="none"
       value={form.email}

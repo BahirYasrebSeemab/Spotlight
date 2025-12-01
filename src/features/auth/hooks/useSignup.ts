@@ -2,19 +2,19 @@ import { useState } from 'react';
 import { SignupForm } from '@/src/shared/types/form.types';
 import { signupWithEmail } from '@/src/features/auth/services/authServices';
 import { useRouter } from 'expo-router';
-import { useDispatch, useSelector } from 'react-redux';
 import { setUser, setLoading, setError } from '@/src/features/auth/slices/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootState } from '@/src/store';
 import { createUser } from '@/src/features/user/services/userServices';
+import { useAppDispatch, useAppSelector } from '@/src/shared/hooks/redux';
 
 export function useSignup() {
   const [step, setStep] = useState(1);
   const [localError, setLocalError] = useState<string | null>(null);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const router = useRouter();
 
-  const { loading, error } = useSelector((state: RootState) => state.auth);
+  const { loading, error } = useAppSelector((state: RootState) => state.auth);
 
   const [form, setForm] = useState<SignupForm>({
     fullName: '',
@@ -61,8 +61,8 @@ export function useSignup() {
         lastLoginAt: new Date(),
       };
 
-      const { data: profile, error: dbError } = await createUser(profilePayload);
-      if (dbError) throw dbError;
+      const { data: profile, error: createErr } = await createUser(profilePayload);
+      if (createErr) throw createErr;
 
       const combined = { ...user, profile };
 

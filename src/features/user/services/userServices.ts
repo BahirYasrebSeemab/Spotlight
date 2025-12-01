@@ -16,13 +16,18 @@ export async function updateUser(
 }
 
 export async function createUser(payload: CreateUserPayload) {
-  console.log('Creating user with payload:', payload);
+  console.log("Calling edge function to create user...");
 
-  const { data, error } = await supabase.from('User').upsert(payload, { onConflict: 'id' }).select().single();
+  const { data, error } = await supabase.functions.invoke(
+    "create-user",
+    { body: payload }
+  );
 
-  console.log('DB response:', { data, error });
+  if (error) {
+    console.log("Edge fn error:", error);
+  }
 
-  return { data, error };
+  return { data: data?.user, error };
 }
 
 export async function getUser(id: string): Promise<InsertResult<User>> {
