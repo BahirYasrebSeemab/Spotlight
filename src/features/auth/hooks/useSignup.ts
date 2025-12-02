@@ -30,6 +30,8 @@ export function useSignup() {
   const updateField = (field: keyof SignupForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
+  
+  const { uploadAvatar } = useUploadAvatar();
 
   const nextStep = () => setStep(s => Math.min(s + 1, 3));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
@@ -37,7 +39,6 @@ export function useSignup() {
   // ⚡ Avatar uploader (needs userId, but we get it after signup)
   
   const handleSignup = async () => {
-    const { uploadAvatar } = useUploadAvatar();
     dispatch(setLoading(true));
 
     try {

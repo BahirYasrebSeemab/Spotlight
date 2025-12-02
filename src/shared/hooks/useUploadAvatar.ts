@@ -7,6 +7,7 @@ export function useUploadAvatar() {
   const [loading, setLoading] = useState(false);
 
   const uploadAvatar = async (userId: string, uri: string): Promise<string | null> => {
+    
     try {
       setLoading(true);
 
