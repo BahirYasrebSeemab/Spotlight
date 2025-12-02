@@ -7,13 +7,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootState } from '@/src/store';
 import { createUser } from '@/src/features/user/services/userServices';
 import { useAppDispatch, useAppSelector } from '@/src/shared/hooks/redux';
+import { useUploadAvatar } from '@/src/shared/hooks/useUploadAvatar';
 
 export function useSignup() {
   const [step, setStep] = useState(1);
   const [localError, setLocalError] = useState<string | null>(null);
+
   const dispatch = useAppDispatch();
   const router = useRouter();
-
   const { loading, error } = useAppSelector((state: RootState) => state.auth);
 
   const [form, setForm] = useState<SignupForm>({
@@ -22,7 +23,7 @@ export function useSignup() {
     username: '',
     password: '',
     confirmPass: '',
-    avatar: '',
+    avatar: '', // URI of picked image
     dob: '',
   });
 
@@ -33,10 +34,14 @@ export function useSignup() {
   const nextStep = () => setStep(s => Math.min(s + 1, 3));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
+  // ⚡ Avatar uploader (needs userId, but we get it after signup)
+  
   const handleSignup = async () => {
+    const { uploadAvatar } = useUploadAvatar();
     dispatch(setLoading(true));
 
     try {
+      // 1️⃣ Create Auth user
       const { user, error } = await signupWithEmail({
         email: form.email,
         password: form.password,
@@ -49,18 +54,28 @@ export function useSignup() {
       if (error) throw error;
       if (!user) throw new Error('Auth signup returned no user');
 
-      // Construct correct payload for your Prisma model
+      const userId = user.id;
+
+      // 2️⃣ Upload avatar only *if user selected one*
+      let uploadedAvatarUrl = null;
+
+      if (form.avatar) {
+        uploadedAvatarUrl = await uploadAvatar(userId, form.avatar);
+      }
+
+      // 3️⃣ Build profile payload for Supabase DB
       const profilePayload = {
-        id: user.id,
+        id: userId,
         email: user.email!,
         username: form.username.toLowerCase(),
         name: form.fullName,
-        avatarUrl: form.avatar,
+        avatarUrl: uploadedAvatarUrl || '',
         dob: form.dob,
         provider: user.app_metadata?.provider || 'email',
         lastLoginAt: new Date(),
       };
 
+      // 4️⃣ Create DB row
       const { data: profile, error: createErr } = await createUser(profilePayload);
       if (createErr) throw createErr;
 
@@ -77,7 +92,6 @@ export function useSignup() {
       dispatch(setLoading(false));
     }
   };
-
 
   return {
     form,
