@@ -60,8 +60,11 @@ export function useSignup() {
       // 2️⃣ Upload avatar only *if user selected one*
       let uploadedAvatarUrl = null;
 
+      console.log(userId);
+
       if (form.avatar) {
         uploadedAvatarUrl = await uploadAvatar(userId, form.avatar);
+        console.log('Uploaded avatar URL:', uploadedAvatarUrl, form.avatar);
       }
 
       // 3️⃣ Build profile payload for Supabase DB
