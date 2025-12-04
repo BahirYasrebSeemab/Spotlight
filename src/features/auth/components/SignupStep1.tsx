@@ -13,13 +13,21 @@ interface SignupStep1Props {
   loading: boolean;
 }
 
-export const SignupStep1 = ({ form, onChange, onNext, handleGoogleLogin, loading }: SignupStep1Props) => (
+export const SignupStep1 = ({ form, onChange, onNext, handleGoogleLogin, loading } : SignupStep1Props) => (
   <View>
     <InputField
       label="Full Name"
       value={form.fullName}
       onChangeText={v => onChange('fullName', v)}
     />
+
+    <InputField
+      label="Age"
+      keyboardType="number-pad"
+      value={form.dob}
+      onChangeText={v => onChange('dob', v)}
+    />
+
     <InputField
       label="Email"
       keyboardType="email-address"
@@ -27,7 +35,8 @@ export const SignupStep1 = ({ form, onChange, onNext, handleGoogleLogin, loading
       value={form.email}
       onChangeText={v => onChange('email', v)}
     />
-    <PrimaryButton title="Next" onPress={onNext} disabled={!form.fullName || !form.email} />
+
+    <PrimaryButton title="Next" onPress={onNext} disabled={!form.fullName || !form.dob || !form.email} />
     <Divider />
     <GoogleButton loading={loading} handleGoogleLogin={handleGoogleLogin} />
   </View>

@@ -7,7 +7,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootState } from '@/src/store';
 import { createUser } from '@/src/features/user/services/userServices';
 import { useAppDispatch, useAppSelector } from '@/src/shared/hooks/redux';
-import { useUploadAvatar } from '@/src/shared/hooks/useUploadAvatar';
 
 export function useSignup() {
   const [step, setStep] = useState(1);
@@ -23,21 +22,16 @@ export function useSignup() {
     username: '',
     password: '',
     confirmPass: '',
-    avatar: '', // URI of picked image
     dob: '',
   });
 
   const updateField = (field: keyof SignupForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
-  
-  const { uploadAvatar } = useUploadAvatar();
 
   const nextStep = () => setStep(s => Math.min(s + 1, 3));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
-  // ⚡ Avatar uploader (needs userId, but we get it after signup)
-  
   const handleSignup = async () => {
     dispatch(setLoading(true));
 
@@ -48,7 +42,6 @@ export function useSignup() {
         password: form.password,
         fullName: form.fullName,
         username: form.username,
-        avatar: form.avatar,
         dob: form.dob,
       });
 
@@ -57,15 +50,8 @@ export function useSignup() {
 
       const userId = user.id;
 
-      // 2️⃣ Upload avatar only *if user selected one*
-      let uploadedAvatarUrl = null;
 
       console.log(userId);
-
-      if (form.avatar) {
-        uploadedAvatarUrl = await uploadAvatar(userId, form.avatar);
-        console.log('Uploaded avatar URL:', uploadedAvatarUrl, form.avatar);
-      }
 
       // 3️⃣ Build profile payload for Supabase DB
       const profilePayload = {
@@ -73,7 +59,6 @@ export function useSignup() {
         email: user.email!,
         username: form.username.toLowerCase(),
         name: form.fullName,
-        avatarUrl: uploadedAvatarUrl || '',
         dob: form.dob,
         provider: user.app_metadata?.provider || 'email',
         lastLoginAt: new Date(),
@@ -109,3 +94,4 @@ export function useSignup() {
     error,
   };
 }
+
