@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { SignupStep1, SignupStep2, SignupStep3, AuthHeader } from '@/src/features/auth/components';
+import { SignupStep1, SignupStep2, AuthHeader } from '@/src/features/auth/components';
 import { useSignup, useOAuth } from '@/src/features/auth/hooks';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
@@ -17,15 +17,22 @@ export default function SignupScreen() {
       <View className="flex-1 justify-center px-8 py-12">
         <AuthHeader title="Create Account" />
 
-        {step === 1 && <SignupStep1 form={form} onChange={updateField} onNext={nextStep} handleGoogleLogin={handleGoogleLogin} loading={oAuthLoading} />}
-        {step === 2 && <SignupStep2 form={form} onChange={updateField} onNext={nextStep} onBack={prevStep} />}
-        {step === 3 && (
-          <SignupStep3
+        {step === 1 && (
+          <SignupStep1
             form={form}
             onChange={updateField}
+            onNext={nextStep}
+            handleGoogleLogin={handleGoogleLogin}
+            loading={oAuthLoading}
+          />
+        )}
+
+        {step === 2 && (
+          <SignupStep2
+            form={form}
+            onChange={updateField}
+            onNext={handleSignup} // now submits here
             onBack={prevStep}
-            onSubmit={handleSignup}
-            loading={loading}
             error={error}
           />
         )}

@@ -4,7 +4,6 @@ export interface SignupForm {
   username: string;
   password: string;
   confirmPass: string;
-  avatar: string;
   dob?: string;
 }
 
