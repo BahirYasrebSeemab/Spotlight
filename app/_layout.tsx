@@ -44,13 +44,13 @@ export default function RootLayout() {
         }
       });
 
-      const { data } = await supabase.auth.getSession();
+      const { data } = await supabase.auth.getClaims();
 
-      if (data.session?.user) {
-        store.dispatch(setUser(data.session.user));
+      if (data?.claims) {
+        store.dispatch(setUser(data.claims));
 
         // Fetch fresh
-        const result = await store.dispatch(fetchUser(data.session.user.id));
+        const result = await store.dispatch(fetchUser(data.claims.id));
         await AsyncStorage.setItem('profile', JSON.stringify(result.payload));
 
         setInitialRoute('(tabs)');

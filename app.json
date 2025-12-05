@@ -18,7 +18,8 @@
               "verify-email": "verify-email",
               "forget-password": "forget-password",
               "signup": "signup",
-              "index": ""
+              "index": "",
+              "callback": "callback"
             }
           },
           "(tabs)": "*",

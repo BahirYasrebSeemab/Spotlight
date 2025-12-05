@@ -1,6 +1,7 @@
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 import { supabase } from '@/src/lib/supabase';
+import * as Linking from 'expo-linking';
 
 interface SignupPayload {
   email: string;
@@ -47,50 +48,43 @@ export async function loginWithEmail(email: string, password: string) {
   return { user: data.user, error };
 }
 
-export async function loginWithGoogle() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-  });
-
-  return { data, error };
-}
-
 export async function logout() {
   const { error } = await supabase.auth.signOut();
   return { error };
 }
 
-// src/features/auth/services/authServices.ts
-
-// Important for redirect handling
 WebBrowser.maybeCompleteAuthSession();
 
 const redirectTo = AuthSession.makeRedirectUri({
   scheme: 'spotlight',
+  path: '(auth)/callback',
+  isTripleSlashed: true,
 });
-console.log(redirectTo)
 
 export async function signInWithGoogle() {
   try {
+    // Step 1: Ask Supabase for Google URL
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo,
-      },
+      options: { redirectTo },
     });
 
     if (error) throw error;
-    
-    // Start OAuth flow in a web browser
-    const result = await WebBrowser.openAuthSessionAsync(data?.url, redirectTo);
-    console.log('OAuth Result:', result);
+    if (!data?.url) throw new Error('No OAuth URL returned');
 
-    if (result.type === 'success') {
-      // The user successfully authenticated
-      return { data: result, error: null };
-    } else {
-      return { data: null, error: 'User canceled or auth failed' };
+    // Step 2: Open Google login
+    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+
+    if (result.type !== 'success') {
+      return { data: null, error: 'User cancelled or auth failed' };
     }
+
+    // Step 3: Exchange code for session
+    const { data: sessionData, error: sessionError } = await supabase.auth.exchangeCodeForSession(result.url);
+
+    if (sessionError) throw sessionError;
+
+    return { data: sessionData, error: null };
   } catch (err: any) {
     return { data: null, error: err.message };
   }
