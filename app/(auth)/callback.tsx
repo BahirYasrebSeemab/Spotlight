@@ -1,17 +1,41 @@
 import { useEffect } from 'react';
+import { useRouter } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { supabase } from '@/src/lib/supabase';
-import { useRouter } from 'expo-router';
+import { useAppDispatch } from '@/src/shared/hooks/redux';
+import { setUser } from '@/src/features/auth/slices/authSlice';
+import { fetchUser } from '@/src/features/user/slices/userSlice';
 
-export default function Callback() {
+export default function OAuthCallback() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    Linking.getInitialURL().then(async url => {
+    const run = async () => {
+      const url = await Linking.getInitialURL();
+      console.log('OAuth Callback URL:', url);
       if (!url) return;
-      await supabase.auth.verifyOtp({ type: 'magiclink', token_hash: url });
+    
+
+      const { data, error } = await supabase.auth.exchangeCodeForSession(url);
+
+      if (error) {
+        console.log('OAuth error:', error);
+        router.replace('/(auth)');
+        return;
+      }
+
+      const session = data.session;
+
+      dispatch(setUser(session.user));
+      await dispatch(fetchUser(session.user.id));
+
+      console.log(session)
+
       router.replace('/(tabs)');
-    });
+    };
+
+    run();
   }, []);
 
   return null;
