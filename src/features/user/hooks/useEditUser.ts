@@ -73,7 +73,7 @@ export function useEditProfile(userId: string, defaultValues: any) {
           email: data.email,
           username: data.username,
           name: data.name,
-          avatar: data.avatarUrl,
+          avatarUrl: data.avatarUrl,
           bio: data.bio,
           createdAt: data.createdAt,
           updatedAt: data.updatedAt,
