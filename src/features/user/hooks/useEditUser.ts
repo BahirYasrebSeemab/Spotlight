@@ -2,10 +2,10 @@ import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { useAppDispatch } from '@/src/shared/hooks/redux';
 import { updateUser } from '@/src/features/user/services/userServices';
+import { uploadAvatarToSupabase } from '@/src/features/user/services/userServices';
 import { useValidation } from '@/src/shared/hooks/validation';
 import { updateUserLocal } from '../slices/userSlice';
 import { useRouter } from 'expo-router';
-import { useUploadImage } from '@/src/shared/hooks/useUploadImage';
 
 export function useEditProfile(userId: string, defaultValues: any) {
   const [name, setName] = useState(defaultValues.name || '');
@@ -13,13 +13,11 @@ export function useEditProfile(userId: string, defaultValues: any) {
   const [bio, setBio] = useState(defaultValues.bio || '');
   const [avatarUrl, setAvatarUrl] = useState(defaultValues.avatarUrl || '');
   const [avatarFile, setAvatarFile] = useState<any>(null);
-
   const [loading, setLoading] = useState(false);
+
   const { validateUsername, error, setError } = useValidation();
   const dispatch = useAppDispatch();
   const router = useRouter();
-
-  const { uploadImage } = useUploadImage();
 
   const pickAvatar = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -49,18 +47,18 @@ export function useEditProfile(userId: string, defaultValues: any) {
     try {
       let finalAvatar = avatarUrl;
 
-      // 🔥 compress + upload avatar
-      if (avatarFile) {
-        const uploaded = await uploadImage(avatarFile.uri, {
-          bucket: 'media',
-          folder: `profiles/${userId}`,
-        });
-
-        if (uploaded) finalAvatar = uploaded;
+      // Upload avatar only if it's a new local image
+      if (avatarFile && avatarUrl.startsWith('file://')) {
+        try {
+          finalAvatar = await uploadAvatarToSupabase(userId, avatarUrl);
+        } catch (err) {
+          setError('Failed to upload avatar');
+          setLoading(false);
+          return false;
+        }
       }
 
       const payload: any = {};
-
       if (name !== defaultValues.name) payload.name = name;
       if (username !== defaultValues.username) payload.username = username;
       if (bio !== defaultValues.bio) payload.bio = bio;
@@ -83,7 +81,6 @@ export function useEditProfile(userId: string, defaultValues: any) {
       );
 
       router.back();
-
       setLoading(false);
       return true;
     } catch (err: any) {
