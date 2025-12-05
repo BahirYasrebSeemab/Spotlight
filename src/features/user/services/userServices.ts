@@ -94,3 +94,15 @@ export async function uploadAvatarToSupabase(userId: string, uri: string) {
   }
 }
 
+export async function fetchUserById(userId: string) {
+  try {
+    const { data, error } = await supabase.from('User').select('*').eq('id', userId).single();
+
+    if (error) throw error;
+
+    return { user: data, error: null };
+  } catch (err: any) {
+    return { user: null, error: err.message || 'Failed to fetch user' };
+  }
+}
+
