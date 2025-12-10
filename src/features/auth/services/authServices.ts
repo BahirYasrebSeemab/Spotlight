@@ -56,9 +56,7 @@ export async function logout() {
 WebBrowser.maybeCompleteAuthSession();
 
 const redirectTo = AuthSession.makeRedirectUri({
-  scheme: 'spotlight',
-  path: '(auth)/callback',
-  isTripleSlashed: true,
+  path: 'callback',
 });
 
 export async function signInWithGoogle() {

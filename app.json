@@ -12,16 +12,7 @@
       ],
       "config": {
         "screens": {
-          "(auth)": {
-            "screens": {
-              "reset-password": "reset-password",
-              "verify-email": "verify-email",
-              "forget-password": "forget-password",
-              "signup": "signup",
-              "index": "",
-              "callback": "callback"
-            }
-          },
+          "(auth)": "*",
           "(tabs)": "*",
           "modal": "modal"
         }
@@ -35,11 +26,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.teczer.expo-nativewind-typescript-boilerplate"
+      "bundleIdentifier": "com.yasreb.spotlight"
     },
     "android": {
       "edgeToEdgeEnabled": true,
-      "package": "com.teczer.exponativewindtypescriptboilerplate",
+      "package": "com.yasreb.spotlight",
       "intentFilters": [
         {
           "action": "VIEW",
