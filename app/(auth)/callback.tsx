@@ -13,10 +13,12 @@ export default function OAuthCallback() {
   useEffect(() => {
     const run = async () => {
       const url = await Linking.getInitialURL();
-      console.log('OAuth Callback URL:', url);
-      if (!url) return;
-    
+      console.log('Callback URL:', url);
 
+      if (!url || !url.includes('code=')) {
+        router.replace('/(auth)');
+        return;
+      }
       const { data, error } = await supabase.auth.exchangeCodeForSession(url);
 
       if (error) {
@@ -26,12 +28,9 @@ export default function OAuthCallback() {
       }
 
       const session = data.session;
-
       dispatch(setUser(session.user));
-      await dispatch(fetchUser(session.user.id));
 
-      console.log(session)
-
+      console.log('OAuth success → Redirecting');
       router.replace('/(tabs)');
     };
 
