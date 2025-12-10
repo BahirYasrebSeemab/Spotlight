@@ -31,6 +31,7 @@
     "android": {
       "edgeToEdgeEnabled": true,
       "package": "com.yasreb.spotlight",
+      "autoVerify": true,
       "intentFilters": [
         {
           "action": "VIEW",
@@ -40,7 +41,9 @@
           ],
           "data": [
             {
-              "scheme": "spotlight"
+              "scheme": "https",
+              "host": "spotlight-web.expo.app",
+              "pathPrefix": "/"
             }
           ]
         }
