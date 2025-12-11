@@ -42,7 +42,7 @@
           "data": [
             {
               "scheme": "https",
-              "host": "spotlight-web--o1kzmw7d3m.expo.app",
+              "host": "spotlight-web.expo.app",
               "pathPrefix": "/"
             }
           ]
