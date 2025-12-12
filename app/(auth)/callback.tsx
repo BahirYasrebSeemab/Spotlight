@@ -9,6 +9,7 @@ import { setUser } from '@/src/features/auth/slices/authSlice';
 export default function OAuthCallbackHandler() {
   const router = useRouter();
   const dispatch = useAppDispatch();
+
   const [logs, setLogs] = useState<string[]>([]);
   const [status, setStatus] = useState('Waiting for redirect...');
 
@@ -17,56 +18,58 @@ export default function OAuthCallbackHandler() {
     setLogs(prev => [...prev, msg]);
   };
 
+  const parseFragmentParams = (url: string) => {
+    const fragment = url.split('#')[1];
+    if (!fragment) return {};
+
+    return Object.fromEntries(
+      fragment.split('&').map(part => part.split('=')),
+    );
+  };
+
   const processUrl = async (url: string) => {
     log(`📩 Processing URL: ${url}`);
 
-    const parsed = Linking.parse(url);
-    log(`🔍 Parsed: ${JSON.stringify(parsed, null, 2)}`);
+    const params = parseFragmentParams(url);
+    log(`🔍 Parsed params: ${JSON.stringify(params, null, 2)}`);
 
-    if (!url.includes('code=')) {
-      log('❌ Missing code param → cannot exchange');
+    const access_token = params.access_token;
+    const refresh_token = params.refresh_token;
+    const expires_in = parseInt(params.expires_in || '3600');
+
+    if (!access_token || !refresh_token) {
+      log('❌ Missing tokens → cannot set session');
       setStatus('Invalid redirect');
       return;
     }
 
-    setStatus('Exchanging session...');
+    setStatus('Setting session…');
 
-    const { data, error } = await supabase.auth.exchangeCodeForSession(url);
+    const { data, error } = await supabase.auth.setSession({
+      access_token,
+      refresh_token,
+    });
 
     if (error) {
-      log(`❌ Supabase error: ${error.message}`);
-      setStatus('OAuth error');
+      log(`❌ setSession error: ${error.message}`);
+      setStatus('Failed to set session');
       return;
     }
 
-    dispatch(setUser(data.session.user));
-    log('✅ Session stored, redirecting…');
+    log('🔥 Session set successfully');
+
+    const { data: userData } = await supabase.auth.getUser();
+    log(`👤 User: ${JSON.stringify(userData.user, null, 2)}`);
+
+    dispatch(setUser(userData.user));
 
     setStatus('Redirecting...');
     router.replace('/(tabs)');
   };
 
   useEffect(() => {
-    // 1) Handle the initial redirect (important!)
-    const checkInitialUrl = async () => {
-      const initial = await Linking.getInitialURL();
-      if (initial) {
-        log(`🔗 Initial URL: ${initial}`);
-        processUrl(initial);
-      } else {
-        log('⚠ No initial URL.');
-      }
-    };
-
-    checkInitialUrl();
-
-    // 2) Listen for future deep links (backup)
-    const sub = Linking.addEventListener('url', event => {
-      log(`📩 Event URL: ${event.url}`);
-      processUrl(event.url);
-    });
-
-    return () => sub.remove();
+    const url = Linking.useLinkingURL();
+    if (url) processUrl(url);
   }, []);
 
   return (
