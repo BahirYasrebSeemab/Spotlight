@@ -30,8 +30,7 @@
       </intent-filter>
       <intent-filter data-generated="true">
         <action android:name="android.intent.action.VIEW"/>
-        <data android:scheme="https" android:host="spotlight-web--o1kzmw7d3m.expo.app" android:pathPrefix="/"/>
-        <data android:scheme="exp+spotlight"/>
+        <data android:scheme="https" android:host="spotlight-web.expo.app" android:pathPrefix="/"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>
