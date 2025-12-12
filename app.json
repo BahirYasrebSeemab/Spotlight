@@ -20,11 +20,11 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundColor": "#000"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.spotlight.app",
+      "package": "com.yasreb.spotlight",
       "intentFilters": [
         {
           "action": "VIEW",
