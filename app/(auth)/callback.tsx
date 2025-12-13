@@ -68,7 +68,7 @@ export default function OAuthCallbackHandler() {
   };
 
   useEffect(() => {
-    const url = Linking.useLinkingURL();
+    const url = Linking.getLinkingURL();
     if (url) processUrl(url);
   }, []);
 
