@@ -11,7 +11,6 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useColorScheme } from 'nativewind';
 import '../global.css';
-import * as Linking from 'expo-linking'
 
 SplashScreen.preventAutoHideAsync();
 
@@ -26,7 +25,6 @@ export default function RootLayout() {
 
   useEffect(() => {
     const bootstrap = async () => {
-      console.log(Linking.useLinkingURL())
       // 🔥 AUTH STATE LISTENER
       const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
         if (session?.user) {
