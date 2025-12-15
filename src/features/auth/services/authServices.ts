@@ -1,7 +1,6 @@
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 import { supabase } from '@/src/lib/supabase';
-import * as Linking from 'expo-linking';
 
 interface SignupPayload {
   email: string;
