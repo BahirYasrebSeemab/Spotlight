@@ -19,7 +19,7 @@ export default function EditProfileScreen() {
     useEditProfile(user.id, {
       name: user.name,
       username: user.username,
-      avatarUrl: user.avatar,
+      avatarUrl: user.avatarUrl,
       bio: user.bio,
     });
 

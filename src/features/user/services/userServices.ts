@@ -17,21 +17,6 @@ export async function updateUser(
   return { data, error };
 }
 
-export async function createUser(payload: CreateUserPayload) {
-  console.log("Calling edge function to create user...");
-
-  const { data, error } = await supabase.functions.invoke(
-    "create-user",
-    { body: payload }
-  );
-
-  if (error) {
-    console.log("Edge fn error:", error);
-  }
-
-  return { data: data?.user, error };
-}
-
 export async function getUser(id: string): Promise<InsertResult<User>> {
   return await supabase.from('User').select('*').eq('id', id).single();
 }

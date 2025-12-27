@@ -5,13 +5,12 @@ import { useRouter } from 'expo-router';
 import { setUser, setLoading, setError } from '@/src/features/auth/slices/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootState } from '@/src/store';
-import { createUser } from '@/src/features/user/services/userServices';
 import { useAppDispatch, useAppSelector } from '@/src/shared/hooks/redux';
+import { fetchUser } from '../../user/slices/userSlice';
 
 export function useSignup() {
   const [step, setStep] = useState(1);
   const [localError, setLocalError] = useState<string | null>(null);
-
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { loading, error } = useAppSelector((state: RootState) => state.auth);
@@ -53,20 +52,7 @@ export function useSignup() {
 
       console.log(userId);
 
-      // 3️⃣ Build profile payload for Supabase DB
-      const profilePayload = {
-        id: userId,
-        email: user.email!,
-        username: form.username.toLowerCase(),
-        name: form.fullName,
-        dob: form.dob,
-        provider: user.app_metadata?.provider || 'email',
-        lastLoginAt: new Date(),
-      };
-
-      // 4️⃣ Create DB row
-      const { data: profile, error: createErr } = await createUser(profilePayload);
-      if (createErr) throw createErr;
+      const profile = await dispatch(fetchUser(userId)).unwrap();
 
       const combined = { ...user, profile };
 

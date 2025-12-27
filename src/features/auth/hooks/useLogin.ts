@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loginWithEmail } from '../services/authServices';
 import { setUser, setLoading, setError } from '@/src/features/auth/slices/authSlice';
 import { useRouter } from 'expo-router';
@@ -26,10 +25,9 @@ export function useLogin() {
       const { user, error } = await loginWithEmail(email, password);
       if (error) throw error;
 
+      // ✅ UI state only
       dispatch(setUser(user));
-      await AsyncStorage.setItem('authState', JSON.stringify({ user }));
 
-      console.log('Login success:', user);
       router.replace('/(tabs)');
     } catch (err: any) {
       const msg = err.message || 'Login failed';

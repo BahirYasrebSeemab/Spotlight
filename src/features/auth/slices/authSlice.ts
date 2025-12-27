@@ -11,7 +11,7 @@ interface AuthState {
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
-  loading: true,
+  loading: true, // bootstrap owns first load
   error: null,
 };
 
@@ -23,14 +23,31 @@ const authSlice = createSlice({
       state.user = action.payload;
       state.isAuthenticated = !!action.payload;
       state.loading = false;
+      state.error = null;
     },
+
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
+
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+    },
+
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
       state.loading = false;
+      state.error = null;
     },
   },
 });
 
-export const { setUser, logout } = authSlice.actions;
+export const {
+  setUser,
+  setLoading,
+  setError,
+  logout,
+} = authSlice.actions;
+
 export default authSlice.reducer;
