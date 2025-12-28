@@ -6,6 +6,7 @@ interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+  isPasswordResetSession: boolean;
 }
 
 const initialState: AuthState = {
@@ -13,6 +14,7 @@ const initialState: AuthState = {
   isAuthenticated: false,
   loading: true, // bootstrap owns first load
   error: null,
+  isPasswordResetSession: false,
 };
 
 const authSlice = createSlice({
@@ -25,6 +27,9 @@ const authSlice = createSlice({
       state.loading = false;
       state.error = null;
     },
+    setPasswordResetSession: (state, action: PayloadAction<boolean>) => {
+      state.isPasswordResetSession = action.payload;
+    },
 
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
@@ -34,7 +39,7 @@ const authSlice = createSlice({
       state.error = action.payload;
     },
 
-    logout: (state) => {
+    logout: state => {
       state.user = null;
       state.isAuthenticated = false;
       state.loading = false;
@@ -43,11 +48,6 @@ const authSlice = createSlice({
   },
 });
 
-export const {
-  setUser,
-  setLoading,
-  setError,
-  logout,
-} = authSlice.actions;
+export const { setUser, setLoading, setError, logout, setPasswordResetSession } = authSlice.actions;
 
 export default authSlice.reducer;

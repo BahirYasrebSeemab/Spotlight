@@ -1,89 +1,92 @@
+// app/(app)/(auth)/callback.tsx
 import { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-import * as Linking from 'expo-linking';
+import { View, ActivityIndicator, Text } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Linking } from 'react-native';
 import { supabase } from '@/src/lib/supabase';
 import { useAppDispatch } from '@/src/shared/hooks/redux';
-import { setUser } from '@/src/features/auth/slices/authSlice';
+import { setPasswordResetSession, setUser } from '@/src/features/auth/slices/authSlice';
 
-export default function OAuthCallbackHandler() {
+export default function AuthCallback() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-
-  const [logs, setLogs] = useState<string[]>([]);
-  const [status, setStatus] = useState('Waiting for redirect...');
-
-  const log = (msg: string) => {
-    console.log(msg);
-    setLogs(prev => [...prev, msg]);
-  };
-
-  const parseFragmentParams = (url: string) => {
-    const fragment = url.split('#')[1];
-    if (!fragment) return {};
-
-    return Object.fromEntries(
-      fragment.split('&').map(part => part.split('=')),
-    );
-  };
-
-  const processUrl = async (url: string) => {
-    log(`📩 Processing URL: ${url}`);
-
-    const params = parseFragmentParams(url);
-    log(`🔍 Parsed params: ${JSON.stringify(params, null, 2)}`);
-
-    const access_token = params.access_token;
-    const refresh_token = params.refresh_token;
-    const expires_in = parseInt(params.expires_in || '3600');
-
-    if (!access_token || !refresh_token) {
-      log('❌ Missing tokens → cannot set session');
-      setStatus('Invalid redirect');
-      return;
-    }
-
-    setStatus('Setting session…');
-
-    const { data, error } = await supabase.auth.setSession({
-      access_token,
-      refresh_token,
-    });
-
-    if (error) {
-      log(`❌ setSession error: ${error.message}`);
-      setStatus('Failed to set session');
-      return;
-    }
-
-    log('🔥 Session set successfully');
-
-    const { data: userData } = await supabase.auth.getUser();
-    log(`👤 User: ${JSON.stringify(userData.user, null, 2)}`);
-
-    dispatch(setUser(userData.user));
-
-    setStatus('Redirecting...');
-    router.replace('/(tabs)');
-  };
+  const [status, setStatus] = useState('Processing...');
 
   useEffect(() => {
-    const url = Linking.getLinkingURL();
-    if (url) processUrl(url);
-  }, []);
+    const handleCallback = async () => {
+      console.log('🔗 Callback: Processing...');
+
+      try {
+        // Get the full URL with hash
+        const url = await Linking.getInitialURL();
+
+        if (!url) {
+          console.log('❌ No URL found');
+          setTimeout(() => router.replace('/(auth)'), 500);
+          return;
+        }
+
+        console.log('🔗 Callback URL:', url);
+
+        // Check for errors in URL
+        if (url.includes('error=')) {
+          const errorMatch = url.match(/error_description=([^&]+)/);
+          const errorDesc = errorMatch ? decodeURIComponent(errorMatch[1].replace(/\+/g, ' ')) : 'Unknown error';
+
+          console.error('❌ Auth error:', errorDesc);
+          setStatus(`Error: ${errorDesc}`);
+
+          setTimeout(() => router.replace('/(auth)'), 2000);
+          return;
+        }
+
+        // Check if it's a password reset link
+        if (url.includes('type=recovery')) {
+          console.log('🔑 Password reset detected');
+
+          const hashIndex = url.indexOf('#');
+          if (hashIndex !== -1) {
+            const hashString = url.substring(hashIndex + 1);
+            const params = new URLSearchParams(hashString);
+
+            const accessToken = params.get('access_token');
+            const refreshToken = params.get('refresh_token');
+
+            if (accessToken && refreshToken) {
+              const { data, error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+
+              if (data?.session && !error) {
+                console.log('✅ Session created');
+                dispatch(setPasswordResetSession(true));
+                dispatch(setUser(data.session.user));
+
+                setStatus('Redirecting to reset password...');
+                setTimeout(() => router.replace('/(auth)/reset-password'), 500);
+                return;
+              }
+            }
+          }
+        }
+
+        // Default: go to auth
+        setTimeout(() => router.replace('/(auth)'), 500);
+      } catch (err) {
+        console.error('❌ Callback error:', err);
+        setStatus('An error occurred');
+        setTimeout(() => router.replace('/(auth)'), 2000);
+      }
+    };
+
+    handleCallback();
+  }, [dispatch, router]);
 
   return (
-    <ScrollView contentContainerClassName="flex-1 p-6 bg-white items-center justify-center">
-      <View className="items-center max-w-md">
-        <ActivityIndicator size="large" color="#007AFF" className="mb-4" />
-        <Text className="text-lg text-center mb-4">{status}</Text>
-
-        {logs.map((l, i) => (
-          <Text key={i} className="text-sm text-gray-700 mb-2 font-mono">
-            {l}
-          </Text>
-        ))}
-      </View>
-    </ScrollView>
+    <View className="flex-1 items-center justify-center bg-white dark:bg-black">
+      <ActivityIndicator size="large" color="#3b82f6" />
+      <Text className="mt-4 text-gray-600 dark:text-gray-400">{status}</Text>
+    </View>
   );
 }
