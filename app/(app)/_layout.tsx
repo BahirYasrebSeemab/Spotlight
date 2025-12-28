@@ -1,105 +1,78 @@
 // app/(app)/_layout.tsx
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Stack, SplashScreen } from 'expo-router';
 import { supabase } from '@/src/lib/supabase';
-import { setUser } from '@/src/features/auth/slices/authSlice';
+import { setUser, setPasswordResetSession } from '@/src/features/auth/slices/authSlice';
 import { fetchUser } from '@/src/features/user/slices/userSlice';
 import { useFonts } from 'expo-font';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useColorScheme } from 'nativewind';
 import { useAppDispatch, useAppSelector } from '@/src/shared/hooks/redux';
+import { useRouter } from 'expo-router';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function AppLayout() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const [fontsLoaded] = useFonts({ ...FontAwesome.font });
   const { colorScheme } = useColorScheme();
-  
-  const [authChecked, setAuthChecked] = useState(false);
-  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
-  // Initial auth check on mount
+  const isAuthenticated = useAppSelector(state => state.auth.isAuthenticated);
+
+  // Listen to auth state changes (for runtime changes only)
   useEffect(() => {
-    const checkInitialAuth = async () => {
-      console.log('🚀 Checking initial auth...');
-      
-      try {
-        const { data } = await supabase.auth.getSession();
-        
-        if (data.session) {
-          console.log('✅ Session found');
-          dispatch(setUser(data.session.user));
-          await dispatch(fetchUser(data.session.user.id));
-        } else {
-          console.log('❌ No session');
-          dispatch(setUser(null));
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      console.log('🔄 Auth state changed:', event);
+
+      // Skip initial session - already handled by splash
+      if (event === 'INITIAL_SESSION') return;
+
+      if (event === 'PASSWORD_RECOVERY') {
+        console.log('🔑 Password recovery event detected');
+        dispatch(setPasswordResetSession(true));
+        router.replace('/(auth)/reset-password');
+        return;
+      }
+
+      if (currentSession) {
+        dispatch(setUser(currentSession.user));
+
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+          await dispatch(fetchUser(currentSession.user.id));
+          dispatch(setPasswordResetSession(false));
         }
-      } catch (err) {
-        console.error('❌ Auth check error:', err);
+      } else {
         dispatch(setUser(null));
-      } finally {
-        setAuthChecked(true);
-        console.log('✅ Auth check complete');
+        dispatch(setPasswordResetSession(false));
       }
-    };
-
-    checkInitialAuth();
-  }, [dispatch]);
-
-  // Listen to auth state changes (logout, token refresh, new login)
-  useEffect(() => {
-    console.log('👂 Setting up auth listener...');
-    
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        console.log('🔔 Auth event:', event);
-
-        // Skip INITIAL_SESSION because we handle it above
-        if (event === 'INITIAL_SESSION') return;
-
-        if (currentSession) {
-          dispatch(setUser(currentSession.user));
-          
-          // Fetch user on sign in or update, not on token refresh
-          if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-            await dispatch(fetchUser(currentSession.user.id));
-          }
-        } else {
-          dispatch(setUser(null));
-        }
-      }
-    );
+    });
 
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [dispatch]);
+  }, [dispatch, router]);
 
-  // Hide splash screen when ready
+  // Hide splash screen when fonts are loaded
   useEffect(() => {
-    if (fontsLoaded && authChecked) {
-      console.log('🎨 Hiding splash screen');
+    if (fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, authChecked]);
+  }, [fontsLoaded]);
 
-  // Keep splash screen visible until ready
-  if (!fontsLoaded || !authChecked) {
+  if (!fontsLoaded) {
     return null;
   }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="splash" />
         <Stack.Protected guard={isAuthenticated}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" />
         </Stack.Protected>
-
-        {!isAuthenticated && (
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        )}
+        <Stack.Screen name="(auth)" />
       </Stack>
     </ThemeProvider>
   );

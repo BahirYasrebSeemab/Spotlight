@@ -81,7 +81,7 @@ export async function signInWithGoogle() {
 
 export async function sendPasswordReset(email: string) {
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: 'spotlight://reset-password',
+    redirectTo: 'https://spotlight-web.expo.app',
   });
 
   return { data, error };
