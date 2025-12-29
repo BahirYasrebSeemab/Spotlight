@@ -1,14 +1,10 @@
 import { useState } from 'react';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { applyNewPassword } from '../services/authServices';
+import { useRouter } from 'expo-router';
+import { applyNewPassword, logout } from '../services/authServices';
 import { useDispatch } from 'react-redux';
-import { setLoading, setError } from '@/src/features/auth/slices/authSlice';
+import { setLoading, setError, setPasswordResetSession, setUser } from '@/src/features/auth/slices/authSlice';
 
 export function useResetPassword() {
-  const params = useLocalSearchParams();
-  const refreshToken = params.refresh_token as string;
-  const accessToken = params.access_token as string;
-
   const dispatch = useDispatch();
   const router = useRouter();
 
@@ -32,13 +28,31 @@ export function useResetPassword() {
     setLocalError(null);
 
     try {
-      const { error } = await applyNewPassword(accessToken, refreshToken, password);
+      // Update password using the existing session
+      const { error } = await applyNewPassword(password);
+
       if (error) throw error;
 
+      console.log('✅ Password updated successfully!');
       setSuccess(true);
+
+      // Clear the password reset flag and user state
+      dispatch(setPasswordResetSession(false));
+      dispatch(setUser(null));
+
+      // Sign out the temporary recovery session
+      const { error: logoutError } = await logout();
+
+      if (logoutError) {
+        console.error('❌ Logout error:', logoutError);
+      }
+
+      // Navigate immediately, don't wait for auth state change
+      console.log('➡️ Navigating to auth...');
       router.replace('/(auth)');
     } catch (err: any) {
       const msg = err.message || 'Error resetting password';
+      console.error('❌ Password reset error:', msg);
       dispatch(setError(msg));
       setLocalError(msg);
     } finally {

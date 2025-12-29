@@ -47,9 +47,14 @@ export async function loginWithEmail(email: string, password: string) {
   return { user: data.user, error };
 }
 
+// authServices.ts
 export async function logout() {
-  const { error } = await supabase.auth.signOut();
-  return { error };
+  try {
+    const { error } = await supabase.auth.signOut();
+    return { error: error || null }; // Ensure we always return { error }
+  } catch (err) {
+    return { error: err as Error };
+  }
 }
 
 WebBrowser.maybeCompleteAuthSession();
@@ -87,22 +92,15 @@ export async function sendPasswordReset(email: string) {
   return { data, error };
 }
 
-export async function applyNewPassword(accessToken: string, refreshToken: string, password: string) {
-  // Require both tokens because setSession expects { access_token, refresh_token }
-  if (!accessToken) return { error: new Error('No access token') };
-  if (!refreshToken) return { error: new Error('No refresh token') };
-
+export async function applyNewPassword(password: string) {
   try {
-    const { error: sessionError } = await supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    });
-    if (sessionError) return { error: sessionError };
-
-    // Now update the user's password (no second arg with accessToken)
+    // The session already exists from verifyOtp, just update the password
     const { data, error } = await supabase.auth.updateUser({ password });
-    return { data, error };
+
+    if (error) return { data: null, error };
+
+    return { data, error: null };
   } catch (err) {
-    return { error: err as Error };
+    return { data: null, error: err as Error };
   }
 }
