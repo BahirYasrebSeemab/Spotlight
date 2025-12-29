@@ -1,9 +1,9 @@
 // app/(app)/_layout.tsx
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Stack, SplashScreen } from 'expo-router';
 import { Linking } from 'react-native';
 import { supabase } from '@/src/lib/supabase';
-import { setUser, setPasswordResetSession, setLoading } from '@/src/features/auth/slices/authSlice';
+import { setUser, setPasswordResetSession } from '@/src/features/auth/slices/authSlice';
 import { fetchUser } from '@/src/features/user/slices/userSlice';
 import { useFonts } from 'expo-font';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -20,60 +20,15 @@ export default function AppLayout() {
   const [fontsLoaded] = useFonts({ ...FontAwesome.font });
   const { colorScheme } = useColorScheme();
   const isNavigatingToReset = useRef(false);
-  const [authChecked, setAuthChecked] = useState(false);
 
-  const isAuthenticated = useAppSelector(state => state.auth.isAuthenticated);
-
-  // Initial auth check on mount
-  useEffect(() => {
-    const checkInitialAuth = async () => {
-      console.log('🚀 Checking initial auth...');
-
-      try {
-        dispatch(setLoading(true));
-        const { data } = await supabase.auth.getSession();
-
-        if (data.session) {
-          // Check if it's a leftover password reset session
-          const isRecoverySession = data.session.user.recovery_sent_at !== undefined;
-
-          if (isRecoverySession) {
-            console.log('🔑 Leftover reset session - signing out');
-            await supabase.auth.signOut();
-            dispatch(setUser(null));
-          } else {
-            // Normal session
-            console.log('✅ Session found');
-            dispatch(setUser(data.session.user));
-            await dispatch(fetchUser(data.session.user.id));
-          }
-        } else {
-          console.log('❌ No session');
-          dispatch(setUser(null));
-        }
-      } catch (err) {
-        console.error('❌ Auth check error:', err);
-        dispatch(setUser(null));
-      } finally {
-        dispatch(setLoading(false));
-        setAuthChecked(true);
-        console.log('✅ Auth check complete');
-      }
-    };
-
-    checkInitialAuth();
-  }, [dispatch]);
-
-  // Handle deep links
+  // Handle deep links when app is ALREADY running (not cold start)
   useEffect(() => {
     const handleDeepLink = async (url: string) => {
-      console.log('🔗 Deep link received:', url);
+      console.log('🔗 Deep link received (app running):', url);
 
-      // Handle password reset
       if (url.includes('type=recovery')) {
         console.log('🔑 Password reset link detected');
 
-        // Extract token_hash
         let tokenHash = null;
         const queryMatch = url.match(/[?&]token_hash=([^&#]+)/);
         if (queryMatch) {
@@ -104,8 +59,6 @@ export default function AppLayout() {
                   isNavigatingToReset.current = false;
                 }, 1000);
               }, 100);
-            } else {
-              console.error('❌ OTP verification failed:', error?.message);
             }
           } catch (err) {
             console.error('❌ Deep link error:', err);
@@ -114,12 +67,7 @@ export default function AppLayout() {
       }
     };
 
-    // Handle deep link on cold start
-    Linking.getInitialURL().then(url => {
-      if (url) handleDeepLink(url);
-    });
-
-    // Handle deep links when app is running
+    // Only listen for deep links when app is running (not cold start)
     const subscription = Linking.addEventListener('url', event => {
       handleDeepLink(event.url);
     });
@@ -127,14 +75,13 @@ export default function AppLayout() {
     return () => subscription.remove();
   }, [dispatch, router]);
 
-  // Listen to auth state changes
+  // Listen to auth state changes (runtime only)
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('🔄 Auth state changed:', event);
 
       if (event === 'INITIAL_SESSION') return;
 
-      // Skip navigation for PASSWORD_RECOVERY - handled by deep link
       if (event === 'PASSWORD_RECOVERY') {
         console.log('🔑 Password recovery event');
         dispatch(setPasswordResetSession(true));
@@ -142,7 +89,6 @@ export default function AppLayout() {
       }
 
       if (currentSession) {
-        // Skip if it's a recovery session from SIGNED_IN
         const isRecoverySession = currentSession.user.recovery_sent_at !== undefined;
         if (isRecoverySession && event === 'SIGNED_IN') {
           console.log('🔑 Recovery session - skipping normal flow');
@@ -152,7 +98,7 @@ export default function AppLayout() {
 
         dispatch(setUser(currentSession.user));
 
-        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        if (event === 'SIGNED_IN') {
           await dispatch(fetchUser(currentSession.user.id));
           dispatch(setPasswordResetSession(false));
         }
@@ -163,26 +109,22 @@ export default function AppLayout() {
     });
 
     return () => authListener.subscription.unsubscribe();
-  }, [dispatch, router]);
+  }, [dispatch]);
 
-  // Hide splash when ready
+  // Hide Expo splash when fonts are loaded
   useEffect(() => {
-    if (fontsLoaded && authChecked) {
+    if (fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, authChecked]);
+  }, [fontsLoaded]);
 
-  // Keep splash visible until ready
-  if (!fontsLoaded || !authChecked) {
-    return null;
-  }
+  if (!fontsLoaded) return null;
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Protected guard={isAuthenticated}>
-          <Stack.Screen name="(tabs)" />
-        </Stack.Protected>
+        <Stack.Screen name="splash" />
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(auth)" />
       </Stack>
     </ThemeProvider>
