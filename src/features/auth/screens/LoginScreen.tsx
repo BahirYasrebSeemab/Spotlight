@@ -43,6 +43,11 @@ export default function LoginScreen() {
             onChangeText={setPassword}
           />
 
+          {/* Forgot password link - moved here, right after password field */}
+          <TouchableOpacity onPress={() => router.push('/forget-password')} className="self-end mb-4">
+            <Text className="text-sm text-blue-500 dark:text-blue-400">Forgot password?</Text>
+          </TouchableOpacity>
+
           {/* Error message */}
           {(localError || error) && <Text className="text-red-500 text-center mb-2">{localError || error}</Text>}
 
@@ -64,17 +69,11 @@ export default function LoginScreen() {
 
           {/* Signup link */}
           <View className="flex-row justify-center">
-            <Text className="text-gray-600 dark:text-gray-300">Don’t have an account? </Text>
+            <Text className="text-gray-600 dark:text-gray-300">Don't have an account? </Text>
             <Link href={'/signup'} className="text-blue-500 dark:text-blue-400 font-semibold">
               Sign up
             </Link>
           </View>
-          <TouchableOpacity onPress={() => router.push('/forget-password')} className="self-end mb-6">
-            <Text className="text-sm text-blue-500 dark:text-blue-400">Forgot password?</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/reset-password')} className="self-end mb-6">
-            <Text className="text-sm text-blue-500 dark:text-blue-400">Reset Password?</Text>
-          </TouchableOpacity>
         </View>
       </View>
     </KeyboardAwareScrollView>

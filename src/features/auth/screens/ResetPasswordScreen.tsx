@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { InputField } from '@/src/shared/components/InputField';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useResetPassword } from '../hooks/useResetPassword';
@@ -6,7 +6,6 @@ import { useAppSelector } from '@/src/shared/hooks/redux';
 
 export default function ResetPasswordScreen() {
   const { password, confirm, setPassword, setConfirm, handleSubmit, localError, success } = useResetPassword();
-  // Only use loading from auth state; do not reference accessToken (not present on AuthState)
   const { loading } = useAppSelector(state => state.auth);
 
   return (
@@ -16,24 +15,29 @@ export default function ResetPasswordScreen() {
     >
       <Text className="text-3xl font-extrabold text-center text-black dark:text-white mb-10">Reset Password</Text>
 
-      <InputField password={true} label="Password" value={password} onChangeText={setPassword} />
-      <InputField password={true} label="Confirm Password" value={confirm} onChangeText={setConfirm} />
+      {!success ? (
+        <>
+          <InputField password={true} label="New Password" value={password} onChangeText={setPassword} />
+          <InputField password={true} label="Confirm Password" value={confirm} onChangeText={setConfirm} />
 
-      {(localError || success) && (
-        <Text className={`text-center mb-4 ${localError ? 'text-red-500' : 'text-green-500'}`}>
-          {localError || 'Password updated!'}
-        </Text>
+          {localError && <Text className="text-center mb-4 text-red-500">{localError}</Text>}
+
+          <TouchableOpacity
+            onPress={handleSubmit}
+            disabled={loading}
+            className={`w-full py-3 rounded-xl ${loading ? 'bg-gray-400' : 'bg-blue-500 dark:bg-blue-600'}`}
+          >
+            <Text className="text-white text-center font-semibold text-base">
+              {loading ? 'Updating...' : 'Update Password'}
+            </Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <View className="items-center">
+          <Text className="text-2xl font-bold text-green-500 mb-2">✓ Password Updated!</Text>
+          <Text className="text-center text-gray-600 dark:text-gray-300">Redirecting to login...</Text>
+        </View>
       )}
-
-      <TouchableOpacity
-        onPress={handleSubmit}
-        disabled={loading}
-        className={`w-full py-3 rounded-xl ${loading ? 'bg-gray-400' : 'bg-blue-500 dark:bg-blue-600'}`}
-      >
-        <Text className="text-white text-center font-semibold text-base">
-          {loading ? 'Updating...' : 'Update Password'}
-        </Text>
-      </TouchableOpacity>
     </KeyboardAwareScrollView>
   );
 }
