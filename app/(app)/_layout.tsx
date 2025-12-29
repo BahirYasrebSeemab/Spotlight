@@ -80,8 +80,6 @@ export default function AppLayout() {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('🔄 Auth state changed:', event);
 
-      if (event === 'INITIAL_SESSION') return;
-
       if (event === 'PASSWORD_RECOVERY') {
         console.log('🔑 Password recovery event');
         dispatch(setPasswordResetSession(true));
@@ -89,13 +87,6 @@ export default function AppLayout() {
       }
 
       if (currentSession) {
-        const isRecoverySession = currentSession.user.recovery_sent_at !== undefined;
-        if (isRecoverySession && event === 'SIGNED_IN') {
-          console.log('🔑 Recovery session - skipping normal flow');
-          dispatch(setPasswordResetSession(true));
-          return;
-        }
-
         dispatch(setUser(currentSession.user));
 
         if (event === 'SIGNED_IN') {
