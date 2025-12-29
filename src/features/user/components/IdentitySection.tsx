@@ -1,8 +1,6 @@
 import { View, Text, Image, ActivityIndicator } from 'react-native';
-import { useUser } from '@/src/shared/hooks/useUser';
 
-export default function IdentitySection({ userId }: { userId: string }) {
-  const { user, loading } = useUser(userId);
+export default function IdentitySection({ user, loading }: { user?: any, loading: boolean }) {
 
   return (
     <View className="items-center pb-16 pt-6 bg-white dark:bg-black border-gray-400 dark:border-gray-800 border rounded-lg w-full">
@@ -11,7 +9,7 @@ export default function IdentitySection({ userId }: { userId: string }) {
           <ActivityIndicator color="#fff" />
         ) : (
           <Image
-            source={{ uri: user?.avatarUrl ?? 'https://placehold.co/150x150?text=Avatar' }}
+            source={{ uri: user?.avatarUrl }}
             className="w-28 h-28 rounded-full mb-4"
           />
         )}

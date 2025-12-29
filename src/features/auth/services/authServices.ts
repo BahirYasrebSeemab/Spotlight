@@ -57,28 +57,36 @@ export async function logout() {
   }
 }
 
+// Important for redirect handling
 WebBrowser.maybeCompleteAuthSession();
+
+const redirectTo = AuthSession.makeRedirectUri({
+  scheme: 'spotlight',
+  path: 'callback',
+});
+console.log(redirectTo)
 
 export async function signInWithGoogle() {
   try {
-    const redirectTo = AuthSession.makeRedirectUri({ scheme: 'spotlight', path: 'callback' });
-
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo,
-        queryParams: { response_type: 'code' },
       },
     });
 
-    console.log('signInWithGoogle data:', data, 'error:', error);
     if (error) throw error;
-    if (!data?.url) throw new Error('No OAuth URL returned');
 
-    // Open Google login in a browser
-    await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
-    // Don't manually call exchangeCodeForSession, onAuthStateChange handles it
-    return { data: null, error: null };
+    // Start OAuth flow in a web browser
+    const result = await WebBrowser.openAuthSessionAsync(data?.url, redirectTo);
+    console.log('OAuth Result:', result);
+
+    if (result.type === 'success') {
+      // The user successfully authenticated
+      return { data: result, error: null };
+    } else {
+      return { data: null, error: 'User canceled or auth failed' };
+    }
   } catch (err: any) {
     return { data: null, error: err.message };
   }

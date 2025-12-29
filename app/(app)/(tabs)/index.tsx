@@ -4,17 +4,21 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { supabase } from '@/src/lib/supabase';
 import { Buffer } from 'buffer';
+import { PrimaryButton } from '@/src/shared/components/PrimaryButton';
+import { useLogout } from '@/src/features/auth/hooks/useLogout';
+import { useAppSelector } from '@/src/shared/hooks/redux';
 
 export default function Home() {
   const [image, setImage] = useState<string | null>(null);
+  const { handleLogout } = useLogout();
   const [uploading, setUploading] = useState(false);
+  const { loading: authLoading, user: authUser } = useAppSelector(state => state.auth);
 
   // HARD CODED USER ID FOR TESTING
   const userId = '7f9a9975-1d25-429a-a9a7-50f96d9dc5de';
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 1,
     });
 
@@ -63,7 +67,14 @@ export default function Home() {
     <View className="flex-1 items-center justify-center bg-white dark:bg-black">
       <Text className="text-xl font-bold text-dark dark:text-white">Home</Text>
       <View className="h-[1px] w-4/5 my-8 bg-[#eee] dark:bg-zinc-900" />
-
+      <View className="flex-1 justify-center items-center bg-gray-100 dark:bg-black">
+        <PrimaryButton
+          onPress={handleLogout}
+          title={authLoading ? 'Logging out...' : 'Logout'}
+          px="px-4"
+          disabled={authLoading}
+        />
+      </View>
       {image && (
         <Image source={{ uri: image }} style={{ width: 150, height: 150, borderRadius: 12, marginBottom: 16 }} />
       )}

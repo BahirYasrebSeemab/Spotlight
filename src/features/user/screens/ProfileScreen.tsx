@@ -66,7 +66,7 @@ export default function ProfileScreen() {
         inverted
         data={[]}
         renderItem={() => null}
-        ListFooterComponent={<IdentitySection userId={user.id} />}
+        ListFooterComponent={<IdentitySection user={user} loading={loading} />}
         contentContainerStyle={{ paddingBottom: 40 }}
       />
     </View>
