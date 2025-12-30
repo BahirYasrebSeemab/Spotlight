@@ -93,6 +93,6 @@ export default function SplashScreen() {
   }, [dispatch, router]);
 
   return (
-    <CustomSplashScreen/>
+    <CustomSplashScreen status='Loading'/>
   );
 }

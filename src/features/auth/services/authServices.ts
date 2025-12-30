@@ -62,7 +62,6 @@ WebBrowser.maybeCompleteAuthSession();
 
 const redirectTo = AuthSession.makeRedirectUri({
   scheme: 'spotlight',
-  path: 'callback',
 });
 console.log(redirectTo)
 

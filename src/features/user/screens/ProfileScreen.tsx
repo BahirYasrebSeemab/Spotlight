@@ -21,6 +21,8 @@ export default function ProfileScreen() {
     );
   }
 
+  console.log('ProfileScreen user:', user);
+
     const navigation = useNavigation();
 
    const router = useRouter();
