@@ -25,6 +25,7 @@ export default function SettingsScreen() {
       <Text className="text-xl font-bold text-black dark:text-white mb-4">Account</Text>
 
       <Row label="Edit Profile" onPress={() => router.navigate('(tabs)/profile/edit-profile')} />
+      <Row label="Change Password" onPress={() => router.navigate('(tabs)/profile/change-password')} />
       <Row label="Delete Account" danger onPress={() => console.log('Delete Account')} />
       <Row label="Logout" danger onPress={handleLogout} />
 
