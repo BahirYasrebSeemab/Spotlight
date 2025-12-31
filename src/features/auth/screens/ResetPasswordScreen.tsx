@@ -1,7 +1,7 @@
 import { Text, TouchableOpacity, View } from 'react-native';
 import { InputField } from '@/src/shared/components/InputField';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { useResetPassword } from '../hooks/useResetPassword';
+import { useResetPassword } from '@/src/features/auth/hooks/useResetPassword';
 import { useAppSelector } from '@/src/shared/hooks/redux';
 
 export default function ResetPasswordScreen() {

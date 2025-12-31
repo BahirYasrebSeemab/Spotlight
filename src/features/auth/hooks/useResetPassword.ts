@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { applyNewPassword, logout } from '../services/authServices';
+import { applyNewPassword, logout } from '@/src/features/auth/services/authServices';
 import { useDispatch } from 'react-redux';
 import { setLoading, setError, setPasswordResetSession, setUser } from '@/src/features/auth/slices/authSlice';
 
