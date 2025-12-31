@@ -40,6 +40,13 @@ export default function AuthCallback() {
             router.replace('/(auth)');
             return;
           }
+          // ---- NEW: update lastLoginAt ----
+          try {
+            await supabase.from('User').update({ lastLoginAt: new Date().toISOString() }).eq('id', user.id);
+            console.log('⏰ lastLoginAt updated');
+          } catch (err) {
+            console.error('❌ Failed to update lastLoginAt:', err);
+          }
 
           // 2️⃣ Set auth user FIRST
           console.log('👤 Setting auth user...');
