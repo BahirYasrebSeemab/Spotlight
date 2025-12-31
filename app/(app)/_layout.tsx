@@ -94,6 +94,13 @@ export default function AppLayout() {
 
           if (fetchUser.fulfilled.match(result)) {
             console.log('✅ User profile fetched successfully');
+
+            try {
+              await supabase.from('User').update({ lastLoginAt: new Date().toISOString() }).eq('id', user.id);
+              console.log('⏰ lastLoginAt updated');
+            } catch (err) {
+              console.error('❌ Failed to update lastLoginAt:', err);
+            }
           } else {
             console.error('❌ fetchUser failed:', result);
           }
