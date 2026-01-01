@@ -34,8 +34,7 @@ export default function ResetPasswordScreen() {
         </>
       ) : (
         <View className="items-center">
-          <Text className="text-2xl font-bold text-green-500 mb-2">✓ Password Updated!</Text>
-          <Text className="text-center text-gray-600 dark:text-gray-300">Redirecting to login...</Text>
+          <Text className="text-green-500 text-center mb-2">Password Updated</Text>
         </View>
       )}
     </KeyboardAwareScrollView>
