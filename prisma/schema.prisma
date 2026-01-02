@@ -174,10 +174,12 @@ model MatchItem {
 }
 
 model Follower {
-  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  followerId  String   @db.Uuid
-  followingId String   @db.Uuid
-  follower    User     @relation("UserFollowing", fields: [followerId], references: [id])
-  following   User     @relation("UserFollowers", fields: [followingId], references: [id])
-  createdAt   DateTime @default(now())
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id      String   @db.Uuid // the person being followed
+  follower_id  String   @db.Uuid // the person who follows
+  createdAt    DateTime @default(now())
+
+  @@unique([user_id, follower_id])
+  @@index([user_id])
+  @@index([follower_id])
 }
