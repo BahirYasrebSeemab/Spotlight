@@ -1,75 +1,87 @@
+// (tabs)/profile/index.tsx - INVERTED SCROLL Profile
 import { View, FlatList, ActivityIndicator } from 'react-native';
 import { useAppSelector } from '@/src/shared/hooks/redux';
-import IdentitySection from '../components/IdentitySection';
-import { PrimaryButton } from '@/src/shared/components/PrimaryButton';
-import { useLogout } from '../../auth/hooks';
 import { useNavigation, useRouter } from 'expo-router';
-import { useLayoutEffect } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { Pressable } from 'react-native';
-import { MoreVertical } from 'lucide-react-native';
+import { Settings } from 'lucide-react-native';
+import { ProfileIdentity } from '@/src/features/user/components/ProfileIdentity';
+import { ProfileTabBar } from '@/src/features/user/components/ProfileTabBar';
+import { ProfileContentGrid } from '@/src/features/user/components/ProfileContentGrid';
+import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
 
 export default function ProfileScreen() {
   const { user, loading } = useAppSelector(state => state.user);
-  const { loading: authLoading, user: authUser } = useAppSelector(state => state.auth);
-  const { handleLogout } = useLogout();
+  const navigation = useNavigation();
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState('all');
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable onPress={() => router.push('/(tabs)/profile/settings')} className="p-2">
+          <Settings size={22} color={'white'} />
+        </Pressable>
+      ),
+    });
+  }, [router]);
 
   if (loading || !user) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-black">
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color="#8B5CF6" />
       </View>
     );
   }
 
-  console.log('ProfileScreen user:', user);
+  // Mock data - replace with real data
+  const posts = [
+    { id: '1', imageUrl: 'https://picsum.photos/400/400', type: 'photo' },
+    { id: '2', imageUrl: 'https://picsum.photos/400/600', type: 'video' },
 
-    const navigation = useNavigation();
-
-   const router = useRouter();
-
-   useLayoutEffect(() => {
-     navigation.setOptions({
-       headerRight: () => (
-         <Pressable onPress={() => router.push('/(tabs)/profile/settings')} className="p-2">
-           <MoreVertical size={22} color={'white'} />
-         </Pressable>
-       ),
-     });
-   }, [router]);
-
-
-  // If email is not confirmed
-  // if (!authUser.emailConfirmedAt) {
-  //   return (
-  //     <View className="flex-1 justify-center items-center bg-white dark:bg-black">
-  //       <EmailVerificationNotice email={user.email} />
-  //       <PrimaryButton
-  //         onPress={handleLogout}
-  //         title={authLoading ? 'Logging out...' : 'Logout'}
-  //         px="px-4"
-  //         disabled={authLoading}
-  //       />
-  //     </View>
-  //   );
-  // }
+  ];
 
   return (
-    <View className="flex-1 justify-center items-center w-full bg-white dark:bg-black">
-      <View className="flex-1 justify-center items-center bg-gray-100 dark:bg-black">
-        <PrimaryButton
-          onPress={handleLogout}
-          title={authLoading ? 'Logging out...' : 'Logout'}
-          px="px-4"
-          disabled={authLoading}
-        />
-      </View>
-
+    <View className="flex-1 bg-white dark:bg-black">
+      {/* INVERTED FlatList - scrolls UP to see content */}
       <FlatList
-        inverted
-        data={[]}
-        renderItem={() => null}
-        ListFooterComponent={<IdentitySection user={user} loading={loading} />}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        inverted // THIS MAKES IT SCROLL UPWARD!
+        data={posts}
+        keyExtractor={item => item.id}
+        numColumns={3}
+        renderItem={({ item }) => null} // We handle rendering differently
+        ListHeaderComponent={() => (
+          // Header appears at BOTTOM (because inverted)
+          <ProfileIdentity
+            user={{
+              ...user,
+              postsCount: posts.length,
+              followersCount: 0,
+              followingCount: 0,
+            }}
+            loading={false}
+            isOwnProfile={true}
+            onEditProfile={() => router.push('/(tabs)/profile/edit')}
+            onAvatarPress={() => {
+              // Handle avatar change/view
+              console.log('Avatar pressed');
+            }}
+          />
+        )}
+        ListFooterComponent={() => (
+          // Footer appears at TOP (because inverted)
+          <>
+            <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={true} />
+            {/* {posts.length > 0 ? (
+              <ProfileContentGrid posts={posts} onPostPress={postId => router.push(`/post/${postId}`)} />
+            ) : (
+              <EmptyProfileContent isOwnProfile={true} activeTab={activeTab} />
+            )} */}
+            <EmptyProfileContent isOwnProfile={true} activeTab={activeTab} />
+          </>
+        )}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1 }}
       />
     </View>
   );
