@@ -19,20 +19,20 @@ export function ProfileStats({
   onFollowingPress,
 }: ProfileStatsProps) {
   return (
-    <View className="flex-row justify-around py-5 px-4 bg-white dark:bg-black border-y border-gray-200 dark:border-gray-800">
+    <View className="flex-row items-center gap-6">
       <TouchableOpacity onPress={onPostsPress} className="items-center" activeOpacity={0.7}>
-        <Text className="text-xl font-bold text-black dark:text-white">{postsCount}</Text>
-        <Text className="text-sm text-gray-600 dark:text-gray-400 mt-1">Posts</Text>
+        <Text className="text-base font-bold text-black dark:text-white">{postsCount}</Text>
+        <Text className="text-xs text-gray-500 dark:text-gray-400">Owns</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={onFollowersPress} className="items-center" activeOpacity={0.7}>
-        <Text className="text-xl font-bold text-black dark:text-white">{followersCount}</Text>
-        <Text className="text-sm text-gray-600 dark:text-gray-400 mt-1">Followers</Text>
+        <Text className="text-base font-bold text-black dark:text-white">{followersCount}</Text>
+        <Text className="text-xs text-gray-500 dark:text-gray-400">Spotters</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={onFollowingPress} className="items-center" activeOpacity={0.7}>
-        <Text className="text-xl font-bold text-black dark:text-white">{followingCount}</Text>
-        <Text className="text-sm text-gray-600 dark:text-gray-400 mt-1">Following</Text>
+        <Text className="text-base font-bold text-black dark:text-white">{followingCount}</Text>
+        <Text className="text-xs text-gray-500 dark:text-gray-400">Spotted</Text>
       </TouchableOpacity>
     </View>
   );

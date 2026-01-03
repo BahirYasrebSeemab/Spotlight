@@ -1,98 +1,59 @@
-import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-function TabBarIcon(props: { name: React.ComponentProps<typeof FontAwesome>['name']; color: string }) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
+// app/(tabs)/_layout.tsx - Updated with better icons
+import { Tabs } from 'expo-router';
+import { Home, Search, PlusSquare, Heart, User } from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
         headerShown: false,
+        tabBarActiveTintColor: '#8B5CF6', // Purple
+        tabBarInactiveTintColor: '#9CA3AF', // Gray
+        tabBarStyle: {
+          backgroundColor: '#000',
+          borderTopColor: '#1F2937',
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '600',
+        },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome name="info-circle" size={25} style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }} />
-                )}
-              </Pressable>
-            </Link>
-          ),
-          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+          tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
           title: 'Home',
         }}
       />
       <Tabs.Screen
-        name="messages"
+        name="search"
         options={{
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome name="info-circle" size={25} style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }} />
-                )}
-              </Pressable>
-            </Link>
-          ),
-          tabBarIcon: ({ color }) => <TabBarIcon name="telegram" color={color} />,
-          title: 'Messages',
+          tabBarIcon: ({ color, size }) => <Search size={size} color={color} />,
+          title: 'Search',
         }}
       />
       <Tabs.Screen
         name="new"
         options={{
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome name="info-circle" size={25} style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }} />
-                )}
-              </Pressable>
-            </Link>
-          ),
-          tabBarIcon: ({ color }) => <TabBarIcon name="plus" color={color} />,
+          tabBarIcon: ({ color, size }) => <PlusSquare size={size} color={color} />,
           title: 'New',
         }}
       />
       <Tabs.Screen
         name="notifications"
         options={{
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome name="info-circle" size={25} style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }} />
-                )}
-              </Pressable>
-            </Link>
-          ),
-          tabBarIcon: ({ color }) => <TabBarIcon name="heart" color={color} />,
+          tabBarIcon: ({ color, size }) => <Heart size={size} color={color} />,
           title: 'Notifications',
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome name="info-circle" size={25} style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }} />
-                )}
-              </Pressable>
-            </Link>
-          ),
-          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
+          tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
           title: 'Profile',
         }}
       />
