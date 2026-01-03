@@ -1,7 +1,7 @@
 // components/profile/ProfileIdentity.tsx - Bottom Profile Card
 import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Edit3, UserPlus, UserCheck } from 'lucide-react-native';
-import Animated, { FadeInDown, FadeInRight, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+// import Animated, { FadeInDown, FadeInRight, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 
 interface ProfileIdentityProps {
   user: any;
@@ -23,22 +23,10 @@ export function ProfileIdentity({
   onAvatarPress,
 }: ProfileIdentityProps) {
   return (
-    <Animated.View
-      entering={FadeInRight.duration(600).springify()}
-      className="bg-white dark:bg-gray-950 rounded-t-3xl shadow-2xl pb-6 pt-4 px-5 border-t border-gray-200 dark:border-gray-800"
-    >
+    <View className="bg-white dark:bg-gray-950 rounded-t-3xl shadow-2xl pb-6 pt-4 px-5 border-t border-gray-200 dark:border-gray-800">
       {/* Top Handle Bar & Edit Button */}
-      <View className="flex-row items-center justify-between mb-4">
+      <View className="flex-row items-center justify-center mb-4">
         <View className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full" />
-        {isOwnProfile && (
-          <TouchableOpacity
-            onPress={onEditProfile}
-            className="bg-gray-100 dark:bg-gray-900 p-2 rounded-full"
-            activeOpacity={0.7}
-          >
-            <Edit3 size={18} color="#8B5CF6" />
-          </TouchableOpacity>
-        )}
       </View>
 
       <View className="flex-row items-start">
@@ -59,8 +47,21 @@ export function ProfileIdentity({
 
         {/* Info Section */}
         <View className="flex-1">
-          <Text className="text-xl font-bold text-black dark:text-white">{user?.name || user?.username}</Text>
-          <Text className="text-sm text-gray-500 dark:text-gray-400 mb-2">@{user?.username}</Text>
+          <View className="flex-row justify-between">
+            <View>
+              <Text className="text-xl font-bold text-black dark:text-white">{user?.name || user?.username}</Text>
+              <Text className="text-sm text-gray-500 dark:text-gray-400 mb-2">@{user?.username}</Text>
+            </View>
+            {isOwnProfile && (
+              <TouchableOpacity
+                onPress={onEditProfile}
+                className="bg-gray-100 dark:bg-gray-900 p-2 rounded-full h-10 w-10 items-center"
+                activeOpacity={0.7}
+              >
+                <Edit3 size={18} color="#8B5CF6" />
+              </TouchableOpacity>
+            )}
+          </View>
 
           {/* Stats Row - More Spacing */}
           <View className="flex-row items-center gap-6">
@@ -106,6 +107,6 @@ export function ProfileIdentity({
           </TouchableOpacity>
         </View>
       )}
-    </Animated.View>
+    </View>
   );
 }
