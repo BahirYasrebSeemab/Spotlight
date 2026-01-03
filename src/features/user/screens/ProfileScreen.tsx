@@ -38,18 +38,15 @@ export default function ProfileScreen() {
   const posts = [
     { id: '1', imageUrl: 'https://picsum.photos/400/400', type: 'photo' },
     { id: '2', imageUrl: 'https://picsum.photos/400/600', type: 'video' },
-
   ];
-
   return (
     <View className="flex-1 bg-white dark:bg-black">
       {/* INVERTED FlatList - scrolls UP to see content */}
       <FlatList
-        inverted // THIS MAKES IT SCROLL UPWARD!
-        data={posts}
-        keyExtractor={item => item.id}
-        numColumns={3}
-        renderItem={({ item }) => null} // We handle rendering differently
+        inverted
+        data={[]} // Empty data array, we use header/footer for layout
+        keyExtractor={(item, index) => `placeholder-${index}`}
+        renderItem={() => null}
         ListHeaderComponent={() => (
           // Header appears at BOTTOM (because inverted)
           <ProfileIdentity
@@ -61,24 +58,24 @@ export default function ProfileScreen() {
             }}
             loading={false}
             isOwnProfile={true}
-            onEditProfile={() => router.push('/(tabs)/profile/edit')}
+            onEditProfile={() => router.push('/(tabs)/profile/edit-profile')}
             onAvatarPress={() => {
-              // Handle avatar change/view
               console.log('Avatar pressed');
             }}
           />
         )}
         ListFooterComponent={() => (
           // Footer appears at TOP (because inverted)
-          <>
+          <View>
             <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={true} />
-            {/* {posts.length > 0 ? (
-              <ProfileContentGrid posts={posts} onPostPress={postId => router.push(`/post/${postId}`)} />
-            ) : (
+            <View className="min-h-screen">
+              {/* {posts.length > 0 ? (
+                <ProfileContentGrid posts={posts} onPostPress={postId => router.push(`/post/${postId}`)} columns={3} />
+              ) : ( */}
               <EmptyProfileContent isOwnProfile={true} activeTab={activeTab} />
-            )} */}
-            <EmptyProfileContent isOwnProfile={true} activeTab={activeTab} />
-          </>
+              {/* )} */}
+            </View>
+          </View>
         )}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1 }}
