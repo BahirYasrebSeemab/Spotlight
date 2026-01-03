@@ -1,7 +1,8 @@
-// components/profile/ProfileIdentity.tsx - Bottom Profile Card
+// src/features/user/components/ProfileIdentity.tsx - FIXED with proper stats
 import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Edit3, UserPlus, UserCheck } from 'lucide-react-native';
-// import Animated, { FadeInDown, FadeInRight, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { ProfileStats } from './ProfileStats';
+import { useRouter } from 'expo-router';
 
 interface ProfileIdentityProps {
   user: any;
@@ -22,15 +23,17 @@ export function ProfileIdentity({
   onFollowToggle,
   onAvatarPress,
 }: ProfileIdentityProps) {
+  const router = useRouter();
+
   return (
     <View className="bg-white dark:bg-gray-950 rounded-t-3xl shadow-2xl pb-6 pt-4 px-5 border-t border-gray-200 dark:border-gray-800">
-      {/* Top Handle Bar & Edit Button */}
+      {/* Top Handle Bar */}
       <View className="flex-row items-center justify-center mb-4">
         <View className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full" />
       </View>
 
       <View className="flex-row items-start">
-        {/* Avatar Section - Smaller */}
+        {/* Avatar Section */}
         <TouchableOpacity onPress={onAvatarPress} activeOpacity={0.8} className="mr-3">
           {loading ? (
             <View className="w-20 h-20 rounded-2xl bg-gray-200 dark:bg-gray-800 items-center justify-center">
@@ -55,7 +58,7 @@ export function ProfileIdentity({
             {isOwnProfile && (
               <TouchableOpacity
                 onPress={onEditProfile}
-                className="bg-gray-100 dark:bg-gray-900 p-2 rounded-full h-10 w-10 items-center"
+                className="bg-gray-100 dark:bg-gray-900 p-2 rounded-full h-10 w-10 items-center justify-center"
                 activeOpacity={0.7}
               >
                 <Edit3 size={18} color="#8B5CF6" />
@@ -63,25 +66,18 @@ export function ProfileIdentity({
             )}
           </View>
 
-          {/* Stats Row - More Spacing */}
-          <View className="flex-row items-center gap-6">
-            <View className="items-center">
-              <Text className="text-base font-bold text-black dark:text-white">{user?.postsCount || 0}</Text>
-              <Text className="text-xs text-gray-500 dark:text-gray-400">owns</Text>
-            </View>
-            <View className="items-center">
-              <Text className="text-base font-bold text-black dark:text-white">{user?.followersCount || 0}</Text>
-              <Text className="text-xs text-gray-500 dark:text-gray-400">spotters</Text>
-            </View>
-            <View className="items-center">
-              <Text className="text-base font-bold text-black dark:text-white">{user?.followingCount || 0}</Text>
-              <Text className="text-xs text-gray-500 dark:text-gray-400">spotted</Text>
-            </View>
-          </View>
+          <ProfileStats
+            postsCount={user?.postsCount ?? 0}
+            followersCount={user?.followersCount ?? 0}
+            followingCount={user?.followingCount ?? 0}
+            onFollowersPress={() => router.push(`(app)/user/${user?.id}/followers`)}
+            onFollowingPress={() => router.push(`(app)/user/${user?.id}/following`)}
+            // onPostsPress={() => router.push(`(app)/user/${user?.id}/posts`)}
+          />
         </View>
       </View>
 
-      {/* Bio - More Compact */}
+      {/* Bio */}
       {user?.bio && <Text className="text-sm text-gray-700 dark:text-gray-300 mt-3 leading-5">{user.bio}</Text>}
 
       {/* Follow Button (only for other users) */}

@@ -1,5 +1,5 @@
-// app/user/[id]/index.tsx - User Profile with Real Data
-import { View, FlatList, ActivityIndicator, Text } from 'react-native';
+// app/user/[id]/index.tsx - User Profile with Real Data & Refresh
+import { View, FlatList, ActivityIndicator, Text, RefreshControl } from 'react-native';
 import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
 import { useState, useLayoutEffect } from 'react';
 import { useAppSelector } from '@/src/shared/hooks/redux';
@@ -24,16 +24,25 @@ export default function UserProfileScreen() {
   const [activeTab, setActiveTab] = useState('all');
 
   // Fetch user profile
-  const { data: user, isLoading: userLoading } = useUserProfile(id);
+  const { data: user, isLoading: userLoading, refetch: refetchUser } = useUserProfile(id);
 
   // Fetch user posts
-  const { data: postsData, isLoading: postsLoading, fetchNextPage, hasNextPage } = useUserPosts(id);
+  const {
+    data: postsData,
+    isLoading: postsLoading,
+    fetchNextPage,
+    hasNextPage,
+    refetch: refetchPosts,
+  } = useUserPosts(id);
 
   // Check follow status
-  const { data: followStatus } = useFollowStatus(currentUser?.id, id);
+  const { data: followStatus, refetch: refetchFollowStatus } = useFollowStatus(currentUser?.id, id);
 
   // Follow/unfollow mutation
   const { follow, unfollow, isLoading: followLoading } = useFollowUser();
+
+  // Refresh state
+  const [refreshing, setRefreshing] = useState(false);
 
   const isOwnProfile = currentUser?.id === id;
 
@@ -60,6 +69,18 @@ export default function UserProfileScreen() {
       });
     }
   }, [user, isOwnProfile]);
+
+  // Pull to refresh handler
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchUser(), refetchPosts(), refetchFollowStatus()]);
+    } catch (error) {
+      console.error('Error refreshing:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const handleFollowToggle = () => {
     if (!currentUser) {
@@ -129,6 +150,9 @@ export default function UserProfileScreen() {
         data={[]}
         keyExtractor={(_, index) => `placeholder-${index}`}
         renderItem={() => null}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#8B5CF6" colors={['#8B5CF6']} />
+        }
         ListHeaderComponent={() => (
           <ProfileIdentity
             user={user}
