@@ -62,8 +62,8 @@ export default function ProfileScreen() {
 
   // Mock data - replace with real data from hooks
   const posts = [
-    // { id: '1', imageUrl: 'https://picsum.photos/400/400', type: 'photo' as const },
-    // { id: '2', imageUrl: 'https://picsum.photos/400/600', type: 'video' as const },
+    { id: '1', imageUrl: 'https://picsum.photos/400/400', type: 'photo' as const },
+    { id: '2', imageUrl: 'https://picsum.photos/400/600', type: 'video' as const },
   ];
 
   return (
@@ -91,11 +91,11 @@ export default function ProfileScreen() {
           <View>
             <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={true} />
             <View className="min-h-screen">
-              {/* {posts.length > 0 ? (
+              {posts.length > 0 ? (
                 <ProfileContentGrid posts={posts} onPostPress={postId => router.push(`/post/${postId}`)} columns={3} />
-              ) : ( */}
+              ) : (
                 <EmptyProfileContent isOwnProfile={true} activeTab={activeTab} />
-              {/* )} */}
+              )}
             </View>
           </View>
         )}
