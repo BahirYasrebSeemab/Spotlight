@@ -2,7 +2,7 @@
 // src/features/profile/hooks/useUserProfile.ts
 // ========================================
 import { useQuery } from '@tanstack/react-query';
-import { getUserProfile } from '@/src/features/user/services/userServices';
+import { getUserProfile } from '@/src/features/user/services/user.services';
 
 export function useUserProfile(userId: string | undefined) {
   return useQuery({

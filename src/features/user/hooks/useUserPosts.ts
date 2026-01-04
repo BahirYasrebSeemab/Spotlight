@@ -2,7 +2,7 @@
 // src/features/profile/hooks/useUserPosts.ts
 // ========================================
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { getUserPosts } from '@/src/features/user/services/userServices';
+import { getUserPosts } from '@/src/features/user/services/user.services';
 
 export function useUserPosts(userId: string | undefined, limit = 20) {
   return useInfiniteQuery({

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { useAppDispatch } from '@/src/shared/hooks/redux';
-import { updateUser } from '@/src/features/user/services/userServices';
-import { uploadAvatarToSupabase } from '@/src/features/user/services/userServices';
+import { updateUser } from '@/src/features/user/services/user.services';
+import { uploadAvatarToSupabase } from '@/src/features/user/services/user.services';
 import { useValidation } from '@/src/shared/hooks/validation';
 import { updateUserLocal } from '../slices/userSlice';
 import { useRouter } from 'expo-router';

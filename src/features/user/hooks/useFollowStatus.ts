@@ -2,7 +2,7 @@
 // src/features/profile/hooks/useFollowStatus.ts
 // ========================================
 import { useQuery } from '@tanstack/react-query';
-import { checkFollowStatus } from '@/src/features/user/services/userServices';
+import { checkFollowStatus } from '@/src/features/user/services/follow.services';
 
 export function useFollowStatus(currentUserId: string | undefined, targetUserId: string | undefined) {
   return useQuery({

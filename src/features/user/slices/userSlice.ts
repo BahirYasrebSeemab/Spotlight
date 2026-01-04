@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getUser } from '../services/userServices';
+import { getUser } from '../services/user.services';
 import { User } from '@/src/shared/types/user.types';
 
 interface UserState {
@@ -16,15 +16,13 @@ const initialState: UserState = {
 
 export const fetchUser = createAsyncThunk(
   'profile/fetch',
-  
-  async (id: string, {rejectWithValue}) => {
+
+  async (id: string, { rejectWithValue }) => {
     const { data, error } = await getUser(id);
     if (error) return rejectWithValue(error.message || 'Failed to load user');
     return data;
-  }
+  },
 );
-
-
 
 const userSlice = createSlice({
   name: 'profile',
@@ -54,4 +52,3 @@ const userSlice = createSlice({
 export const { updateUserLocal } = userSlice.actions;
 
 export default userSlice.reducer;
-

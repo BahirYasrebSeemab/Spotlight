@@ -2,7 +2,7 @@
 // src/features/profile/hooks/useUserFollowing.ts
 // ========================================
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { getUserFollowing } from '@/src/features/user/services/userServices';
+import { getUserFollowing } from '@/src/features/user/services/follow.services';
 
 export function useUserFollowing(userId: string | undefined, limit = 20) {
   return useInfiniteQuery({
