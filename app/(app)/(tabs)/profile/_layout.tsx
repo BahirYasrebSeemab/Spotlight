@@ -1,8 +1,11 @@
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useAppSelector } from '@/src/shared/hooks/redux';
+import { Pressable } from 'react-native';
+import { Settings } from 'lucide-react-native';
 
 export default function ProfileLayout() {
   const { user, loading } = useAppSelector(state => state.user);
+  const router = useRouter();
 
   if (loading || !user) {
     return null;
@@ -11,7 +14,15 @@ export default function ProfileLayout() {
   return (
     <Stack screenOptions={{ headerShown: true }}>
       <Stack.Screen
-        options={{ headerTitle: user.username, headerStyle: { backgroundColor: 'transparent' } }}
+        options={{
+          headerTitle: user.username,
+          headerStyle: { backgroundColor: 'transparent' },
+          headerRight: () => (
+            <Pressable onPress={() => router.push('/(tabs)/profile/settings')} className="p-2">
+              <Settings size={22} color={'white'} />
+            </Pressable>
+          ),
+        }}
         name="index"
       />
       <Stack.Screen name="settings" options={{ title: 'Settings' }} />

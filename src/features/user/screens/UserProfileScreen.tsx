@@ -1,5 +1,5 @@
-// app/user/[id]/index.tsx - User Profile with Real Data & Refresh
-import { View, FlatList, ActivityIndicator, Text, RefreshControl } from 'react-native';
+// app/user/[id]/index.tsx
+import { View, FlatList, ActivityIndicator, Text, RefreshControl, Pressable, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
 import { useState, useLayoutEffect } from 'react';
 import { useAppSelector } from '@/src/shared/hooks/redux';
@@ -8,13 +8,14 @@ import { ProfileTabBar } from '@/src/features/user/components/ProfileTabBar';
 import { ProfileContentGrid } from '@/src/features/user/components/ProfileContentGrid';
 import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
 import { Share, MoreVertical } from 'lucide-react-native';
-import { Pressable, Alert } from 'react-native';
 
 // Import hooks
 import { useUserProfile } from '@/src/features/user/hooks/useUserProfile';
 import { useUserPosts } from '@/src/features/user/hooks/useUserPosts';
 import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
 import { useFollowUser } from '@/src/features/user/hooks/useFollowUser';
+import { useFollowRequests } from '@/src/features/user/hooks/useFollowRequests';
+import { useFollowRequestStatus } from '@/src/features/user/hooks/useFollowRequestStatus';
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -38,8 +39,14 @@ export default function UserProfileScreen() {
   // Check follow status
   const { data: followStatus, refetch: refetchFollowStatus } = useFollowStatus(currentUser?.id, id);
 
+  // Check follow request status
+  const { data: requestStatus, refetch: refetchRequestStatus } = useFollowRequestStatus(currentUser?.id, id);
+
   // Follow/unfollow mutation
   const { follow, unfollow, isLoading: followLoading } = useFollowUser();
+
+  // Follow request mutations
+  const { send, cancel, isSending, isCanceling } = useFollowRequests();
 
   // Refresh state
   const [refreshing, setRefreshing] = useState(false);
@@ -74,7 +81,7 @@ export default function UserProfileScreen() {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      await Promise.all([refetchUser(), refetchPosts(), refetchFollowStatus()]);
+      await Promise.all([refetchUser(), refetchPosts(), refetchFollowStatus(), refetchRequestStatus()]);
     } catch (error) {
       console.error('Error refreshing:', error);
     } finally {
@@ -82,16 +89,48 @@ export default function UserProfileScreen() {
     }
   };
 
-  const handleFollowToggle = () => {
+  const handleFollowToggle = async () => {
     if (!currentUser) {
       Alert.alert('Sign in required', 'Please sign in to follow users');
       return;
     }
 
-    if (followStatus?.isFollowing) {
-      unfollow({ currentUserId: currentUser.id, targetUserId: id });
-    } else {
-      follow({ currentUserId: currentUser.id, targetUserId: id });
+    try {
+      // If already following, unfollow
+      if (followStatus?.isFollowing) {
+        await unfollow({ currentUserId: currentUser.id, targetUserId: id });
+        // Refresh status after unfollow
+        await Promise.all([refetchFollowStatus(), refetchUser()]);
+        return;
+      }
+
+      // If user is private, send follow request
+      if (user?.isPrivate) {
+        await send({ requesterId: currentUser.id, requestedId: id });
+        // Refresh request status
+        await refetchRequestStatus();
+      } else {
+        // If public, follow directly
+        await follow({ currentUserId: currentUser.id, targetUserId: id });
+        // Refresh follow status
+        await Promise.all([refetchFollowStatus(), refetchUser()]);
+      }
+    } catch (error) {
+      console.error('Error toggling follow:', error);
+      Alert.alert('Error', 'Failed to update follow status. Please try again.');
+    }
+  };
+
+  const handleCancelRequest = async () => {
+    if (!currentUser) return;
+
+    try {
+      await cancel({ requesterId: currentUser.id, requestedId: id });
+      // Refresh request status
+      await refetchRequestStatus();
+    } catch (error) {
+      console.error('Error canceling request:', error);
+      Alert.alert('Error', 'Failed to cancel request. Please try again.');
     }
   };
 
@@ -159,8 +198,13 @@ export default function UserProfileScreen() {
             loading={false}
             isOwnProfile={false}
             isFollowing={followStatus?.isFollowing}
+            followRequestStatus={requestStatus?.status || null}
             onFollowToggle={handleFollowToggle}
+            onCancelRequest={handleCancelRequest}
             onAvatarPress={() => router.push(`/user/${id}/avatar`)}
+            onFollowersPress={() => router.push(`/user/${user.id}/followers`)}
+            onFollowingPress={() => router.push(`/user/${user.id}/following`)}
+            followLoading={followLoading || isSending || isCanceling}
           />
         )}
         ListFooterComponent={() => (

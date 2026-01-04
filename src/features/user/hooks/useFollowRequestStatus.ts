@@ -1,18 +1,16 @@
-// ========================================
 // src/features/user/hooks/useFollowRequestStatus.ts
-// ========================================
 import { useQuery } from '@tanstack/react-query';
-import { checkFollowRequestStatus } from '@/src/features/user/services/followRequest.services';
+import { checkFollowRequestStatus } from '../services/followRequest.services';
 
-export function useFollowRequestStatus(currentUserId: string | undefined, targetUserId: string | undefined) {
+export function useFollowRequestStatus(requesterId?: string, requestedId?: string) {
   return useQuery({
-    queryKey: ['follow-request-status', currentUserId, targetUserId],
+    queryKey: ['follow-request-status', requesterId, requestedId],
     queryFn: async () => {
-      if (!currentUserId || !targetUserId) return null;
-      const { data } = await checkFollowRequestStatus(currentUserId, targetUserId);
+      if (!requesterId || !requestedId) return null;
+      const { data } = await checkFollowRequestStatus(requesterId, requestedId);
       return data;
     },
-    enabled: !!currentUserId && !!targetUserId && currentUserId !== targetUserId,
-    staleTime: 1 * 60 * 1000,
+    enabled: !!requesterId && !!requestedId,
+    staleTime: 1000 * 60, // 1 minute
   });
 }

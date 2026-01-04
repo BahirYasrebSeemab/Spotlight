@@ -1,22 +1,22 @@
-// app/user/[id]/following.tsx - Spotted List (similar structure)
+// app/user/[id]/followers.tsx - FIXED Spotters List
 import { View, FlatList, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useUserFollowing } from '@/src/features/user/hooks/useUserFollowing';
+import { useUserFollowers } from '@/src/features/user/hooks/useUserFollowers';
 import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
 import { useFollowUser } from '@/src/features/user/hooks/useFollowUser';
 import { useAppSelector } from '@/src/shared/hooks/redux';
 
-export default function FollowingScreen() {
+export default function FollowersScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user: currentUser } = useAppSelector(state => state.user);
   const { follow, unfollow } = useFollowUser();
 
-  const { data: followingData, isLoading, fetchNextPage, hasNextPage } = useUserFollowing(id);
+  const { data: followersData, isLoading, fetchNextPage, hasNextPage } = useUserFollowers(id);
 
-  const following = followingData?.pages.flatMap(page => page) || [];
+  const followers = followersData?.pages.flatMap(page => page) || [];
 
-  interface FollowingUser {
+  interface FollowerUser {
     id: string;
     username: string;
     name: string | null;
@@ -24,7 +24,7 @@ export default function FollowingScreen() {
     bio: string | null;
   }
 
-  const FollowingItem = ({ item }: { item: FollowingUser }) => {
+  const FollowerItem = ({ item }: { item: FollowerUser }) => {
     const { data: followStatus } = useFollowStatus(currentUser?.id, item.id);
     const isOwnProfile = currentUser?.id === item.id;
 
@@ -82,8 +82,8 @@ export default function FollowingScreen() {
   return (
     <View className="flex-1 bg-white dark:bg-black">
       <FlatList
-        data={following}
-        renderItem={({ item }) => <FollowingItem item={item} />}
+        data={followers}
+        renderItem={({ item }) => <FollowerItem item={item} />}
         keyExtractor={item => item.id}
         onEndReached={() => {
           if (hasNextPage) fetchNextPage();
@@ -91,7 +91,7 @@ export default function FollowingScreen() {
         onEndReachedThreshold={0.5}
         ListEmptyComponent={() => (
           <View className="flex-1 items-center justify-center py-20">
-            <Text className="text-gray-500 dark:text-gray-400">Not spotting anyone yet</Text>
+            <Text className="text-gray-500 dark:text-gray-400">No spotters yet</Text>
           </View>
         )}
       />
