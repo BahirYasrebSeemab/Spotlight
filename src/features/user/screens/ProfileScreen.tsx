@@ -1,6 +1,6 @@
 // app/(tabs)/profile/index.tsx - Own Profile with Refresh
 import { View, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
-import { useAppSelector } from '@/src/shared/hooks/redux';
+import { useAppDispatch, useAppSelector } from '@/src/shared/hooks/redux';
 import { useNavigation, useRouter } from 'expo-router';
 import { useLayoutEffect, useState } from 'react';
 import { Pressable } from 'react-native';
@@ -10,6 +10,7 @@ import { ProfileTabBar } from '@/src/features/user/components/ProfileTabBar';
 import { ProfileContentGrid } from '@/src/features/user/components/ProfileContentGrid';
 import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
 import { useQueryClient } from '@tanstack/react-query';
+import { fetchUser } from '../slices/userSlice';
 
 export default function ProfileScreen() {
   const { user, loading } = useAppSelector(state => state.user);
@@ -18,6 +19,7 @@ export default function ProfileScreen() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
+  const dispatch = useAppDispatch()
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -26,6 +28,7 @@ export default function ProfileScreen() {
           <Settings size={22} color={'white'} />
         </Pressable>
       ),
+      
     });
   }, [router]);
 
@@ -34,9 +37,7 @@ export default function ProfileScreen() {
     setRefreshing(true);
     try {
       // Refetch current user profile
-      await queryClient.invalidateQueries({
-        queryKey: ['user-profile', user?.id],
-      });
+      await dispatch(fetchUser(user?.id || '')).unwrap();
 
       // Refetch user posts if you add that hook later
       await queryClient.invalidateQueries({
@@ -85,6 +86,9 @@ export default function ProfileScreen() {
             onAvatarPress={() => {
               console.log('Avatar pressed');
             }}
+            onFollowersPress={() => router.push(`/user/${user.id}/followers`)}
+            onFollowingPress={() => router.push(`/user/${user.id}/following`)}
+            
           />
         )}
         ListFooterComponent={() => (
@@ -100,7 +104,6 @@ export default function ProfileScreen() {
           </View>
         )}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1 }}
       />
     </View>
   );

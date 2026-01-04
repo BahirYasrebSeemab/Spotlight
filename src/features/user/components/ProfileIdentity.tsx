@@ -1,4 +1,4 @@
-// src/features/user/components/ProfileStats.tsx
+// src/features/user/components/ProfileIdentity.tsx
 import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Edit3, UserPlus, UserCheck, Clock } from 'lucide-react-native';
 import { ProfileStats } from './ProfileStats';
@@ -15,6 +15,7 @@ interface ProfileIdentityProps {
   onAvatarPress?: () => void;
   onFollowersPress?: () => void;
   onFollowingPress?: () => void;
+  followLoading?: boolean; // ADD THIS LINE
 }
 
 export function ProfileIdentity({
@@ -29,10 +30,22 @@ export function ProfileIdentity({
   onAvatarPress,
   onFollowersPress,
   onFollowingPress,
+  followLoading = false, // ADD THIS LINE
 }: ProfileIdentityProps) {
   // Determine button state and render
   const renderFollowButton = () => {
     if (isOwnProfile) return null;
+
+    // Show loading state - ADD THIS BLOCK
+    if (followLoading) {
+      return (
+        <View className="mt-3">
+          <View className="flex-row items-center justify-center py-2.5 rounded-xl bg-purple-600">
+            <ActivityIndicator size="small" color="white" />
+          </View>
+        </View>
+      );
+    }
 
     // Pending request
     if (followRequestStatus === 'pending') {
@@ -41,6 +54,7 @@ export function ProfileIdentity({
           <TouchableOpacity
             onPress={onCancelRequest}
             className="flex-row items-center justify-center py-2.5 rounded-xl bg-gray-200 dark:bg-gray-800"
+            activeOpacity={0.7}
           >
             <Clock size={16} color="#8B5CF6" />
             <Text className="text-purple-600 font-semibold ml-2 text-sm">Requested</Text>
@@ -56,6 +70,7 @@ export function ProfileIdentity({
           <TouchableOpacity
             onPress={onFollowToggle}
             className="flex-row items-center justify-center py-2.5 rounded-xl bg-gray-200 dark:bg-gray-800"
+            activeOpacity={0.7}
           >
             <UserCheck size={16} color="#8B5CF6" />
             <Text className="text-purple-600 font-semibold ml-2 text-sm">Spotting</Text>
@@ -70,6 +85,7 @@ export function ProfileIdentity({
         <TouchableOpacity
           onPress={onFollowToggle}
           className="flex-row items-center justify-center py-2.5 rounded-xl bg-purple-600"
+          activeOpacity={0.7}
         >
           <UserPlus size={16} color="white" />
           <Text className="text-white font-semibold ml-2 text-sm">{user?.isPrivate ? 'Request to Spot' : 'Spot'}</Text>
@@ -134,7 +150,7 @@ export function ProfileIdentity({
             postsCount={user?.postsCount ?? 0}
             followersCount={user?.followersCount ?? 0}
             followingCount={user?.followingCount ?? 0}
-            onPostsPress={undefined} // Can add later if needed
+            onPostsPress={undefined}
             onFollowersPress={onFollowersPress}
             onFollowingPress={onFollowingPress}
           />
