@@ -130,11 +130,7 @@ export async function getUserFollowing(userId: string, limit = 20, offset = 0) {
 // Check if target user is private
 export async function isUserPrivate(userId: string): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from('User')
-      .select('isPrivate')
-      .eq('id', userId)
-      .single();
+    const { data, error } = await supabase.from('User').select('isPrivate').eq('id', userId).single();
 
     if (error) throw error;
     return data?.isPrivate || false;
@@ -148,18 +144,17 @@ export async function followUserSmart(currentUserId: string, targetUserId: strin
   try {
     // Check if target user is private
     const isPrivate = await isUserPrivate(targetUserId);
-    
+
     if (isPrivate) {
       // Send follow request instead
-      return await sendFollowRequest(currentUserId, targetUserId);
+      const result = await sendFollowRequest(currentUserId, targetUserId);
+      return { success: true, result: result.data, error: result.error };
     } else {
       // Direct follow for public accounts
-      const { error } = await supabase
-        .from('Follower')
-        .insert({
-          followerId: currentUserId,
-          followingId: targetUserId,
-        });
+      const { error } = await supabase.from('Follower').insert({
+        followerId: currentUserId,
+        followingId: targetUserId,
+      });
 
       if (error) throw error;
       return { success: true, error: null };
