@@ -9,6 +9,8 @@ export interface User {
   isBrand?: boolean;
   updatedAt?: string;
   createdAt?: string; // make optional
+  followingCount?: number;
+  followersCount?: number;
 }
 export interface UserProfilePayload {
   username?: string;
