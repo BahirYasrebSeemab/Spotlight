@@ -1,18 +1,23 @@
+// src/store/index.ts (or wherever your store is configured)
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '@/src/features/auth/slices/authSlice';
-import userReducer from '@/src/features/user/slices/userSlice';
+// Remove userReducer import
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    user: userReducer,
+    // Remove user: userReducer
+    // Add other slices as needed
   },
+  middleware: getDefaultMiddleware =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        // Ignore Supabase user objects
+        ignoredActions: ['auth/setCurrentUser'],
+        ignoredPaths: ['auth.user'],
+      },
+    }),
 });
 
-// ----------------- TYPES -----------------
-
-// RootState: the type of the whole redux state
 export type RootState = ReturnType<typeof store.getState>;
-
-// AppDispatch: the type of the dispatch function
 export type AppDispatch = typeof store.dispatch;

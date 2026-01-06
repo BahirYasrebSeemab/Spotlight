@@ -1,17 +1,21 @@
+// ========================================
+// app/(auth)/forget-password.tsx - Updated Forgot Password Screen
+// ========================================
 import { View, Text, TouchableOpacity } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { useRouter } from 'expo-router';
 import { InputField } from '@/src/shared/components/InputField';
 import { useForgotPassword } from '@/src/features/auth/hooks';
-import { useAppSelector } from '@/src/shared/hooks/redux';
+import { AuthHeader } from '@/src/features/auth/components';
 
 export default function ForgetPasswordScreen() {
-  const { email, setEmail, handleReset, localError, success } = useForgotPassword();
-  const { loading, error } = useAppSelector(s => s.auth);
+  const { email, setEmail, handleReset, localError, success, loading } = useForgotPassword();
+  const router = useRouter();
 
   return (
     <KeyboardAwareScrollView className="flex-1 bg-white dark:bg-black">
       <View className="flex-1 justify-center px-8 py-12">
-        <Text className="text-3xl text-center font-bold text-black dark:text-white mb-10">Reset Password</Text>
+        <AuthHeader title="Reset Password" subtitle="Enter your email and we'll send you a reset link" />
 
         <InputField
           label="Email"
@@ -19,20 +23,35 @@ export default function ForgetPasswordScreen() {
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
+          editable={!loading && !success}
         />
 
-        {(localError || error) && <Text className="text-red-500 text-center mb-2">{localError || error}</Text>}
+        {/* Error Message */}
+        {localError && <Text className="text-red-500 text-center mb-2">{localError}</Text>}
 
-        {success && <Text className="text-green-500 text-center mb-2">Check your inbox for a reset link.</Text>}
+        {/* Success Message */}
+        {success && (
+          <View className="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl mb-4">
+            <Text className="text-green-600 dark:text-green-400 text-center font-medium">
+              ✓ Check your inbox for a reset link
+            </Text>
+          </View>
+        )}
 
+        {/* Send Reset Link Button */}
         <TouchableOpacity
-          disabled={loading}
+          disabled={loading || success}
           onPress={handleReset}
-          className={`w-full py-3 rounded-xl mt-4 ${loading ? 'bg-gray-400' : 'bg-blue-500'}`}
+          className={`w-full py-3 rounded-xl mt-4 ${loading || success ? 'bg-gray-400' : 'bg-blue-500 dark:bg-blue-600'}`}
         >
           <Text className="text-white text-center text-base font-semibold">
-            {loading ? 'Sending...' : 'Send Reset Link'}
+            {loading ? 'Sending...' : success ? 'Email Sent' : 'Send Reset Link'}
           </Text>
+        </TouchableOpacity>
+
+        {/* Back to Login */}
+        <TouchableOpacity onPress={() => router.back()} className="mt-6">
+          <Text className="text-center text-blue-500 dark:text-blue-400">Back to Login</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAwareScrollView>

@@ -1,21 +1,28 @@
-import { useState } from 'react';
+// ========================================
+// src/features/auth/hooks/useResendVerification.ts
+// ========================================
+import { useMutation } from '@tanstack/react-query';
 import { resendVerificationEmail } from '@/src/features/auth/services/authServices';
 
 export function useResendVerification() {
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const resendMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const result = await resendVerificationEmail(email);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return result;
+    },
+  });
 
-  const resend = async (email: string) => {
-    setLoading(true);
-    setMessage(null);
-    const result = await resendVerificationEmail(email);
-    if (result.success) {
-      setMessage('Verification email sent successfully.');
-    } else {
-      setMessage(result.error);
-    }
-    setLoading(false);
+  const resend = (email: string) => {
+    resendMutation.mutate(email);
   };
 
-  return { resend, loading, message };
+  return {
+    resend,
+    loading: resendMutation.isPending,
+    message: resendMutation.isSuccess ? 'Verification email sent successfully.' : resendMutation.error?.message || null,
+    success: resendMutation.isSuccess,
+  };
 }

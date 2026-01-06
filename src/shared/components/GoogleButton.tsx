@@ -1,23 +1,27 @@
-import { TouchableOpacity, Text, View, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+// ========================================
+// src/shared/components/GoogleButton.tsx - Updated
+// ========================================
+import { TouchableOpacity, Text, ActivityIndicator, View } from 'react-native';
 
 interface GoogleButtonProps {
-  handleGoogleLogin: () => void;
-  className?: String;
   loading: boolean;
+  handleGoogleLogin: () => void;
+  className?: string;
+  disabled?: boolean;
 }
 
-export const GoogleButton = ({ loading, handleGoogleLogin, className }: GoogleButtonProps) => (
+export const GoogleButton = ({ loading, handleGoogleLogin, className, disabled }: GoogleButtonProps) => (
   <TouchableOpacity
     onPress={handleGoogleLogin}
-    className={`${className} w-full border border-gray-300 dark:border-gray-700 flex-row items-center justify-center py-3 rounded-xl`}
+    disabled={loading || disabled}
+    className={`w-full py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 flex-row items-center justify-center ${className || ''}`}
   >
     {loading ? (
-      <ActivityIndicator size="small" color="#DB4437" />
+      <ActivityIndicator color="#4285F4" />
     ) : (
-      <View className="flex-row items-center">
-        <Ionicons name="logo-google" size={18} color="#DB4437" />
-        <Text className="text-black dark:text-white font-medium ml-2">Continue with Google</Text>
+      <View className="flex-row items-center gap-3">
+        <Text className="text-2xl">🔍</Text>
+        <Text className="text-black dark:text-white font-semibold">Continue with Google</Text>
       </View>
     )}
   </TouchableOpacity>
