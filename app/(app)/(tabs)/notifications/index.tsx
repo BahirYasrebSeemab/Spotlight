@@ -1,4 +1,6 @@
-// app/(tabs)/notifications/index.tsx
+// ========================================
+// app/(tabs)/notifications/index.tsx - FIXED Notifications
+// ========================================
 import { View, FlatList, Text, Image, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
@@ -8,10 +10,9 @@ import { useFollowRequests } from '@/src/features/user/hooks/useFollowRequests';
 import { Check, X, UserPlus } from 'lucide-react-native';
 
 export default function NotificationsScreen() {
-  const { user: currentUser } = useAppSelector(state => state.user);
+  const authUser = useAppSelector(state => state.auth.user);
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'requests' | 'activity'>('requests');
-  const [processingId, setProcessingId] = useState<string | null>(null);
 
   const {
     data: requestsData,
@@ -19,44 +20,34 @@ export default function NotificationsScreen() {
     fetchNextPage,
     hasNextPage,
     refetch,
-  } = useReceivedFollowRequests(currentUser?.id);
+  } = useReceivedFollowRequests(authUser?.id);
 
   const { accept, reject, isAccepting, isRejecting } = useFollowRequests();
 
   const requests = requestsData?.pages.flatMap(page => page) || [];
 
   const handleAccept = async (requestId: string) => {
-    setProcessingId(requestId);
     try {
       await accept(requestId);
-      // Refetch to update UI
-      await refetch();
       Alert.alert('Success', 'Follow request accepted!');
     } catch (error) {
       console.error('Error accepting request:', error);
       Alert.alert('Error', 'Failed to accept request. Please try again.');
-    } finally {
-      setProcessingId(null);
     }
   };
 
   const handleReject = async (requestId: string) => {
-    setProcessingId(requestId);
     try {
       await reject(requestId);
-      // Refetch to update UI
-      await refetch();
       Alert.alert('Success', 'Follow request declined');
     } catch (error) {
       console.error('Error rejecting request:', error);
       Alert.alert('Error', 'Failed to decline request. Please try again.');
-    } finally {
-      setProcessingId(null);
     }
   };
 
   const renderRequest = ({ item }: any) => {
-    const isProcessing = processingId === item.id;
+    const isProcessing = isAccepting || isRejecting;
 
     return (
       <View className="p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black">
@@ -96,7 +87,7 @@ export default function NotificationsScreen() {
             className="flex-1 flex-row items-center justify-center bg-purple-600 py-2.5 rounded-lg"
             activeOpacity={0.8}
           >
-            {isProcessing && isAccepting ? (
+            {isAccepting ? (
               <ActivityIndicator size="small" color="white" />
             ) : (
               <>
@@ -112,7 +103,7 @@ export default function NotificationsScreen() {
             className="flex-1 flex-row items-center justify-center bg-gray-200 dark:bg-gray-800 py-2.5 rounded-lg"
             activeOpacity={0.8}
           >
-            {isProcessing && isRejecting ? (
+            {isRejecting ? (
               <ActivityIndicator size="small" color="#9CA3AF" />
             ) : (
               <>

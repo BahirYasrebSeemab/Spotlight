@@ -4,7 +4,7 @@ export interface SignupForm {
   username: string;
   password: string;
   confirmPass: string;
-  dob?: string;
+  dob?: string | undefined;
 }
 
 export interface LoginForm {

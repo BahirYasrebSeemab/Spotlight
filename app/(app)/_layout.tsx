@@ -1,26 +1,30 @@
-// app/(app)/_layout.tsx
+// ========================================
+// app/(app)/_layout.tsx - FIXED
+// ========================================
 import { useEffect, useRef } from 'react';
 import { Stack, SplashScreen } from 'expo-router';
 import { Linking } from 'react-native';
 import { supabase } from '@/src/lib/supabase';
-import { setUser, setPasswordResetSession } from '@/src/features/auth/slices/authSlice';
-import { fetchUser } from '@/src/features/user/slices/userSlice';
+import { setCurrentUser, setPasswordResetSession, clearCurrentUser } from '@/src/features/auth/slices/authSlice';
 import { useFonts } from 'expo-font';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useColorScheme } from 'nativewind';
 import { useAppDispatch } from '@/src/shared/hooks/redux';
 import { useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function AppLayout() {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [fontsLoaded] = useFonts({ ...FontAwesome.font });
   const { colorScheme } = useColorScheme();
   const isNavigatingToReset = useRef(false);
-  const isHandlingOAuth = useRef(false); // 🔥 NEW: Track if OAuth flow is active
+  const isHandlingOAuth = useRef(false);
 
   // Handle deep links when app is ALREADY running (not cold start)
   useEffect(() => {
@@ -30,10 +34,9 @@ export default function AppLayout() {
       // Handle OAuth callback - check for tokens in the URL
       if (url.includes('access_token') && url.includes('refresh_token')) {
         console.log('🔐 OAuth callback detected');
-        isHandlingOAuth.current = true; // 🔥 Mark OAuth as active
+        isHandlingOAuth.current = true;
 
         try {
-          // Extract tokens from URL hash
           const hashIndex = url.indexOf('#');
           if (hashIndex === -1) {
             console.error('❌ No hash found in OAuth URL');
@@ -60,7 +63,6 @@ export default function AppLayout() {
 
           console.log('📥 Setting session with tokens...');
 
-          // Set the session in Supabase
           const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
             access_token,
             refresh_token,
@@ -83,26 +85,30 @@ export default function AppLayout() {
           const user = sessionData.session.user;
           console.log('👤 User ID:', user.id);
 
-          // Set user in Redux
-          dispatch(setUser(user));
+          // Set user in Redux (auth state only)
+          dispatch(setCurrentUser(user));
 
-          // Fetch full user profile
-          console.log('📥 Fetching user profile...');
-          const result = await dispatch(fetchUser(user.id));
+          // Save to AsyncStorage
+          await AsyncStorage.setItem('authState', JSON.stringify({ user }));
 
-          console.log('📦 fetchUser result type:', result.type);
+          // Prefetch user profile using React Query
+          console.log('📥 Prefetching user profile...');
+          try {
+            await queryClient.prefetchQuery({
+              queryKey: ['user-profile', user.id],
+              queryFn: async () => {
+                const { getUserProfile } = await import('@/src/features/user/services/user.services');
+                const { data } = await getUserProfile(user.id);
+                return data;
+              },
+            });
+            console.log('✅ User profile prefetched successfully');
 
-          if (fetchUser.fulfilled.match(result)) {
-            console.log('✅ User profile fetched successfully');
-
-            try {
-              await supabase.from('User').update({ lastLoginAt: new Date().toISOString() }).eq('id', user.id);
-              console.log('⏰ lastLoginAt updated');
-            } catch (err) {
-              console.error('❌ Failed to update lastLoginAt:', err);
-            }
-          } else {
-            console.error('❌ fetchUser failed:', result);
+            // Update lastLoginAt
+            await supabase.from('User').update({ lastLoginAt: new Date().toISOString() }).eq('id', user.id);
+            console.log('⏰ lastLoginAt updated');
+          } catch (err) {
+            console.error('❌ Failed to prefetch profile:', err);
           }
 
           // Navigate to tabs
@@ -110,7 +116,7 @@ export default function AppLayout() {
           setTimeout(() => {
             console.log('🔄 Executing router.replace to tabs');
             router.replace('/(tabs)');
-            isHandlingOAuth.current = false; // 🔥 Reset flag after navigation
+            isHandlingOAuth.current = false;
           }, 200);
         } catch (err) {
           console.error('❌ OAuth deep link error:', err);
@@ -118,7 +124,7 @@ export default function AppLayout() {
           isHandlingOAuth.current = false;
           router.replace('/(auth)');
         }
-        return; // IMPORTANT: return here so password recovery handler doesn't run
+        return;
       }
 
       // Handle password recovery
@@ -163,20 +169,18 @@ export default function AppLayout() {
       }
     };
 
-    // Only listen for deep links when app is running (not cold start)
     const subscription = Linking.addEventListener('url', event => {
       handleDeepLink(event.url);
     });
 
     return () => subscription.remove();
-  }, [dispatch, router]);
+  }, [dispatch, router, queryClient]);
 
   // Listen to auth state changes (runtime only)
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('🔄 Auth state changed:', event);
 
-      // 🔥 Skip auth listener if OAuth handler is active
       if (isHandlingOAuth.current) {
         console.log('⏭️ Skipping auth listener - OAuth handler is active');
         return;
@@ -189,20 +193,35 @@ export default function AppLayout() {
       }
 
       if (currentSession) {
-        dispatch(setUser(currentSession.user));
+        console.log('✅ Session active:', currentSession.user.id);
+        dispatch(setCurrentUser(currentSession.user));
+
+        // Save to AsyncStorage
+        await AsyncStorage.setItem('authState', JSON.stringify({ user: currentSession.user }));
 
         if (event === 'SIGNED_IN') {
-          await dispatch(fetchUser(currentSession.user.id));
+          // Prefetch user profile on sign in
+          queryClient.prefetchQuery({
+            queryKey: ['user-profile', currentSession.user.id],
+            queryFn: async () => {
+              const { getUserProfile } = await import('@/src/features/user/services/user.services');
+              const { data } = await getUserProfile(currentSession.user.id);
+              return data;
+            },
+          });
           dispatch(setPasswordResetSession(false));
         }
       } else {
-        dispatch(setUser(null));
-        dispatch(setPasswordResetSession(false));
+        console.log('❌ No session - clearing state');
+        dispatch(clearCurrentUser());
+        await AsyncStorage.removeItem('authState');
+        // Clear all React Query cache on logout
+        queryClient.clear();
       }
     });
 
     return () => authListener.subscription.unsubscribe();
-  }, [dispatch]);
+  }, [dispatch, queryClient]);
 
   // Hide Expo splash when fonts are loaded
   useEffect(() => {

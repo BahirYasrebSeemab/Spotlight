@@ -1,4 +1,4 @@
-// app/user/[id]/index.tsx
+// app/user/[id]/index.tsx - Using Enhanced React Query Hooks
 import { View, FlatList, ActivityIndicator, Text, RefreshControl, Pressable, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
 import { useState, useLayoutEffect } from 'react';
@@ -9,7 +9,7 @@ import { ProfileContentGrid } from '@/src/features/user/components/ProfileConten
 import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
 import { Share, MoreVertical } from 'lucide-react-native';
 
-// Import hooks
+// Import ENHANCED hooks
 import { useUserProfile } from '@/src/features/user/hooks/useUserProfile';
 import { useUserPosts } from '@/src/features/user/hooks/useUserPosts';
 import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
@@ -19,7 +19,7 @@ import { useFollowRequestStatus } from '@/src/features/user/hooks/useFollowReque
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user: currentUser } = useAppSelector(state => state.user);
+  const currentUser = useAppSelector(state => state.auth.user);
   const router = useRouter();
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('all');
@@ -33,6 +33,7 @@ export default function UserProfileScreen() {
     isLoading: postsLoading,
     fetchNextPage,
     hasNextPage,
+    isFetchingNextPage,
     refetch: refetchPosts,
   } = useUserPosts(id);
 
@@ -42,11 +43,11 @@ export default function UserProfileScreen() {
   // Check follow request status
   const { data: requestStatus, refetch: refetchRequestStatus } = useFollowRequestStatus(currentUser?.id, id);
 
-  // Follow/unfollow mutation
-  const { follow, unfollow, isLoading: followLoading } = useFollowUser();
+  // Follow/unfollow mutation with optimistic updates
+  const { follow, unfollow, isLoading: followLoading, error: followError } = useFollowUser();
 
-  // Follow request mutations
-  const { send, cancel, isSending, isCanceling } = useFollowRequests();
+  // Follow request mutations with optimistic updates
+  const { send, cancel, isSending, isCanceling, error: requestError } = useFollowRequests();
 
   // Refresh state
   const [refreshing, setRefreshing] = useState(false);
@@ -89,50 +90,35 @@ export default function UserProfileScreen() {
     }
   };
 
-  const handleFollowToggle = async () => {
+  // Handle follow/unfollow toggle
+  const handleFollowToggle = () => {
     if (!currentUser) {
       Alert.alert('Sign in required', 'Please sign in to follow users');
       return;
     }
 
-    try {
-      // If already following, unfollow
-      if (followStatus?.isFollowing) {
-        await unfollow({ currentUserId: currentUser.id, targetUserId: id });
-        // Refresh status after unfollow
-        await Promise.all([refetchFollowStatus(), refetchUser()]);
-        return;
-      }
-
-      // If user is private, send follow request
-      if (user?.isPrivate) {
-        await send({ requesterId: currentUser.id, requestedId: id });
-        // Refresh request status
-        await refetchRequestStatus();
-      } else {
-        // If public, follow directly
-        await follow({ currentUserId: currentUser.id, targetUserId: id });
-        // Refresh follow status
-        await Promise.all([refetchFollowStatus(), refetchUser()]);
-      }
-    } catch (error) {
-      console.error('Error toggling follow:', error);
-      Alert.alert('Error', 'Failed to update follow status. Please try again.');
+    // If already following, unfollow
+    if (followStatus?.isFollowing) {
+      unfollow({ currentUserId: currentUser.id, targetUserId: id });
+    } else {
+      // Follow or send request (handled by followUserSmart)
+      follow({ currentUserId: currentUser.id, targetUserId: id });
     }
   };
 
-  const handleCancelRequest = async () => {
+  // Handle cancel follow request
+  const handleCancelRequest = () => {
     if (!currentUser) return;
-
-    try {
-      await cancel({ requesterId: currentUser.id, requestedId: id });
-      // Refresh request status
-      await refetchRequestStatus();
-    } catch (error) {
-      console.error('Error canceling request:', error);
-      Alert.alert('Error', 'Failed to cancel request. Please try again.');
-    }
+    cancel({ requesterId: currentUser.id, requestedId: id });
   };
+
+  // Show error if mutations fail
+  if (followError) {
+    Alert.alert('Error', 'Failed to update follow status. Please try again.');
+  }
+  if (requestError) {
+    Alert.alert('Error', 'Failed to process request. Please try again.');
+  }
 
   const handleShare = () => {
     console.log('Share profile:', user?.username);
@@ -182,6 +168,13 @@ export default function UserProfileScreen() {
     return true;
   });
 
+  // Map to grid format
+  const gridPosts = filteredPosts.map((post: any) => ({
+    id: post.id,
+    imageUrl: post.mediaUrl || '',
+    type: post.mediaUrl?.includes('.mp4') ? ('video' as const) : ('photo' as const),
+  }));
+
   return (
     <View className="flex-1 bg-white dark:bg-black">
       <FlatList
@@ -215,13 +208,9 @@ export default function UserProfileScreen() {
                 <View className="py-20">
                   <ActivityIndicator size="large" color="#8B5CF6" />
                 </View>
-              ) : filteredPosts.length > 0 ? (
+              ) : gridPosts.length > 0 ? (
                 <ProfileContentGrid
-                  posts={filteredPosts.map((post: any) => ({
-                    id: post.id,
-                    imageUrl: post.mediaUrl || '',
-                    type: post.mediaUrl?.includes('.mp4') ? ('video' as const) : ('photo' as const),
-                  }))}
+                  posts={gridPosts}
                   onPostPress={postId => router.push(`/post/${postId}`)}
                   columns={3}
                 />
@@ -234,7 +223,9 @@ export default function UserProfileScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1 }}
         onEndReached={() => {
-          if (hasNextPage) fetchNextPage();
+          if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
         }}
         onEndReachedThreshold={0.5}
       />

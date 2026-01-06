@@ -1,19 +1,20 @@
+// ========================================
+// src/features/auth/hooks/useSignup.ts
+// ========================================
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { SignupForm } from '@/src/shared/types/form.types';
 import { signupWithEmail } from '@/src/features/auth/services/authServices';
 import { useRouter } from 'expo-router';
-import { setUser, setLoading, setError } from '@/src/features/auth/slices/authSlice';
+import { useAppDispatch } from '@/src/shared/hooks/redux';
+import { setCurrentUser } from '@/src/features/auth/slices/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { RootState } from '@/src/store';
-import { useAppDispatch, useAppSelector } from '@/src/shared/hooks/redux';
-import { fetchUser } from '../../user/slices/userSlice';
 
 export function useSignup() {
   const [step, setStep] = useState(1);
-  const [localError, setLocalError] = useState<string | null>(null);
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { loading, error } = useAppSelector((state: RootState) => state.auth);
+  const queryClient = useQueryClient();
 
   const [form, setForm] = useState<SignupForm>({
     fullName: '',
@@ -24,18 +25,9 @@ export function useSignup() {
     dob: '',
   });
 
-  const updateField = (field: keyof SignupForm, value: string) => {
-    setForm(prev => ({ ...prev, [field]: value }));
-  };
-
-  const nextStep = () => setStep(s => Math.min(s + 1, 3));
-  const prevStep = () => setStep(s => Math.max(s - 1, 1));
-
-  const handleSignup = async () => {
-    dispatch(setLoading(true));
-
-    try {
-      // 1️⃣ Create Auth user
+  const signupMutation = useMutation({
+    mutationFn: async () => {
+      // Create auth user
       const { user, error } = await signupWithEmail({
         email: form.email,
         password: form.password,
@@ -47,25 +39,44 @@ export function useSignup() {
       if (error) throw error;
       if (!user) throw new Error('Auth signup returned no user');
 
-      const userId = user.id;
+      return user;
+    },
+    onSuccess: async user => {
+      console.log('✅ Signup successful:', user.id);
 
+      // Set auth user in Redux
+      dispatch(setCurrentUser(user));
 
-      console.log(userId);
+      // Save to AsyncStorage
+      await AsyncStorage.setItem('authState', JSON.stringify({ user }));
 
-      const profile = await dispatch(fetchUser(userId)).unwrap();
+      // Prefetch user profile
+      queryClient.prefetchQuery({
+        queryKey: ['user-profile', user.id],
+        queryFn: async () => {
+          const { getUserProfile } = await import('@/src/features/user/services/user.services');
+          const { data } = await getUserProfile(user.id);
+          return data;
+        },
+      });
 
-      const combined = { ...user, profile };
-
-      dispatch(setUser(combined));
-      await AsyncStorage.setItem('authState', JSON.stringify({ user: combined }));
-
+      // Navigate to tabs
       router.replace('/(tabs)');
-    } catch (err: any) {
-      console.error('Signup error:', err);
-      dispatch(setError(err.message || 'Signup failed'));
-    } finally {
-      dispatch(setLoading(false));
-    }
+    },
+    onError: (error: any) => {
+      console.error('❌ Signup error:', error);
+    },
+  });
+
+  const updateField = (field: keyof SignupForm, value: string) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const nextStep = () => setStep(s => Math.min(s + 1, 3));
+  const prevStep = () => setStep(s => Math.max(s - 1, 1));
+
+  const handleSignup = () => {
+    signupMutation.mutate();
   };
 
   return {
@@ -75,9 +86,7 @@ export function useSignup() {
     prevStep,
     updateField,
     handleSignup,
-    localError,
-    loading,
-    error,
+    loading: signupMutation.isPending,
+    error: signupMutation.error?.message || null,
   };
 }
-

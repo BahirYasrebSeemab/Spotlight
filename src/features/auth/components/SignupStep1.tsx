@@ -1,3 +1,6 @@
+// ========================================
+// src/features/auth/components/SignupStep1.tsx - Updated
+// ========================================
 import { View } from 'react-native';
 import { InputField } from '../../../shared/components/InputField';
 import { PrimaryButton } from '../../../shared/components/PrimaryButton';
@@ -13,31 +16,43 @@ interface SignupStep1Props {
   loading: boolean;
 }
 
-export const SignupStep1 = ({ form, onChange, onNext, handleGoogleLogin, loading } : SignupStep1Props) => (
-  <View>
-    <InputField
-      label="Full Name"
-      value={form.fullName}
-      onChangeText={v => onChange('fullName', v)}
-    />
+export const SignupStep1 = ({ form, onChange, onNext, handleGoogleLogin, loading }: SignupStep1Props) => {
+  const isValid = form.fullName.trim() && form.dob && form.email.trim();
 
-    <InputField
-      label="Age"
-      keyboardType="number-pad"
-      value={form.dob}
-      onChangeText={v => onChange('dob', v)}
-    />
+  return (
+    <View>
+      <InputField
+        label="Full Name"
+        placeholder="John Doe"
+        value={form.fullName}
+        onChangeText={v => onChange('fullName', v)}
+        editable={!loading}
+      />
 
-    <InputField
-      label="Email"
-      keyboardType="email-address"
-      autoCapitalize="none"
-      value={form.email}
-      onChangeText={v => onChange('email', v)}
-    />
+      <InputField
+        label="Age"
+        placeholder="18"
+        keyboardType="number-pad"
+        value={form.dob}
+        onChangeText={v => onChange('dob', v)}
+        editable={!loading}
+      />
 
-    <PrimaryButton title="Next" onPress={onNext} disabled={!form.fullName || !form.dob || !form.email} />
-    <Divider />
-    <GoogleButton loading={loading} handleGoogleLogin={handleGoogleLogin} />
-  </View>
-);
+      <InputField
+        label="Email"
+        placeholder="john@example.com"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        value={form.email}
+        onChangeText={v => onChange('email', v)}
+        editable={!loading}
+      />
+
+      <PrimaryButton title="Next" onPress={onNext} disabled={!isValid || loading} />
+
+      <Divider />
+
+      <GoogleButton loading={loading} handleGoogleLogin={handleGoogleLogin} disabled={loading} />
+    </View>
+  );
+};

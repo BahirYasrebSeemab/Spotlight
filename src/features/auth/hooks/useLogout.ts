@@ -1,31 +1,50 @@
-import { useDispatch } from 'react-redux';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { logout as logoutAction, setLoading, setError } from '@/src/features/auth/slices/authSlice';
-import { logout as logoutService } from '@/src/features/auth/services/authServices';
+// ========================================
+// src/features/auth/hooks/useLogout.ts
+// ========================================
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
+import { useAppDispatch } from '@/src/shared/hooks/redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { clearCurrentUser } from '@/src/features/auth/slices/authSlice';
+import { logout as logoutService } from '@/src/features/auth/services/authServices';
 
 export function useLogout() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  const handleLogout = async () => {
-    try {
-      dispatch(setLoading(true));
-      dispatch(setError(null));
-
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
       const { error } = await logoutService();
       if (error) throw error;
+    },
+    onSuccess: async () => {
+      console.log('✅ Logout successful');
 
+      // Clear AsyncStorage
       await AsyncStorage.removeItem('authState');
-      dispatch(logoutAction());
+
+      // Clear Redux auth state
+      dispatch(clearCurrentUser());
+
+      // Clear all React Query cache
+      queryClient.clear();
+
+      // Navigate to auth
       router.replace('/(auth)');
-    } catch (err: any) {
-      console.error('Logout error:', err.message);
-      dispatch(setError(err.message));
-    } finally {
-      dispatch(setLoading(false));
-    }
+    },
+    onError: (error: any) => {
+      console.error('❌ Logout error:', error.message);
+    },
+  });
+
+  const handleLogout = () => {
+    logoutMutation.mutate();
   };
 
-  return { handleLogout };
+  return {
+    handleLogout,
+    loading: logoutMutation.isPending,
+    error: logoutMutation.error?.message || null,
+  };
 }

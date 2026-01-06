@@ -1,37 +1,41 @@
+// ========================================
+// src/features/auth/hooks/useForgotPassword.ts
+// ========================================
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useMutation } from '@tanstack/react-query';
 import { sendPasswordReset } from '../services/authServices';
-import { setError, setLoading } from '../slices/authSlice';
 
 export function useForgotPassword() {
-  const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const handleReset = async () => {
-    if (!email) {
-      setLocalError('Email is required.');
-      return;
-    }
+  const resetMutation = useMutation({
+    mutationFn: async () => {
+      if (!email) {
+        throw new Error('Email is required.');
+      }
 
-    dispatch(setLoading(true));
-    dispatch(setError(null));
-    setLocalError(null);
-    setSuccess(false);
-
-    try {
       const { error } = await sendPasswordReset(email);
       if (error) throw error;
-
-      setSuccess(true); // ✅ we show success message
-    } catch (err: any) {
-      const msg = err.message || 'Something went wrong.';
-      dispatch(setError(msg));
+    },
+    onSuccess: () => {
+      console.log('✅ Password reset email sent');
+      setSuccess(true);
+      setLocalError(null);
+    },
+    onError: (error: any) => {
+      const msg = error.message || 'Something went wrong.';
       setLocalError(msg);
-    } finally {
-      dispatch(setLoading(false));
-    }
+      setSuccess(false);
+      console.error('❌ Password reset error:', msg);
+    },
+  });
+
+  const handleReset = () => {
+    setLocalError(null);
+    setSuccess(false);
+    resetMutation.mutate();
   };
 
   return {
@@ -40,5 +44,6 @@ export function useForgotPassword() {
     handleReset,
     localError,
     success,
+    loading: resetMutation.isPending,
   };
 }
