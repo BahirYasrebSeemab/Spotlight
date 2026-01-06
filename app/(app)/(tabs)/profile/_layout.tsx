@@ -1,21 +1,35 @@
+// ========================================
+// app/(tabs)/profile/_layout.tsx - FIXED
+// ========================================
 import { Stack, useRouter } from 'expo-router';
 import { useAppSelector } from '@/src/shared/hooks/redux';
-import { Pressable } from 'react-native';
+import { useUserProfile } from '@/src/features/user/hooks/useUserProfile';
+import { Pressable, ActivityIndicator, View } from 'react-native';
 import { Settings } from 'lucide-react-native';
 
 export default function ProfileLayout() {
-  const { user, loading } = useAppSelector(state => state.user);
+  // Get auth user ID from Redux
+  const authUser = useAppSelector(state => state.auth.user);
   const router = useRouter();
 
-  if (loading || !user) {
-    return null;
+  // Fetch full profile data with React Query
+  const { data: profile, isLoading } = useUserProfile(authUser?.id);
+
+  // Show loading state
+  if (isLoading || !profile) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
+        <ActivityIndicator size="large" color="#8B5CF6" />
+      </View>
+    );
   }
 
   return (
     <Stack screenOptions={{ headerShown: true }}>
       <Stack.Screen
+        name="index"
         options={{
-          headerTitle: user.username,
+          headerTitle: profile.username,
           headerStyle: { backgroundColor: 'transparent' },
           headerRight: () => (
             <Pressable onPress={() => router.push('/(tabs)/profile/settings')} className="p-2">
@@ -23,12 +37,33 @@ export default function ProfileLayout() {
             </Pressable>
           ),
         }}
-        name="index"
       />
-      <Stack.Screen name="settings" options={{ title: 'Settings' }} />
-      <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
-      <Stack.Screen name="change-password" options={{ headerShown: false }} />
-      <Stack.Screen name="danger" />
+      <Stack.Screen
+        name="settings"
+        options={{
+          title: 'Settings',
+          headerStyle: { backgroundColor: 'transparent' },
+        }}
+      />
+      <Stack.Screen
+        name="edit-profile"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="change-password"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="danger"
+        options={{
+          title: 'Account Management',
+          headerStyle: { backgroundColor: 'transparent' },
+        }}
+      />
     </Stack>
   );
 }

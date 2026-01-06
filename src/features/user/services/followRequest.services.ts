@@ -1,7 +1,7 @@
+// ========================================
+// src/features/user/services/followRequest.services.ts - FIXED
+// ========================================
 import { supabase } from '@/src/lib/supabase';
-// ========================================
-// src/features/user/services/follow-request.service.ts
-// ========================================
 
 export interface FollowRequest {
   id: string;
@@ -24,7 +24,7 @@ export interface FollowRequest {
   };
 }
 
-// Send a follow request (for private accounts)
+// Send a follow request
 export async function sendFollowRequest(requesterId: string, requestedId: string) {
   try {
     const { data, error } = await supabase
@@ -60,34 +60,79 @@ export async function cancelFollowRequest(requesterId: string, requestedId: stri
   }
 }
 
-// Accept a follow request
+// Accept a follow request - LOGS EVERYTHING
 export async function acceptFollowRequest(requestId: string) {
   try {
-    const { error } = await supabase
+    console.log('📥 [SERVICE] Starting acceptFollowRequest for:', requestId);
+
+    // Update status to 'accepted'
+    const { data, error } = await supabase
       .from('FollowRequest')
       .update({ status: 'accepted', updatedAt: new Date().toISOString() })
-      .eq('id', requestId);
+      .eq('id', requestId)
+      .select()
+      .single();
 
-    if (error) throw error;
+    console.log('📦 [SERVICE] Update result:', { data, error });
 
-    // The database trigger will automatically create the Follower relationship
-    return { success: true, error: null };
+    if (error) {
+      console.error('❌ [SERVICE] Update error:', error);
+      throw error;
+    }
+
+    if (!data) {
+      console.error('❌ [SERVICE] No data returned after update');
+      throw new Error('Follow request not found');
+    }
+
+    console.log('✅ [SERVICE] Status updated to accepted:', data);
+
+    // Give the trigger time to run (if it exists)
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Check if follower relationship was created by trigger
+    const { data: followerCheck, error: checkError } = await supabase
+      .from('Follower')
+      .select('*')
+      .eq('followerId', data.requesterId)
+      .eq('followingId', data.requestedId)
+      .single();
+
+    console.log('🔍 [SERVICE] Follower relationship check:', { followerCheck, checkError });
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('❌ [SERVICE] Error checking follower:', checkError);
+    }
+
+    if (!followerCheck) {
+      console.warn('⚠️ [SERVICE] No follower relationship found - trigger might not exist');
+    } else {
+      console.log('✅ [SERVICE] Follower relationship exists:', followerCheck);
+    }
+
+    return { success: true, error: null, data };
   } catch (err: any) {
+    console.error('❌ [SERVICE] acceptFollowRequest failed:', err);
     return { success: false, error: err.message || 'Failed to accept follow request' };
   }
 }
 
-// Reject a follow request
+// Reject a follow request - JUST DELETE
 export async function rejectFollowRequest(requestId: string) {
   try {
-    const { error } = await supabase
-      .from('FollowRequest')
-      .update({ status: 'rejected', updatedAt: new Date().toISOString() })
-      .eq('id', requestId);
+    console.log('🔴 [SERVICE] Rejecting/deleting request:', requestId);
 
-    if (error) throw error;
+    const { error } = await supabase.from('FollowRequest').delete().eq('id', requestId);
+
+    if (error) {
+      console.error('❌ [SERVICE] Delete error:', error);
+      throw error;
+    }
+
+    console.log('✅ [SERVICE] Request deleted successfully');
     return { success: true, error: null };
   } catch (err: any) {
+    console.error('❌ [SERVICE] rejectFollowRequest failed:', err);
     return { success: false, error: err.message || 'Failed to reject follow request' };
   }
 }
@@ -121,7 +166,6 @@ export async function getReceivedFollowRequests(userId: string, limit = 20, offs
 
     if (error) throw error;
 
-    // Flatten structure
     const requests =
       data?.map(item => ({
         ...item,
@@ -162,7 +206,6 @@ export async function getSentFollowRequests(userId: string, limit = 20, offset =
 
     if (error) throw error;
 
-    // Flatten structure
     const requests =
       data?.map(item => ({
         ...item,
@@ -185,7 +228,7 @@ export async function checkFollowRequestStatus(requesterId: string, requestedId:
       .eq('requestedId', requestedId)
       .single();
 
-    if (error && error.code !== 'PGRST116') throw error; // Ignore not found error
+    if (error && error.code !== 'PGRST116') throw error;
     return { data, error: null };
   } catch (err: any) {
     return { data: null, error: err.message || 'Failed to check request status' };

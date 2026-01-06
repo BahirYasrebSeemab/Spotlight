@@ -3,18 +3,18 @@
 // ========================================
 import { View, FlatList, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useUserFollowers } from '@/src/features/user/hooks/useUserFollowers';
+import { useUserFollowing } from '@/src/features/user/hooks/useUserFollowing';
 import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
 import { useFollowUser } from '@/src/features/user/hooks/useFollowUser';
 import { useAppSelector } from '@/src/shared/hooks/redux';
 
-export default function FollowersScreen() {
+export default function FollowingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const authUser = useAppSelector(state => state.auth.user);
   const { follow, unfollow, isLoading: followLoading } = useFollowUser();
 
-  const { data: followersData, isLoading, fetchNextPage, hasNextPage } = useUserFollowers(id);
+  const { data: followersData, isLoading, fetchNextPage, hasNextPage } = useUserFollowing(id);
 
   const followers = followersData?.pages.flatMap(page => page) || [];
 
