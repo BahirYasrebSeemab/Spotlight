@@ -3,6 +3,23 @@
 // ========================================
 import { supabase } from '@/src/lib/supabase';
 
+// Check if current user follows target user
+export async function checkFollowStatus(currentUserId: string, targetUserId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('Follower')
+      .select('id')
+      .eq('followerId', currentUserId)
+      .eq('followingId', targetUserId)
+      .single();
+
+    return { isFollowing: !!data, error: null };
+  } catch (err: any) {
+    // Not following if no record found
+    return { isFollowing: false, error: null };
+  }
+}
+
 // Get user profile - ALWAYS returns basic info (name, username, avatar, counts)
 export async function getUserProfile(userId: string) {
   try {
