@@ -2,6 +2,7 @@
 // src/features/user/services/user.services.ts - UPDATED
 // ========================================
 import { supabase } from '@/src/lib/supabase';
+import { sendFollowRequest } from './followRequest.services';
 
 // Check if current user follows target user
 export async function checkFollowStatus(currentUserId: string, targetUserId: string) {
@@ -153,5 +154,42 @@ export async function unfollowUser(currentUserId: string, targetUserId: string) 
   } catch (err: any) {
     console.error('❌ Unfollow failed:', err);
     return { success: false, error: err.message || 'Failed to unfollow user' };
+  }
+}
+
+// Check if target user is private
+export async function isUserPrivate(userId: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.from('User').select('isPrivate').eq('id', userId).single();
+
+    if (error) throw error;
+    return data?.isPrivate || false;
+  } catch (err) {
+    return false;
+  }
+}
+
+// Smart follow function - handles both public and private accounts
+export async function followUserSmart(currentUserId: string, targetUserId: string) {
+  try {
+    // Check if target user is private
+    const isPrivate = await isUserPrivate(targetUserId);
+
+    if (isPrivate) {
+      // Send follow request instead
+      const result = await sendFollowRequest(currentUserId, targetUserId);
+      return { success: true, result: result.data, error: result.error };
+    } else {
+      // Direct follow for public accounts
+      const { error } = await supabase.from('Follower').insert({
+        followerId: currentUserId,
+        followingId: targetUserId,
+      });
+
+      if (error) throw error;
+      return { success: true, error: null };
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to follow user' };
   }
 }
