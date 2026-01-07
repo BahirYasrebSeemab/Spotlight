@@ -114,10 +114,10 @@ export default function UserProfileScreen() {
 
   // Show error if mutations fail
   if (followError) {
-    Alert.alert('Error', 'Failed to update follow status. Please try again.');
+    console.error('Follow error:', followError);
   }
   if (requestError) {
-    Alert.alert('Error', 'Failed to process request. Please try again.');
+    console.error('Follow request error:', requestError);
   }
 
   const handleShare = () => {
