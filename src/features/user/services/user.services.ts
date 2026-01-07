@@ -104,10 +104,15 @@ export async function uploadAvatarToSupabase(userId: string, uri: string) {
   }
 }
 
-// Fetch user profile by ID
+
+// Get user profile - ALWAYS returns basic info (name, username, avatar, counts)
 export async function getUserProfile(userId: string) {
   try {
-    const { data, error } = await supabase.from('User').select('*').eq('id', userId).single();
+    const { data, error } = await supabase
+      .from('User')
+      .select('id, username, name, avatarUrl, bio, isPrivate, followersCount, followingCount, postsCount, createdAt')
+      .eq('id', userId)
+      .single();
 
     if (error) throw error;
     return { data, error: null };

@@ -1,6 +1,4 @@
-// ========================================
-// src/features/profile/hooks/useUserFollowers.ts
-// ========================================
+// src/features/user/hooks/useUserFollowers.ts - HANDLE PRIVATE ACCOUNTS
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { getUserFollowers } from '@/src/features/user/services/follow.services';
 
@@ -10,12 +8,20 @@ export function useUserFollowers(userId: string | undefined, limit = 20) {
     queryFn: async ({ pageParam }) => {
       if (!userId) throw new Error('User ID is required');
       const { data, error } = await getUserFollowers(userId, limit, pageParam as number);
+      
+      // Handle private account case
+      if (error === 'PRIVATE_ACCOUNT') {
+        return { isPrivate: true, followers: [] };
+      }
+      
       if (error) throw new Error(error);
-      return data || [];
+      return { isPrivate: false, followers: data || [] };
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
-      if (!lastPage || lastPage.length < limit) return undefined;
+      if (lastPage.isPrivate || !lastPage.followers || lastPage.followers.length < limit) {
+        return undefined;
+      }
       return allPages.length * limit;
     },
     enabled: !!userId,

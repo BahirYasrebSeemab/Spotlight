@@ -1,89 +1,17 @@
 // ========================================
-// app/user/[id]/followers.tsx - FIXED Followers/Following
+// app/user/[id]/following.tsx - FIXED with Privacy
 // ========================================
-import { View, FlatList, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { View, FlatList, Text, ActivityIndicator } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { useUserFollowing } from '@/src/features/user/hooks/useUserFollowing';
-import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
-import { useFollowUser } from '@/src/features/user/hooks/useFollowUser';
-import { useAppSelector } from '@/src/shared/hooks/redux';
+import { FollowerItem } from '@/src/features/user/components/FollowerItem';
+import { Lock } from 'lucide-react-native';
 
 export default function FollowingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
-  const authUser = useAppSelector(state => state.auth.user);
-  const { follow, unfollow, isLoading: followLoading } = useFollowUser();
+  const { data: followingData, isLoading, fetchNextPage, hasNextPage } = useUserFollowing(id);
 
-  const { data: followersData, isLoading, fetchNextPage, hasNextPage } = useUserFollowing(id);
-
-  const followers = followersData?.pages.flatMap(page => page) || [];
-
-  interface FollowerUser {
-    id: string;
-    username: string;
-    name: string | null;
-    avatarUrl: string;
-    bio: string | null;
-  }
-
-  const FollowerItem = ({ item }: { item: FollowerUser }) => {
-    const { data: followStatus } = useFollowStatus(authUser?.id, item.id);
-    const isOwnProfile = authUser?.id === item.id;
-
-    const handleFollowToggle = () => {
-      if (!authUser) return;
-
-      if (followStatus?.isFollowing) {
-        unfollow({ currentUserId: authUser.id, targetUserId: item.id });
-      } else {
-        follow({ currentUserId: authUser.id, targetUserId: item.id });
-      }
-    };
-
-    return (
-      <TouchableOpacity
-        onPress={() => router.push(`/user/${item.id}`)}
-        className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800"
-      >
-        <View className="flex-row items-center flex-1">
-          {item.avatarUrl ? (
-            <Image source={{ uri: item.avatarUrl }} className="w-12 h-12 rounded-full mr-3" />
-          ) : (
-            <View className="w-12 h-12 rounded-full bg-purple-500 items-center justify-center mr-3">
-              <Text className="text-white text-lg font-bold">{item.name?.[0] || item.username?.[0] || '?'}</Text>
-            </View>
-          )}
-          <View className="flex-1">
-            <Text className="font-semibold text-black dark:text-white">{item.name || item.username}</Text>
-            <Text className="text-sm text-gray-500 dark:text-gray-400">@{item.username}</Text>
-          </View>
-        </View>
-
-        {!isOwnProfile && (
-          <TouchableOpacity
-            onPress={handleFollowToggle}
-            disabled={followLoading}
-            className={`px-4 py-2 rounded-full ${
-              followStatus?.isFollowing ? 'bg-gray-200 dark:bg-gray-800' : 'bg-purple-600'
-            }`}
-          >
-            {followLoading ? (
-              <ActivityIndicator size="small" color={followStatus?.isFollowing ? '#000' : '#FFF'} />
-            ) : (
-              <Text
-                className={`font-semibold text-sm ${
-                  followStatus?.isFollowing ? 'text-black dark:text-white' : 'text-white'
-                }`}
-              >
-                {followStatus?.isFollowing ? 'Spotting' : 'Spot'}
-              </Text>
-            )}
-          </TouchableOpacity>
-        )}
-      </TouchableOpacity>
-    );
-  };
-
+  // Loading state
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-black">
@@ -92,19 +20,44 @@ export default function FollowingScreen() {
     );
   }
 
+  // Check if first page indicates private account
+  const firstPage = followingData?.pages[0];
+  if (firstPage?.isPrivate) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white dark:bg-black px-8">
+        <View className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-900 items-center justify-center mb-6">
+          <Lock size={40} color="#9CA3AF" strokeWidth={1.5} />
+        </View>
+        <Text className="text-2xl font-bold text-black dark:text-white mb-3 text-center">This Account is Private</Text>
+        <Text className="text-gray-500 dark:text-gray-400 text-center text-base leading-6">
+          Follow this account to see who they spot
+        </Text>
+      </View>
+    );
+  }
+
+  const following = followingData?.pages.flatMap(page => page.following || page) || [];
+
   return (
     <View className="flex-1 bg-white dark:bg-black">
       <FlatList
-        data={followers}
+        data={following}
         renderItem={({ item }) => <FollowerItem item={item} />}
         keyExtractor={item => item.id}
         onEndReached={() => {
           if (hasNextPage) fetchNextPage();
         }}
         onEndReachedThreshold={0.5}
+        contentContainerStyle={{ flexGrow: 1 }}
         ListEmptyComponent={() => (
-          <View className="flex-1 items-center justify-center py-20">
-            <Text className="text-gray-500 dark:text-gray-400">No spotters yet</Text>
+          <View className="flex-1 items-center justify-center py-20 px-8">
+            <View className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-900 items-center justify-center mb-4">
+              <Text className="text-3xl">👁️</Text>
+            </View>
+            <Text className="text-xl font-bold text-black dark:text-white mb-2">Not spotting anyone yet</Text>
+            <Text className="text-gray-500 dark:text-gray-400 text-center">
+              When this user spots someone, they'll appear here
+            </Text>
           </View>
         )}
       />
