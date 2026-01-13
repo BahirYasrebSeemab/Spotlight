@@ -25,10 +25,11 @@ export default function ProfileLayout() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: true }}>
+    <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen
         name="index"
         options={{
+          headerShown: true,
           headerTitle: profile.username,
           headerStyle: { backgroundColor: 'transparent' },
           headerRight: () => (
@@ -41,6 +42,7 @@ export default function ProfileLayout() {
       <Stack.Screen
         name="settings"
         options={{
+          headerShown: true,
           title: 'Settings',
           headerStyle: { backgroundColor: 'transparent' },
         }}
@@ -62,6 +64,7 @@ export default function ProfileLayout() {
         options={{
           title: 'Account Management',
           headerStyle: { backgroundColor: 'transparent' },
+          headerShown: false
         }}
       />
     </Stack>

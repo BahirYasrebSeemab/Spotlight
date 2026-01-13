@@ -15,7 +15,7 @@ interface ProfileIdentityProps {
   onAvatarPress?: () => void;
   onFollowersPress?: () => void;
   onFollowingPress?: () => void;
-  followLoading?: boolean; // ADD THIS LINE
+  followLoading?: boolean;
 }
 
 export function ProfileIdentity({
@@ -30,13 +30,16 @@ export function ProfileIdentity({
   onAvatarPress,
   onFollowersPress,
   onFollowingPress,
-  followLoading = false, // ADD THIS LINE
+  followLoading = false,
 }: ProfileIdentityProps) {
+  // Determine if stats should be disabled (private account and not following)
+  const isPrivateAndNotFollowing = user?.isPrivate && !isOwnProfile && !isFollowing;
+
   // Determine button state and render
   const renderFollowButton = () => {
     if (isOwnProfile) return null;
 
-    // Show loading state - ADD THIS BLOCK
+    // Show loading state
     if (followLoading) {
       return (
         <View className="mt-3">
@@ -153,6 +156,7 @@ export function ProfileIdentity({
             onPostsPress={undefined}
             onFollowersPress={onFollowersPress}
             onFollowingPress={onFollowingPress}
+            isPrivateAndNotFollowing={isPrivateAndNotFollowing}
           />
         </View>
       </View>
