@@ -2,7 +2,11 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { getUserFollowing } from '@/src/features/user/services/follow.services';
 
-export function useUserFollowing(userId: string | undefined, limit = 20) {
+interface UseUserFollowingOptions {
+  enabled?: boolean;
+}
+
+export function useUserFollowing(userId: string | undefined, options?: UseUserFollowingOptions, limit = 20) {
   return useInfiniteQuery({
     queryKey: ['user-following', userId],
     queryFn: async ({ pageParam }) => {
@@ -24,6 +28,6 @@ export function useUserFollowing(userId: string | undefined, limit = 20) {
       }
       return allPages.length * limit;
     },
-    enabled: !!userId,
+    enabled: options?.enabled !== undefined ? options.enabled && !!userId : !!userId,
   });
 }

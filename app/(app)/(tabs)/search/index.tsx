@@ -92,8 +92,7 @@ export default function SearchScreen() {
       className="flex-1 bg-white dark:bg-black"
     >
       {/* Header */}
-      <View className="pt-12 pb-3 px-4 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800">
-        <Text className="text-2xl font-bold text-black dark:text-white mb-3">Search</Text>
+      <View className=" pb-3 px-4 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800">
 
         {/* Search Input */}
         <View className="flex-row items-center bg-gray-100 dark:bg-gray-900 rounded-full px-4 py-3">

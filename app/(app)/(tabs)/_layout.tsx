@@ -50,7 +50,7 @@ export default function TabLayout() {
           options={{
             tabBarIcon: ({ color, size }) => <Heart size={size} color={color} />,
             title: 'Notifications',
-            headerShown: true,
+            headerShown: false,
           }}
         />
         <Tabs.Screen

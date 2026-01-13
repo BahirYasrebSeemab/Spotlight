@@ -1,18 +1,39 @@
 // ========================================
-// app/user/[id]/following.tsx - FIXED with Privacy
+// app/user/[id]/following.tsx - INVERTED with Privacy Check
 // ========================================
 import { View, FlatList, Text, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { useAppSelector } from '@/src/shared/hooks/redux';
+import { useUserProfile } from '@/src/features/user/hooks/useUserProfile';
+import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
 import { useUserFollowing } from '@/src/features/user/hooks/useUserFollowing';
 import { FollowerItem } from '@/src/features/user/components/FollowerItem';
 import { Lock } from 'lucide-react-native';
 
 export default function FollowingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: followingData, isLoading, fetchNextPage, hasNextPage } = useUserFollowing(id);
+  const currentUser = useAppSelector(state => state.auth.user);
+
+  // Fetch user profile first to check if private
+  const { data: user, isLoading: userLoading } = useUserProfile(id);
+
+  // Check follow status
+  const { data: followStatus, isLoading: followLoading } = useFollowStatus(currentUser?.id, id);
+
+  // Only fetch following if account is public OR user is following
+  const shouldFetchFollowing = !user?.isPrivate || followStatus?.isFollowing;
+
+  const isOwnProfile = currentUser?.id === id;
+
+  const {
+    data: followingData,
+    isLoading: followingLoading,
+    fetchNextPage,
+    hasNextPage,
+  } = useUserFollowing(id, { enabled: shouldFetchFollowing });
 
   // Loading state
-  if (isLoading) {
+  if (userLoading || followLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-black">
         <ActivityIndicator size="large" color="#8B5CF6" />
@@ -20,9 +41,8 @@ export default function FollowingScreen() {
     );
   }
 
-  // Check if first page indicates private account
-  const firstPage = followingData?.pages[0];
-  if (firstPage?.isPrivate) {
+  // Check if private account and not following (and not own profile)
+  if (user?.isPrivate && !followStatus?.isFollowing && !isOwnProfile) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-black px-8">
         <View className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-900 items-center justify-center mb-6">
@@ -51,13 +71,19 @@ export default function FollowingScreen() {
         contentContainerStyle={{ flexGrow: 1 }}
         ListEmptyComponent={() => (
           <View className="flex-1 items-center justify-center py-20 px-8">
-            <View className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-900 items-center justify-center mb-4">
-              <Text className="text-3xl">👁️</Text>
-            </View>
-            <Text className="text-xl font-bold text-black dark:text-white mb-2">Not spotting anyone yet</Text>
-            <Text className="text-gray-500 dark:text-gray-400 text-center">
-              When this user spots someone, they'll appear here
-            </Text>
+            {followingLoading ? (
+              <ActivityIndicator size="large" color="#8B5CF6" />
+            ) : (
+              <>
+                <View className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-900 items-center justify-center mb-4">
+                  <Text className="text-3xl">👁️</Text>
+                </View>
+                <Text className="text-xl font-bold text-black dark:text-white mb-2">Not spotting anyone yet</Text>
+                <Text className="text-gray-500 dark:text-gray-400 text-center">
+                  When this user spots someone, they'll appear here
+                </Text>
+              </>
+            )}
           </View>
         )}
       />

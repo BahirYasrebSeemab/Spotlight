@@ -1,4 +1,4 @@
-// app/user/[id]/index.tsx - Using Enhanced React Query Hooks
+// app/user/[id]/index.tsx - With Privacy Logic
 import { View, FlatList, ActivityIndicator, Text, RefreshControl, Pressable, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
 import { useState, useLayoutEffect } from 'react';
@@ -7,7 +7,7 @@ import { ProfileIdentity } from '@/src/features/user/components/ProfileIdentity'
 import { ProfileTabBar } from '@/src/features/user/components/ProfileTabBar';
 import { ProfileContentGrid } from '@/src/features/user/components/ProfileContentGrid';
 import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
-import { Share, MoreVertical } from 'lucide-react-native';
+import { Share, MoreVertical, Lock } from 'lucide-react-native';
 
 // Import ENHANCED hooks
 import { useUserProfile } from '@/src/features/user/hooks/useUserProfile';
@@ -27,21 +27,26 @@ export default function UserProfileScreen() {
   // Fetch user profile
   const { data: user, isLoading: userLoading, refetch: refetchUser } = useUserProfile(id);
 
-  // Fetch user posts
-  const {
-    data: postsData,
-    isLoading: postsLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetch: refetchPosts,
-  } = useUserPosts(id);
-
   // Check follow status
   const { data: followStatus, refetch: refetchFollowStatus } = useFollowStatus(currentUser?.id, id);
 
   // Check follow request status
   const { data: requestStatus, refetch: refetchRequestStatus } = useFollowRequestStatus(currentUser?.id, id);
+
+  const isOwnProfile = currentUser?.id === id;
+
+  // Only fetch posts if: own profile OR account is public OR user is following
+  const shouldFetchPosts = isOwnProfile || !user?.isPrivate || followStatus?.isFollowing;
+
+  // // Fetch user posts (conditionally enabled)
+  // const {
+  //   data: postsData,
+  //   isLoading: postsLoading,
+  //   fetchNextPage,
+  //   hasNextPage,
+  //   isFetchingNextPage,
+  //   refetch: refetchPosts,
+  // } = useUserPosts(id, { enabled: shouldFetchPosts });
 
   // Follow/unfollow mutation with optimistic updates
   const { follow, unfollow, isLoading: followLoading, error: followError } = useFollowUser();
@@ -52,10 +57,8 @@ export default function UserProfileScreen() {
   // Refresh state
   const [refreshing, setRefreshing] = useState(false);
 
-  const isOwnProfile = currentUser?.id === id;
-
   // Flatten posts from infinite query
-  const posts = postsData?.pages.flatMap(page => page) || [];
+  // const posts = postsData?.pages.flatMap(page => page) || [];
 
   // Set header
   useLayoutEffect(() => {
@@ -82,7 +85,11 @@ export default function UserProfileScreen() {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      await Promise.all([refetchUser(), refetchPosts(), refetchFollowStatus(), refetchRequestStatus()]);
+      const refreshPromises = [refetchUser(), refetchFollowStatus(), refetchRequestStatus()];
+      // if (shouldFetchPosts) {
+      //   refreshPromises.push(refetchPosts());
+      // }
+      await Promise.all(refreshPromises);
     } catch (error) {
       console.error('Error refreshing:', error);
     } finally {
@@ -160,20 +167,36 @@ export default function UserProfileScreen() {
     return null;
   }
 
-  // Filter posts based on active tab
-  const filteredPosts = posts.filter((post: any) => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'photos') return post.mediaUrl && !post.mediaUrl.includes('.mp4');
-    if (activeTab === 'videos') return post.mediaUrl && post.mediaUrl.includes('.mp4');
-    return true;
-  });
+  // Check if private and not following - show private account message
+  const isPrivateAndNotFollowing = user.isPrivate && !followStatus?.isFollowing && !isOwnProfile;
 
-  // Map to grid format
-  const gridPosts = filteredPosts.map((post: any) => ({
-    id: post.id,
-    imageUrl: post.mediaUrl || '',
-    type: post.mediaUrl?.includes('.mp4') ? ('video' as const) : ('photo' as const),
-  }));
+  // // Filter posts based on active tab
+  // const filteredPosts = posts.filter((post: any) => {
+  //   if (activeTab === 'all') return true;
+  //   if (activeTab === 'photos') return post.mediaUrl && !post.mediaUrl.includes('.mp4');
+  //   if (activeTab === 'videos') return post.mediaUrl && post.mediaUrl.includes('.mp4');
+  //   return true;
+  // });
+
+  // // Map to grid format
+  // const gridPosts = filteredPosts.map((post: any) => ({
+  //   id: post.id,
+  //   imageUrl: post.mediaUrl || '',
+  //   type: post.mediaUrl?.includes('.mp4') ? ('video' as const) : ('photo' as const),
+  // }));
+
+  // Private account content view
+  const renderPrivateContent = () => (
+    <View className="flex-1 items-center justify-center py-20 px-8">
+      <View className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-900 items-center justify-center mb-6">
+        <Lock size={40} color="#9CA3AF" strokeWidth={1.5} />
+      </View>
+      <Text className="text-2xl font-bold text-black dark:text-white mb-3 text-center">This Account is Private</Text>
+      <Text className="text-gray-500 dark:text-gray-400 text-center text-base leading-6">
+        Follow this account to see their posts
+      </Text>
+    </View>
+  );
 
   return (
     <View className="flex-1 bg-white dark:bg-black">
@@ -195,8 +218,8 @@ export default function UserProfileScreen() {
             onFollowToggle={handleFollowToggle}
             onCancelRequest={handleCancelRequest}
             onAvatarPress={() => router.push(`/user/${id}/avatar`)}
-            onFollowersPress={() => router.push(`/user/${user.id}/followers`)}
-            onFollowingPress={() => router.push(`/user/${user.id}/following`)}
+            onFollowersPress={isPrivateAndNotFollowing ? undefined : () => router.push(`/user/${user.id}/followers`)}
+            onFollowingPress={isPrivateAndNotFollowing ? undefined : () => router.push(`/user/${user.id}/following`)}
             followLoading={followLoading || isSending || isCanceling}
           />
         )}
@@ -204,16 +227,18 @@ export default function UserProfileScreen() {
           <View>
             <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={false} />
             <View className="min-h-screen">
-              {postsLoading ? (
-                <View className="py-20">
-                  <ActivityIndicator size="large" color="#8B5CF6" />
-                </View>
-              ) : gridPosts.length > 0 ? (
-                <ProfileContentGrid
-                  posts={gridPosts}
-                  onPostPress={postId => router.push(`/post/${postId}`)}
-                  columns={3}
-                />
+              {isPrivateAndNotFollowing ? (
+                renderPrivateContent()
+              // ) : postsLoading ? (
+              //   <View className="py-20">
+              //     <ActivityIndicator size="large" color="#8B5CF6" />
+              //   </View>
+              // ) : gridPosts.length > 0 ? (
+              //   <ProfileContentGrid
+              //     posts={gridPosts}
+              //     onPostPress={postId => router.push(`/post/${postId}`)}
+              //     columns={3}
+              //   />
               ) : (
                 <EmptyProfileContent isOwnProfile={false} activeTab={activeTab} />
               )}
@@ -223,9 +248,9 @@ export default function UserProfileScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1 }}
         onEndReached={() => {
-          if (hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
-          }
+          // if (hasNextPage && !isFetchingNextPage && !isPrivateAndNotFollowing) {
+          //   fetchNextPage();
+          // }
         }}
         onEndReachedThreshold={0.5}
       />
