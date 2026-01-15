@@ -10,32 +10,35 @@ datasource db {
 }
 
 model User {
-  username                            String      @unique
-  email                               String      @unique
-  avatarUrl                           String      @default("https://djmiacrhlrehonnuflhi.supabase.co/storage/v1/object/public/static/general/default.jpg")
-  bio                                 String?
-  createdAt                           DateTime    @default(now())
-  followersCount                      Int         @default(0)
-  followingCount                      Int         @default(0)
-  internationalCount                  Int         @default(0)
-  localCount                          Int         @default(0)
-  name                                String?
-  ownershipsCount                     Int         @default(0)
-  postsCount                          Int         @default(0)
-  tailoredCount                       Int         @default(0)
-  updatedAt                           DateTime    @default(now()) @updatedAt
-  dob                                 DateTime?   @default(dbgenerated("'1970-01-01 00:00:00'::timestamp without time zone"))
-  emailConfirmedAt                    DateTime?
-  lastLoginAt                         DateTime?
-  id                                  String      @id @db.Uuid
-  closets                             Closet[]
-  Comment                             Comment[]
-  Follower_Follower_followerIdToUser  Follower[]  @relation("Follower_followerIdToUser")
-  Follower_Follower_followingIdToUser Follower[]  @relation("Follower_followingIdToUser")
-  Like                                Like[]
-  matches                             Match[]
-  ownerships                          Ownership[]
-  posts                               Post[]
+  username                                      String          @unique
+  email                                         String          @unique
+  avatarUrl                                     String          @default("https://djmiacrhlrehonnuflhi.supabase.co/storage/v1/object/public/static/general/default.jpg")
+  bio                                           String?
+  createdAt                                     DateTime        @default(now())
+  followersCount                                Int             @default(0)
+  followingCount                                Int             @default(0)
+  internationalCount                            Int             @default(0)
+  localCount                                    Int             @default(0)
+  name                                          String?
+  ownershipsCount                               Int             @default(0)
+  postsCount                                    Int             @default(0)
+  tailoredCount                                 Int             @default(0)
+  updatedAt                                     DateTime        @default(now()) @updatedAt
+  dob                                           DateTime?       @default(dbgenerated("'1970-01-01 00:00:00'::timestamp without time zone"))
+  emailConfirmedAt                              DateTime?
+  lastLoginAt                                   DateTime?
+  id                                            String          @id @db.Uuid
+  isPrivate                                     Boolean?        @default(false)
+  closets                                       Closet[]
+  Comment                                       Comment[]
+  FollowRequest_FollowRequest_requestedIdToUser FollowRequest[] @relation("FollowRequest_requestedIdToUser")
+  FollowRequest_FollowRequest_requesterIdToUser FollowRequest[] @relation("FollowRequest_requesterIdToUser")
+  Follower_Follower_followerIdToUser            Follower[]      @relation("Follower_followerIdToUser")
+  Follower_Follower_followingIdToUser           Follower[]      @relation("Follower_followingIdToUser")
+  Like                                          Like[]
+  matches                                       Match[]
+  ownerships                                    Ownership[]
+  posts                                         Post[]
 }
 
 model Brand {
@@ -158,6 +161,24 @@ model Follower {
   followingId                     String   @db.Uuid
   User_Follower_followerIdToUser  User     @relation("Follower_followerIdToUser", fields: [followerId], references: [id])
   User_Follower_followingIdToUser User     @relation("Follower_followingIdToUser", fields: [followingId], references: [id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model FollowRequest {
+  id                                   String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  requesterId                          String   @db.Uuid
+  requestedId                          String   @db.Uuid
+  status                               String   @default("pending")
+  createdAt                            DateTime @default(now()) @db.Timestamp(6)
+  updatedAt                            DateTime @default(now()) @db.Timestamp(6)
+  User_FollowRequest_requestedIdToUser User     @relation("FollowRequest_requestedIdToUser", fields: [requestedId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  User_FollowRequest_requesterIdToUser User     @relation("FollowRequest_requesterIdToUser", fields: [requesterId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([requesterId, requestedId])
+  @@index([requestedId], map: "idx_follow_request_requested")
+  @@index([requesterId], map: "idx_follow_request_requester")
+  @@index([status], map: "idx_follow_request_status")
 }
 
 enum BrandType {
