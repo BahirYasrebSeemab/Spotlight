@@ -9,64 +9,51 @@ datasource db {
   extensions = [uuid_ossp(map: "uuid-ossp")]
 }
 
-// ============================================================================
-// USER & SOCIAL
-// ============================================================================
-
 model User {
-  id       String  @id @db.Uuid
-  username String  @unique
-  email    String  @unique
-  name     String?
-  bio      String?
-  avatarUrl String @default("https://djmiacrhlrehonnuflhi.supabase.co/storage/v1/object/public/static/general/default.jpg")
-  
-  // Privacy
-  isPrivate Boolean? @default(false)
-  
-  // Dates
-  dob              DateTime? @default(dbgenerated("'1970-01-01 00:00:00'::timestamp without time zone"))
-  emailConfirmedAt DateTime?
-  lastLoginAt      DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @default(now()) @updatedAt
-  
-  // Counts
-  followersCount     Int @default(0)
-  followingCount     Int @default(0)
-  ownershipsCount    Int @default(0)
-  postsCount         Int @default(0)
-  internationalCount Int @default(0)
-  localCount         Int @default(0)
-  tailoredCount      Int @default(0)
-  
-  // Relations
-  closets                                       Closet[]
-  comments                                      Comment[]
-  followRequests_sent                           FollowRequest[] @relation("FollowRequest_requesterIdToUser")
-  followRequests_received                       FollowRequest[] @relation("FollowRequest_requestedIdToUser")
-  followers                                     Follower[]      @relation("Follower_followerIdToUser")
-  following                                     Follower[]      @relation("Follower_followingIdToUser")
-  likes                                         Like[]
-  matches                                       Match[]
-  ownerships                                    Ownership[]
-  posts                                         Post[]
-  brandAdmins                                   BrandAdmin[]
-  communityProductsCreated                      CommunityProduct[] @relation("CommunityProductCreator")
-  
+  username                 String             @unique
+  email                    String             @unique
+  avatarUrl                String             @default("https://djmiacrhlrehonnuflhi.supabase.co/storage/v1/object/public/static/general/default.jpg")
+  bio                      String?
+  createdAt                DateTime           @default(now())
+  followersCount           Int                @default(0)
+  followingCount           Int                @default(0)
+  internationalCount       Int                @default(0)
+  localCount               Int                @default(0)
+  name                     String?
+  ownershipsCount          Int                @default(0)
+  postsCount               Int                @default(0)
+  tailoredCount            Int                @default(0)
+  updatedAt                DateTime           @default(now()) @updatedAt
+  dob                      DateTime?          @default(dbgenerated("'1970-01-01 00:00:00'::timestamp without time zone"))
+  emailConfirmedAt         DateTime?
+  lastLoginAt              DateTime?
+  id                       String             @id @db.Uuid
+  isPrivate                Boolean?           @default(false)
+  brandAdmins              BrandAdmin[]
+  closets                  Closet[]
+  comments                 Comment[]
+  communityProductsCreated CommunityProduct[] @relation("CommunityProductCreator")
+  followRequests_received  FollowRequest[]    @relation("FollowRequest_requestedIdToUser")
+  followRequests_sent      FollowRequest[]    @relation("FollowRequest_requesterIdToUser")
+  followers                Follower[]         @relation("Follower_followerIdToUser")
+  following                Follower[]         @relation("Follower_followingIdToUser")
+  likes                    Like[]
+  matches                  Match[]
+  ownerships               Ownership[]
+  posts                    Post[]
+
   @@index([email])
   @@index([username])
 }
 
 model Follower {
+  createdAt   DateTime @default(now())
   id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   followerId  String   @db.Uuid
   followingId String   @db.Uuid
-  createdAt   DateTime @default(now())
-  
-  follower  User @relation("Follower_followerIdToUser", fields: [followerId], references: [id], onDelete: Cascade)
-  following User @relation("Follower_followingIdToUser", fields: [followingId], references: [id], onDelete: Cascade)
-  
+  follower    User     @relation("Follower_followerIdToUser", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("Follower_followingIdToUser", fields: [followingId], references: [id], onDelete: Cascade)
+
   @@unique([followerId, followingId])
   @@index([followerId])
   @@index([followingId])
@@ -81,34 +68,27 @@ model FollowRequest {
   status      String   @default("pending")
   createdAt   DateTime @default(now()) @db.Timestamp(6)
   updatedAt   DateTime @default(now()) @db.Timestamp(6)
-  
-  requester User @relation("FollowRequest_requesterIdToUser", fields: [requesterId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  requested User @relation("FollowRequest_requestedIdToUser", fields: [requestedId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  
+  requested   User     @relation("FollowRequest_requestedIdToUser", fields: [requestedId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  requester   User     @relation("FollowRequest_requesterIdToUser", fields: [requesterId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
   @@unique([requesterId, requestedId])
   @@index([requestedId], map: "idx_follow_request_requested")
   @@index([requesterId], map: "idx_follow_request_requester")
   @@index([status], map: "idx_follow_request_status")
 }
 
-// ============================================================================
-// BRAND & PRODUCTS
-// ============================================================================
-
 model Brand {
-  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name        String    @unique
+  name        String       @unique
   description String?
   logoUrl     String?
-  verified    Boolean   @default(false)
-  type        BrandType @default(LOCAL)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @default(now()) @updatedAt
-  
-  // Relations
-  prototypes  Prototype[]
+  verified    Boolean      @default(false)
+  type        BrandType    @default(LOCAL)
+  createdAt   DateTime     @default(now())
+  id          String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  updatedAt   DateTime     @default(now()) @updatedAt
   brandAdmins BrandAdmin[]
-  
+  prototypes  Prototype[]
+
   @@index([name])
   @@index([verified])
   @@index([type])
@@ -118,55 +98,37 @@ model BrandAdmin {
   id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   userId    String   @db.Uuid
   brandId   String   @db.Uuid
-  role      String   @default("admin") // admin, editor, viewer
+  role      String   @default("admin")
   createdAt DateTime @default(now())
-  
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  
+  brand     Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, brandId])
   @@index([userId])
   @@index([brandId])
 }
 
-// PROTOTYPE: Brand's official product template (one per design)
-// Example: "Nike Air Force 1 Low White - Size 10"
 model Prototype {
-  id          String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name        String
-  description String?
-  brandId     String  @db.Uuid
-  
-  // Product details
-  sku         String? @unique
-  upc         String?
-  category    String?
-  retailPrice Decimal? @db.Decimal(10, 2)
-  
-  // Official images (uploaded by brand)
+  id           String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name         String
+  description  String?
+  brandId      String      @db.Uuid
+  sku          String?     @unique
+  upc          String?
+  category     String?
+  retailPrice  Decimal?    @db.Decimal(10, 2)
   imageUrl     String?
   thumbnailUrl String?
-  
-  // Variants (size, color combinations)
-  // Store as JSON: [{size: "10", color: "white"}, ...]
-  variants Json? @db.JsonB
-  
-  // Verification
-  isVerified Boolean  @default(true)
-  verifiedAt DateTime @default(now())
-  verifiedBy String?  @db.Uuid
-  
-  // Status
-  isActive Boolean @default(true)
-  
-  // Timestamps
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  
-  // Relations
-  brand      Brand       @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  ownerships Ownership[]
-  
+  variants     Json?
+  isVerified   Boolean     @default(true)
+  verifiedAt   DateTime    @default(now())
+  verifiedBy   String?     @db.Uuid
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @default(now()) @updatedAt
+  ownerships   Ownership[]
+  brand        Brand       @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
   @@index([brandId])
   @@index([sku])
   @@index([upc])
@@ -174,96 +136,60 @@ model Prototype {
   @@index([isActive])
 }
 
-// COMMUNITY_PRODUCT: User-created product entries before brand verification
-// These are temporary placeholders that get migrated to Prototypes
 model CommunityProduct {
-  id          String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name        String
-  brandName   String  // Text field - user types "Nike"
-  description String?
-  
-  // Product details (user-provided)
-  upc      String?
-  category String?
-  
-  // Images (from first uploader or most popular)
-  imageUrl     String?
-  thumbnailUrl String?
-  
-  // Metadata
-  createdBy String @db.Uuid
-  creator   User   @relation("CommunityProductCreator", fields: [createdBy], references: [id], onDelete: Cascade)
-  
-  // Status tracking
+  id                    String                 @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                  String
+  brandName             String
+  description           String?
+  upc                   String?
+  category              String?
+  imageUrl              String?
+  thumbnailUrl          String?
+  createdBy             String                 @db.Uuid
   status                CommunityProductStatus @default(ACTIVE)
   migratedToPrototypeId String?                @db.Uuid
-  
-  // Stats
-  ownershipCount Int @default(0)
-  flagCount      Int @default(0)
-  
-  // Timestamps
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  
-  // Relations
-  ownerships Ownership[]
-  
+  ownershipCount        Int                    @default(0)
+  flagCount             Int                    @default(0)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @default(now()) @updatedAt
+  creator               User                   @relation("CommunityProductCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  ownerships            Ownership[]
+
   @@index([brandName])
   @@index([upc])
   @@index([status])
   @@index([createdBy])
 }
 
-// OWNERSHIP: Represents a USER owning a PRODUCT (either Prototype or CommunityProduct)
 model Ownership {
-  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  
-  // Owner
-  ownerId String @db.Uuid
-  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  
-  // What product (EITHER prototype OR community product)
-  prototypeId        String? @db.Uuid
-  communityProductId String? @db.Uuid
-  
-  prototype        Prototype?        @relation(fields: [prototypeId], references: [id], onDelete: SetNull)
-  communityProduct CommunityProduct? @relation(fields: [communityProductId], references: [id], onDelete: SetNull)
-  
-  // Authentication & Uniqueness
-  serialNumber    String?  @unique
-  isAuthenticated Boolean  @default(false)
-  
-  // User's personal images of THEIR item
-  originalImageUrl  String?
-  processedImageUrl String?
-  thumbnailUrl      String?
-  processingStatus  String  @default("pending") // pending, processing, completed, failed
-  
-  // Ownership details
-  status        String    @default("owned") // owned, sold, donated, wishlisted
-  verified      Boolean   @default(false)
-  condition     String?   // new, like-new, good, fair, poor
-  purchaseDate  DateTime?
-  purchasePrice Decimal?  @db.Decimal(10, 2)
-  notes         String?
-  
-  // Variant selection (if prototype has variants)
-  selectedVariant Json? @db.JsonB
-  
-  // NFT-like features
-  transferable   Boolean @default(false)
-  ownershipChain Json?   @db.JsonB // [{userId, date}, ...]
-  
-  // Timestamps
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  
-  // Relations
-  closetItems ClosetItem[]
-  postItems   PostItem[]
-  matchItems  MatchItem[]
-  
+  status             String            @default("owned")
+  verified           Boolean           @default(false)
+  createdAt          DateTime          @default(now())
+  id                 String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  ownerId            String            @db.Uuid
+  communityProductId String?           @db.Uuid
+  condition          String?
+  isAuthenticated    Boolean           @default(false)
+  notes              String?
+  originalImageUrl   String?
+  ownershipChain     Json?
+  processedImageUrl  String?
+  processingStatus   String            @default("pending")
+  prototypeId        String?           @db.Uuid
+  purchaseDate       DateTime?
+  purchasePrice      Decimal?          @db.Decimal(10, 2)
+  selectedVariant    Json?
+  serialNumber       String?           @unique
+  thumbnailUrl       String?
+  transferable       Boolean           @default(false)
+  updatedAt          DateTime          @default(now()) @updatedAt
+  closetItems        ClosetItem[]
+  matchItems         MatchItem[]
+  communityProduct   CommunityProduct? @relation(fields: [communityProductId], references: [id])
+  owner              User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  prototype          Prototype?        @relation(fields: [prototypeId], references: [id])
+  postItems          PostItem[]
+
   @@unique([ownerId, prototypeId, serialNumber])
   @@index([ownerId])
   @@index([prototypeId])
@@ -273,135 +199,111 @@ model Ownership {
   @@index([processingStatus])
 }
 
-// ============================================================================
-// CLOSET & ORGANIZATION
-// ============================================================================
-
 model Closet {
-  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   name      String
-  ownerId   String   @db.Uuid
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  
-  owner User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  items ClosetItem[]
-  
+  createdAt DateTime     @default(now())
+  id        String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  ownerId   String       @db.Uuid
+  updatedAt DateTime     @default(now()) @updatedAt
+  owner     User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  items     ClosetItem[]
+
   @@index([ownerId])
 }
 
 model ClosetItem {
-  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  closetId    String   @db.Uuid
-  ownershipId String   @db.Uuid
-  createdAt   DateTime @default(now())
-  
-  closet    Closet    @relation(fields: [closetId], references: [id], onDelete: Cascade)
-  ownership Ownership @relation(fields: [ownershipId], references: [id], onDelete: Cascade)
-  
+  createdAt   DateTime  @default(now())
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  closetId    String    @db.Uuid
+  ownershipId String    @db.Uuid
+  closet      Closet    @relation(fields: [closetId], references: [id], onDelete: Cascade)
+  ownership   Ownership @relation(fields: [ownershipId], references: [id], onDelete: Cascade)
+
   @@unique([closetId, ownershipId])
   @@index([closetId])
   @@index([ownershipId])
 }
 
-// ============================================================================
-// SOCIAL FEATURES
-// ============================================================================
-
 model Post {
-  id            String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   caption       String?
   mediaUrl      String?
-  authorId      String   @db.Uuid
-  likesCount    Int      @default(0)
-  commentsCount Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now()) @updatedAt
-  
-  author   User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  items    PostItem[]
-  comments Comment[]
-  likes    Like[]
-  
+  createdAt     DateTime   @default(now())
+  likesCount    Int        @default(0)
+  commentsCount Int        @default(0)
+  id            String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  authorId      String     @db.Uuid
+  updatedAt     DateTime   @default(now()) @updatedAt
+  comments      Comment[]
+  likes         Like[]
+  author        User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  items         PostItem[]
+
   @@index([authorId])
   @@index([createdAt])
 }
 
 model PostItem {
-  id          String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  postId      String @db.Uuid
-  ownershipId String @db.Uuid
-  
-  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  ownership Ownership @relation(fields: [ownershipId], references: [id], onDelete: Cascade)
-  
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  postId      String    @db.Uuid
+  ownershipId String    @db.Uuid
+  ownership   Ownership @relation(fields: [ownershipId], references: [id], onDelete: Cascade)
+  post        Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+
   @@unique([postId, ownershipId])
   @@index([postId])
   @@index([ownershipId])
 }
 
 model Like {
+  createdAt DateTime @default(now())
   id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   postId    String   @db.Uuid
   userId    String   @db.Uuid
-  createdAt DateTime @default(now())
-  
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([postId, userId])
   @@index([postId])
   @@index([userId])
 }
 
 model Comment {
-  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   content   String
+  createdAt DateTime @default(now())
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   postId    String   @db.Uuid
   userId    String   @db.Uuid
-  createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
-  
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([postId])
   @@index([userId])
 }
 
-// ============================================================================
-// MATCHES (OUTFIT COMBINATIONS)
-// ============================================================================
-
 model Match {
-  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   title     String?
-  userId    String   @db.Uuid
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  
-  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items MatchItem[]
-  
+  createdAt DateTime    @default(now())
+  id        String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId    String      @db.Uuid
+  updatedAt DateTime    @default(now()) @updatedAt
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     MatchItem[]
+
   @@index([userId])
 }
 
 model MatchItem {
-  id          String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  matchId     String @db.Uuid
-  ownershipId String @db.Uuid
-  
-  match     Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  ownership Ownership @relation(fields: [ownershipId], references: [id], onDelete: Cascade)
-  
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  matchId     String    @db.Uuid
+  ownershipId String    @db.Uuid
+  match       Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  ownership   Ownership @relation(fields: [ownershipId], references: [id], onDelete: Cascade)
+
   @@unique([matchId, ownershipId])
   @@index([matchId])
   @@index([ownershipId])
 }
-
-// ============================================================================
-// ENUMS
-// ============================================================================
 
 enum BrandType {
   INTERNATIONAL
@@ -410,8 +312,8 @@ enum BrandType {
 }
 
 enum CommunityProductStatus {
-  ACTIVE       // Currently active, users can link ownerships
-  UNDER_REVIEW // Flagged, being reviewed
-  MIGRATED     // Merged into a Prototype
-  DELETED      // Marked as fake/invalid
+  ACTIVE
+  UNDER_REVIEW
+  MIGRATED
+  DELETED
 }
