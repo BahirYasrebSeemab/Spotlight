@@ -104,7 +104,6 @@ export async function uploadAvatarToSupabase(userId: string, uri: string) {
   }
 }
 
-
 // Get user profile - ALWAYS returns basic info (name, username, avatar, counts)
 export async function getUserProfile(userId: string) {
   try {
@@ -174,8 +173,13 @@ export async function getUserOwnerships(userId: string, limit = 20, offset = 0) 
         id,
         status,
         verified,
+        isAuthenticated,
         createdAt,
-        product:productId (
+        originalImageUrl,
+        processedImageUrl,
+        thumbnailUrl,
+        processingStatus,
+        prototype:prototypeId (
           id,
           name,
           imageUrl,
@@ -186,6 +190,13 @@ export async function getUserOwnerships(userId: string, limit = 20, offset = 0) 
             logoUrl,
             type
           )
+        ),
+        communityProduct:communityProductId (
+          id,
+          name,
+          brandName,
+          imageUrl,
+          category
         )
       `,
       )
@@ -204,10 +215,7 @@ export async function getUserOwnerships(userId: string, limit = 20, offset = 0) 
 // Toggle account privacy
 export async function toggleAccountPrivacy(userId: string, isPrivate: boolean) {
   try {
-    const { error } = await supabase
-      .from('User')
-      .update({ isPrivate })
-      .eq('id', userId);
+    const { error } = await supabase.from('User').update({ isPrivate }).eq('id', userId);
 
     if (error) throw error;
     return { success: true, error: null };

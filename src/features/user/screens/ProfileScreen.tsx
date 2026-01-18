@@ -13,6 +13,7 @@ import { ProfileContentGrid } from '@/src/features/user/components/ProfileConten
 import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
 import { useUserProfile } from '@/src/features/user/hooks/useUserProfile';
 import { useUserPosts } from '@/src/features/user/hooks/useUserPosts';
+import { Spotlight } from '@/src/shared/components/Spotlight';
 
 export default function ProfileScreen() {
   // Get auth user from Redux (just ID)
@@ -61,9 +62,11 @@ export default function ProfileScreen() {
   // Loading state
   if (profileLoading || !profile) {
     return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
-        <ActivityIndicator size="large" color="#8B5CF6" />
-      </View>
+      <Spotlight intensity={0.2}>
+        <View className="flex-1 items-center justify-center bg-black">
+          <ActivityIndicator size="large" color="#ffffff" />
+        </View>
+      </Spotlight>
     );
   }
 
@@ -86,14 +89,15 @@ export default function ProfileScreen() {
   }));
 
   return (
-    <View className="flex-1 bg-white dark:bg-black">
+    <Spotlight intensity={0.2}>
+      <View className="flex-1 bg-black">
       <FlatList
         inverted
         data={[]}
         keyExtractor={(_, index) => `placeholder-${index}`}
         renderItem={() => null}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#8B5CF6" colors={['#8B5CF6']} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" colors={['#ffffff']} />
         }
         ListHeaderComponent={() => (
           <ProfileIdentity
@@ -114,7 +118,7 @@ export default function ProfileScreen() {
             <View className="min-h-screen">
               {postsLoading ? (
                 <View className="py-20">
-                  <ActivityIndicator size="large" color="#8B5CF6" />
+                  <ActivityIndicator size="large" color="#ffffff" />
                 </View>
               ) : gridPosts.length > 0 ? (
                 <ProfileContentGrid
@@ -137,6 +141,7 @@ export default function ProfileScreen() {
         }}
         onEndReachedThreshold={0.5}
       />
-    </View>
+      </View>
+    </Spotlight>
   );
 }
