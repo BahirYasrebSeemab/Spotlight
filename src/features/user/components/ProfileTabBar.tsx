@@ -18,7 +18,7 @@ export function ProfileTabBar({ activeTab, onTabChange, isOwnProfile }: ProfileT
   ];
 
   return (
-    <View className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 shadow-sm">
+    <View className="bg-black border-b border-gray-800 shadow-sm">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -34,12 +34,12 @@ export function ProfileTabBar({ activeTab, onTabChange, isOwnProfile }: ProfileT
               key={tab.id}
               onPress={() => onTabChange(tab.id)}
               className={`flex-row items-center px-4 py-2 rounded-full mr-2 ${
-                isActive ? 'bg-purple-600' : 'bg-gray-100 dark:bg-gray-900'
+                isActive ? 'bg-white' : 'bg-gray-800'
               }`}
               style={{ height: 36 }}
             >
-              <Icon size={18} color={isActive ? 'white' : '#9CA3AF'} />
-              <Text className={`ml-2 font-medium ${isActive ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`}>
+              <Icon size={18} color={isActive ? 'black' : '#999999'} />
+              <Text className={`ml-2 font-medium ${isActive ? 'text-black' : 'text-gray-400'}`}>
                 {tab.label}
               </Text>
             </TouchableOpacity>

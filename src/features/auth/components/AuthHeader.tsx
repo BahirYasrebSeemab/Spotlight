@@ -10,7 +10,7 @@ interface AuthHeaderProps {
 
 export const AuthHeader = ({ title, subtitle }: AuthHeaderProps) => (
   <View className="mb-10">
-    <Text className="text-3xl font-extrabold text-center text-black dark:text-white">{title}</Text>
-    {subtitle && <Text className="text-center text-gray-500 dark:text-gray-400 mt-2 text-base">{subtitle}</Text>}
+    <Text className="text-3xl font-extrabold text-center text-white">{title}</Text>
+    {subtitle && <Text className="text-center text-gray-400 mt-2 text-base">{subtitle}</Text>}
   </View>
 );

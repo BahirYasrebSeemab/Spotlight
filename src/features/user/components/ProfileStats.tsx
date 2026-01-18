@@ -29,11 +29,11 @@ export function ProfileStats({
         disabled={!onPostsPress || isPrivateAndNotFollowing}
       >
         <Text
-          className={`text-base font-bold ${isPrivateAndNotFollowing ? 'text-gray-400 dark:text-gray-600' : 'text-black dark:text-white'}`}
+          className={`text-base font-bold ${isPrivateAndNotFollowing ? 'text-gray-600' : 'text-white'}`}
         >
           {postsCount}
         </Text>
-        <Text className="text-xs text-gray-500 dark:text-gray-400">Owns</Text>
+        <Text className="text-xs text-gray-400">Owns</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -43,11 +43,11 @@ export function ProfileStats({
         disabled={!onFollowersPress || isPrivateAndNotFollowing}
       >
         <Text
-          className={`text-base font-bold ${isPrivateAndNotFollowing ? 'text-gray-400 dark:text-gray-600' : 'text-black dark:text-white'}`}
+          className={`text-base font-bold ${isPrivateAndNotFollowing ? 'text-gray-600' : 'text-white'}`}
         >
           {followersCount}
         </Text>
-        <Text className="text-xs text-gray-500 dark:text-gray-400">Spotters</Text>
+        <Text className="text-xs text-gray-400">Spotters</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -57,11 +57,11 @@ export function ProfileStats({
         disabled={!onFollowingPress || isPrivateAndNotFollowing}
       >
         <Text
-          className={`text-base font-bold ${isPrivateAndNotFollowing ? 'text-gray-400 dark:text-gray-600' : 'text-black dark:text-white'}`}
+          className={`text-base font-bold ${isPrivateAndNotFollowing ? 'text-gray-600' : 'text-white'}`}
         >
           {followingCount}
         </Text>
-        <Text className="text-xs text-gray-500 dark:text-gray-400">Spotted</Text>
+        <Text className="text-xs text-gray-400">Spotted</Text>
       </TouchableOpacity>
     </View>
   );

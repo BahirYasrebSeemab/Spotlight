@@ -6,16 +6,18 @@ import { InputField } from '@/src/shared/components/InputField';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useResetPassword } from '@/src/features/auth/hooks/useResetPassword';
 import { AuthHeader } from '@/src/features/auth/components';
+import { Spotlight } from '@/src/shared/components/Spotlight';
 import { CheckCircle } from 'lucide-react-native';
 
 export default function ResetPasswordScreen() {
   const { password, confirm, setPassword, setConfirm, handleSubmit, localError, success, loading } = useResetPassword();
 
   return (
-    <KeyboardAwareScrollView
-      className="flex-1 bg-white dark:bg-black"
-      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
-    >
+    <Spotlight intensity={0.25}>
+      <KeyboardAwareScrollView
+        className="flex-1 bg-black"
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
+      >
       <AuthHeader title="Reset Password" subtitle={!success ? 'Enter your new password below' : undefined} />
 
       {!success ? (
@@ -36,28 +38,29 @@ export default function ResetPasswordScreen() {
           />
 
           {/* Error Message */}
-          {localError && <Text className="text-center mb-4 text-red-500">{localError}</Text>}
+          {localError && <Text className="text-center mb-4 text-white">{localError}</Text>}
 
           {/* Update Button */}
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={loading}
-            className={`w-full py-3 rounded-xl ${loading ? 'bg-gray-400' : 'bg-blue-500 dark:bg-blue-600'}`}
+            className={`w-full py-3 rounded-xl ${loading ? 'bg-gray-600' : 'bg-white'}`}
           >
-            <Text className="text-white text-center font-semibold text-base">
+            <Text className={`text-center font-semibold text-base ${loading ? 'text-gray-300' : 'text-black'}`}>
               {loading ? 'Updating...' : 'Update Password'}
             </Text>
           </TouchableOpacity>
         </>
       ) : (
         <View className="items-center py-12">
-          <View className="bg-green-100 dark:bg-green-900/30 rounded-full p-6 mb-6">
-            <CheckCircle size={64} color="#10B981" />
+          <View className="bg-white/20 rounded-full p-6 mb-6">
+            <CheckCircle size={64} color="#ffffff" />
           </View>
-          <Text className="text-2xl font-bold text-black dark:text-white mb-2">Password Updated!</Text>
-          <Text className="text-gray-600 dark:text-gray-400 text-center">Redirecting you to login...</Text>
+          <Text className="text-2xl font-bold text-white mb-2">Password Updated!</Text>
+          <Text className="text-gray-400 text-center">Redirecting you to login...</Text>
         </View>
       )}
     </KeyboardAwareScrollView>
+    </Spotlight>
   );
 }

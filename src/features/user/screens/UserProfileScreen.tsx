@@ -8,6 +8,7 @@ import { ProfileTabBar } from '@/src/features/user/components/ProfileTabBar';
 import { ProfileContentGrid } from '@/src/features/user/components/ProfileContentGrid';
 import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
 import { Share, MoreVertical, Lock } from 'lucide-react-native';
+import { Spotlight } from '@/src/shared/components/Spotlight';
 
 // Import ENHANCED hooks
 import { useUserProfile } from '@/src/features/user/hooks/useUserProfile';
@@ -143,21 +144,25 @@ export default function UserProfileScreen() {
   // Loading state
   if (userLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
-        <ActivityIndicator size="large" color="#8B5CF6" />
-      </View>
+      <Spotlight intensity={0.2}>
+        <View className="flex-1 items-center justify-center bg-black">
+          <ActivityIndicator size="large" color="#ffffff" />
+        </View>
+      </Spotlight>
     );
   }
 
   // Not found state
   if (!user) {
     return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-black px-8">
-        <Text className="text-xl font-bold text-black dark:text-white mb-2">User not found</Text>
-        <Text className="text-gray-500 dark:text-gray-400 text-center">
-          This user doesn't exist or has been removed
-        </Text>
-      </View>
+      <Spotlight intensity={0.2}>
+        <View className="flex-1 items-center justify-center bg-black px-8">
+          <Text className="text-xl font-bold text-white mb-2">User not found</Text>
+          <Text className="text-gray-400 text-center">
+            This user doesn't exist or has been removed
+          </Text>
+        </View>
+      </Spotlight>
     );
   }
 
@@ -188,25 +193,26 @@ export default function UserProfileScreen() {
   // Private account content view
   const renderPrivateContent = () => (
     <View className="flex-1 items-center justify-center py-20 px-8">
-      <View className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-900 items-center justify-center mb-6">
-        <Lock size={40} color="#9CA3AF" strokeWidth={1.5} />
+      <View className="w-24 h-24 rounded-full bg-white/10 items-center justify-center mb-6">
+        <Lock size={40} color="#ffffff" strokeWidth={1.5} />
       </View>
-      <Text className="text-2xl font-bold text-black dark:text-white mb-3 text-center">This Account is Private</Text>
-      <Text className="text-gray-500 dark:text-gray-400 text-center text-base leading-6">
+      <Text className="text-2xl font-bold text-white mb-3 text-center">This Account is Private</Text>
+      <Text className="text-gray-400 text-center text-base leading-6">
         Follow this account to see their posts
       </Text>
     </View>
   );
 
   return (
-    <View className="flex-1 bg-white dark:bg-black">
+    <Spotlight intensity={0.2}>
+      <View className="flex-1 bg-black">
       <FlatList
         inverted
         data={[]}
         keyExtractor={(_, index) => `placeholder-${index}`}
         renderItem={() => null}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#8B5CF6" colors={['#8B5CF6']} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" colors={['#ffffff']} />
         }
         ListHeaderComponent={() => (
           <ProfileIdentity
@@ -254,6 +260,7 @@ export default function UserProfileScreen() {
         }}
         onEndReachedThreshold={0.5}
       />
-    </View>
+      </View>
+    </Spotlight>
   );
 }

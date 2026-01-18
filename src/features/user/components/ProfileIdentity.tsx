@@ -43,8 +43,8 @@ export function ProfileIdentity({
     if (followLoading) {
       return (
         <View className="mt-3">
-          <View className="flex-row items-center justify-center py-2.5 rounded-xl bg-purple-600">
-            <ActivityIndicator size="small" color="white" />
+          <View className="flex-row items-center justify-center py-2.5 rounded-xl bg-white">
+            <ActivityIndicator size="small" color="black" />
           </View>
         </View>
       );
@@ -56,11 +56,11 @@ export function ProfileIdentity({
         <View className="mt-3">
           <TouchableOpacity
             onPress={onCancelRequest}
-            className="flex-row items-center justify-center py-2.5 rounded-xl bg-gray-200 dark:bg-gray-800"
+            className="flex-row items-center justify-center py-2.5 rounded-xl bg-gray-800"
             activeOpacity={0.7}
           >
-            <Clock size={16} color="#8B5CF6" />
-            <Text className="text-purple-600 font-semibold ml-2 text-sm">Requested</Text>
+            <Clock size={16} color="#ffffff" />
+            <Text className="text-white font-semibold ml-2 text-sm">Requested</Text>
           </TouchableOpacity>
         </View>
       );
@@ -72,11 +72,11 @@ export function ProfileIdentity({
         <View className="mt-3">
           <TouchableOpacity
             onPress={onFollowToggle}
-            className="flex-row items-center justify-center py-2.5 rounded-xl bg-gray-200 dark:bg-gray-800"
+            className="flex-row items-center justify-center py-2.5 rounded-xl bg-gray-800"
             activeOpacity={0.7}
           >
-            <UserCheck size={16} color="#8B5CF6" />
-            <Text className="text-purple-600 font-semibold ml-2 text-sm">Spotting</Text>
+            <UserCheck size={16} color="#ffffff" />
+            <Text className="text-white font-semibold ml-2 text-sm">Spotting</Text>
           </TouchableOpacity>
         </View>
       );
@@ -87,42 +87,42 @@ export function ProfileIdentity({
       <View className="mt-3">
         <TouchableOpacity
           onPress={onFollowToggle}
-          className="flex-row items-center justify-center py-2.5 rounded-xl bg-purple-600"
+          className="flex-row items-center justify-center py-2.5 rounded-xl bg-white"
           activeOpacity={0.7}
         >
-          <UserPlus size={16} color="white" />
-          <Text className="text-white font-semibold ml-2 text-sm">{user?.isPrivate ? 'Request to Spot' : 'Spot'}</Text>
+          <UserPlus size={16} color="black" />
+          <Text className="text-black font-semibold ml-2 text-sm">{user?.isPrivate ? 'Request to Spot' : 'Spot'}</Text>
         </TouchableOpacity>
       </View>
     );
   };
 
   return (
-    <View className="bg-white dark:bg-gray-950 rounded-t-3xl shadow-2xl pb-6 pt-4 px-5 border-t border-gray-200 dark:border-gray-800">
+    <View className="bg-black rounded-t-3xl shadow-2xl pb-6 pt-4 px-5 border-t border-gray-800">
       {/* Top Handle Bar */}
       <View className="flex-row items-center justify-center mb-4">
-        <View className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full" />
+        <View className="w-12 h-1.5 bg-gray-600 rounded-full" />
       </View>
 
       <View className="flex-row items-start">
         {/* Avatar Section */}
         <TouchableOpacity onPress={onAvatarPress} activeOpacity={0.8} className="mr-3">
           {loading ? (
-            <View className="w-20 h-20 rounded-2xl bg-gray-200 dark:bg-gray-800 items-center justify-center">
-              <ActivityIndicator color="#8B5CF6" />
+            <View className="w-20 h-20 rounded-2xl bg-gray-800 items-center justify-center">
+              <ActivityIndicator color="#ffffff" />
             </View>
           ) : (
             <View className="relative">
               {user?.avatarUrl ? (
                 <Image source={{ uri: user.avatarUrl }} className="w-20 h-20 rounded-2xl" />
               ) : (
-                <View className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 items-center justify-center">
+                <View className="w-20 h-20 rounded-2xl bg-gray-800 items-center justify-center">
                   <Text className="text-white text-2xl font-bold">{user?.name?.[0] || user?.username?.[0] || '?'}</Text>
                 </View>
               )}
               {/* Private account indicator */}
               {user?.isPrivate && !isOwnProfile && (
-                <View className="absolute -top-1 -right-1 bg-gray-800 rounded-full p-1">
+                <View className="absolute -top-1 -right-1 bg-gray-800 rounded-full p-1 border border-white/30">
                   <Text className="text-xs">🔒</Text>
                 </View>
               )}
@@ -134,16 +134,16 @@ export function ProfileIdentity({
         <View className="flex-1">
           <View className="flex-row justify-between items-start">
             <View className="flex-1">
-              <Text className="text-xl font-bold text-black dark:text-white">{user?.name || user?.username}</Text>
-              <Text className="text-sm text-gray-500 dark:text-gray-400 mb-2">@{user?.username}</Text>
+              <Text className="text-xl font-bold text-white">{user?.name || user?.username}</Text>
+              <Text className="text-sm text-gray-400 mb-2">@{user?.username}</Text>
             </View>
             {isOwnProfile && (
               <TouchableOpacity
                 onPress={onEditProfile}
-                className="bg-gray-100 dark:bg-gray-900 p-2 rounded-full w-10 h-10 items-center justify-center ml-2"
+                className="bg-gray-800 p-2 rounded-full w-10 h-10 items-center justify-center ml-2"
                 activeOpacity={0.7}
               >
-                <Edit3 size={18} color="#8B5CF6" />
+                <Edit3 size={18} color="#ffffff" />
               </TouchableOpacity>
             )}
           </View>
@@ -162,12 +162,12 @@ export function ProfileIdentity({
       </View>
 
       {/* Bio */}
-      {user?.bio && <Text className="text-sm text-gray-700 dark:text-gray-300 mt-3 leading-5">{user.bio}</Text>}
+      {user?.bio && <Text className="text-sm text-gray-300 mt-3 leading-5">{user.bio}</Text>}
 
       {/* Private account message for non-followers */}
       {user?.isPrivate && !isOwnProfile && !isFollowing && followRequestStatus !== 'pending' && (
-        <View className="mt-3 p-3 bg-gray-100 dark:bg-gray-900 rounded-xl">
-          <Text className="text-sm text-gray-600 dark:text-gray-400 text-center">
+        <View className="mt-3 p-3 bg-gray-800 rounded-xl">
+          <Text className="text-sm text-gray-400 text-center">
             🔒 This account is private. Spot to see their content.
           </Text>
         </View>

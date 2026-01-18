@@ -41,9 +41,9 @@ export const InputField = ({ label, error, password, value, ...props }: InputFie
     }),
     color: animatedLabel.interpolate({
       inputRange: [0, 1],
-      outputRange: ['#888', theme === 'dark' ? '#aaa' : '#555'],
+      outputRange: ['#666', '#999'],
     }),
-    backgroundColor: theme === 'dark' ? '#000' : '#fff', // background matches theme
+    backgroundColor: '#000', // Always black background
     paddingHorizontal: 4,
   };
 
@@ -58,13 +58,14 @@ export const InputField = ({ label, error, password, value, ...props }: InputFie
         secureTextEntry={password && !showPass}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        className={`border rounded-xl p-3 text-black dark:text-white ${
+        className={`border rounded-xl p-3 text-white ${
           error
-            ? 'border-red-500'
+            ? 'border-white'
             : isFocused
-              ? 'border-blue-500 dark:border-blue-400'
-              : 'border-gray-300 dark:border-gray-700'
-        } ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}
+              ? 'border-white'
+              : 'border-gray-600'
+        } bg-black`}
+        placeholderTextColor="#666"
         {...props}
       />
 
@@ -73,12 +74,12 @@ export const InputField = ({ label, error, password, value, ...props }: InputFie
           <Ionicons
             name={showPass ? 'eye-off-outline' : 'eye-outline'}
             size={20}
-            color={theme === 'dark' ? '#ccc' : '#888'}
+            color="#999"
           />
         </TouchableOpacity>
       )}
 
-      {error && <Text className="text-red-500 text-xs mt-1">{error}</Text>}
+      {error && <Text className="text-white text-xs mt-1">{error}</Text>}
     </View>
   );
 };
