@@ -2,7 +2,7 @@
 // src/features/new/screens/CameraScreen.tsx
 // Main camera screen for New tab
 // ========================================
-import { View, Text, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Alert, StyleSheet } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { Spotlight } from '@/src/shared/components/Spotlight';
@@ -178,11 +178,15 @@ export default function CameraScreen() {
     );
   }
 
-  // Camera view with live preview
+  // Camera view with live preview - NO CHILDREN INSIDE CameraView!
   return (
     <Spotlight intensity={0.2}>
-      <View className="flex-1 bg-black">
-        <CameraView ref={cameraRef} className="flex-1" facing={facing}>
+      <View style={StyleSheet.absoluteFill}>
+        {/* CameraView takes full screen - NO CHILDREN */}
+        <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing={facing} />
+
+        {/* UI elements positioned OUTSIDE and ABOVE the camera using absolute positioning */}
+        <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
           {/* Top bar with gallery and flip icons */}
           <View className="absolute top-12 left-5 right-5 flex-row justify-between items-center z-10">
             <TouchableOpacity onPress={openGallery} className="bg-black/70 rounded-full p-2" activeOpacity={0.7}>
@@ -211,7 +215,7 @@ export default function CameraScreen() {
             </TouchableOpacity>
             <Text className="text-white text-sm mt-4">Take Photo</Text>
           </View>
-        </CameraView>
+        </View>
       </View>
     </Spotlight>
   );
