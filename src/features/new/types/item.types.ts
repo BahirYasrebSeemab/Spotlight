@@ -11,6 +11,8 @@ export interface CreateItemPayload {
   purchasePrice?: number;
   purchaseDate?: string;
   notes?: string;
+  existingPrototypeId?: string;
+  existingCommunityProductId?: string;
   selectedVariant?: {
     size?: string;
     color?: string;
