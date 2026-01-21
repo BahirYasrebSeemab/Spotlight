@@ -123,7 +123,6 @@ export async function createItemOwnership(
     // Add all the text fields
     formData.append('name', payload.name);
     formData.append('brandName', payload.brandName);
-    formData.append('ownerId', userId);
 
     if (payload.upc) formData.append('upc', payload.upc);
     if (payload.category) formData.append('category', payload.category);
@@ -133,23 +132,40 @@ export async function createItemOwnership(
     if (payload.purchasePrice) formData.append('purchasePrice', payload.purchasePrice.toString());
     if (payload.purchaseDate) formData.append('purchaseDate', payload.purchaseDate.toString());
 
+    // Add existing product IDs if selected
+    if (payload.existingPrototypeId) formData.append('existingPrototypeId', payload.existingPrototypeId);
+    if (payload.existingCommunityProductId)
+      formData.append('existingCommunityProductId', payload.existingCommunityProductId);
+
     // Add the image file if it exists
     if (payload.imageUri) {
-      // Fetch the image from the URI and convert to blob
-      const response = await fetch(payload.imageUri);
-      const blob = await response.blob();
+      try {
+        // Fetch the image from the URI and convert to blob
+        const response = await fetch(payload.imageUri);
+        const blob = await response.blob();
 
-      // Get file extension from URI or default to jpg
-      const uriParts = payload.imageUri.split('.');
-      const fileExtension = uriParts[uriParts.length - 1].split('?')[0] || 'jpg';
+        // Get file extension from URI or default to jpg
+        const uriParts = payload.imageUri.split('.');
+        const fileExtension = uriParts[uriParts.length - 1].split('?')[0] || 'jpg';
 
-      // Create file from blob
-      const file = new File([blob], `image.${fileExtension}`, {
-        type: blob.type || 'image/jpeg',
-      });
+        // Create file from blob with proper MIME type
+        const mimeType = blob.type || 'image/jpeg';
+        const file = new File([blob], `image.${fileExtension}`, {
+          type: mimeType,
+        });
 
-      formData.append('image', file);
+        formData.append('image', file);
+      } catch (imageError) {
+        console.error('Error processing image:', imageError);
+        throw new Error('Failed to process image file');
+      }
     }
+
+    // Get the current session token
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) throw new Error('No active session');
 
     // Call the edge function with FormData
     const { data, error } = await supabase.functions.invoke('create-item-ownership', {
@@ -157,7 +173,7 @@ export async function createItemOwnership(
     });
 
     if (error) throw error;
-    if (!data || data.error) {
+    if (!data || !data.success) {
       throw new Error(data?.error || 'Failed to create ownership');
     }
 
@@ -267,22 +283,16 @@ export async function getAllBrands(limit = 100): Promise<{ data: Brand[] | null;
  */
 export async function checkProcessingStatus(
   ownershipId: string,
-): Promise<{ data: { processingStatus: string; processedImageUrl?: string } | null; error: string | null }> {
+): Promise<{ data: Ownership | null; error: string | null }> {
   try {
     const { data, error } = await supabase
       .from('Ownership')
-      .select('processingStatus, processedImageUrl, thumbnailUrl')
+      .select('id, processingStatus, originalImageUrl, processedImageUrl, thumbnailUrl')
       .eq('id', ownershipId)
       .single();
 
     if (error) throw error;
-    return {
-      data: {
-        processingStatus: data.processingStatus,
-        processedImageUrl: data.processedImageUrl,
-      },
-      error: null,
-    };
+    return { data: data as Ownership, error: null };
   } catch (err: any) {
     return { data: null, error: err.message || 'Failed to check processing status' };
   }
