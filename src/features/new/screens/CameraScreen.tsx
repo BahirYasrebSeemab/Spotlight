@@ -10,11 +10,13 @@ import { ImageIcon, X, FlipHorizontal } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { Image as CompressorImage } from 'react-native-compressor';
 
 export default function CameraScreen() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [lastGalleryPhoto, setLastGalleryPhoto] = useState<string | null>(null);
   const [facing, setFacing] = useState<CameraType>('back');
+  const [isCompressing, setIsCompressing] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [mediaLibraryPermission, requestMediaLibraryPermission] = MediaLibrary.usePermissions();
   const cameraRef = useRef<CameraView>(null);
@@ -102,13 +104,31 @@ export default function CameraScreen() {
     setFacing(current => (current === 'back' ? 'front' : 'back'));
   };
 
-  const handleAddItem = () => {
+  const handleAddItem = async () => {
     if (!capturedImage) return;
-    // Navigate to item form with image
-    router.push({
-      pathname: './item-form' as any,
-      params: { imageUri: capturedImage },
-    });
+
+    try {
+      setIsCompressing(true);
+
+      // Compress the image before passing to the form
+      const compressedImage = await CompressorImage.compress(capturedImage, {
+        compressionMethod: 'auto',
+        maxWidth: 1920,
+        maxHeight: 1920,
+        quality: 0.8,
+      });
+
+      // Navigate to item form with compressed image
+      router.push({
+        pathname: '/(app)/(tabs)/new/item-form',
+        params: { imageUri: compressedImage },
+      });
+    } catch (error) {
+      console.error('Error compressing image:', error);
+      Alert.alert('Error', 'Failed to process image');
+    } finally {
+      setIsCompressing(false);
+    }
   };
 
   const handleAddMemory = () => {
@@ -160,8 +180,15 @@ export default function CameraScreen() {
             <View className="bg-black/70 rounded-2xl p-6">
               <Text className="text-white font-semibold text-lg mb-4 text-center">What would you like to add?</Text>
 
-              <TouchableOpacity onPress={handleAddItem} className="bg-white py-4 rounded-xl mb-3" activeOpacity={0.7}>
-                <Text className="text-black font-semibold text-center text-base">Add Item</Text>
+              <TouchableOpacity
+                onPress={handleAddItem}
+                disabled={isCompressing}
+                className={`py-4 rounded-xl mb-3 ${isCompressing ? 'bg-gray-600' : 'bg-white'}`}
+                activeOpacity={0.7}
+              >
+                <Text className="text-black font-semibold text-center text-base">
+                  {isCompressing ? 'Processing...' : 'Add Item'}
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity

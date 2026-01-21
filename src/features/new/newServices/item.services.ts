@@ -3,7 +3,14 @@
 // Centralized Supabase calls for item/ownership operations
 // ========================================
 import { supabase } from '@/src/lib/supabase';
-import { CreateItemPayload, Ownership, CommunityProduct, Prototype, Brand, ProductSearchResult } from '../types/item.types';
+import {
+  CreateItemPayload,
+  Ownership,
+  CommunityProduct,
+  Prototype,
+  Brand,
+  ProductSearchResult,
+} from '../types/item.types';
 
 /**
  * Search for existing products (Prototype or CommunityProduct)
@@ -81,8 +88,8 @@ export async function searchProducts(params: {
 
       if (!commError && communityProducts) {
         communityProducts.forEach((cp: any) => {
-          const exactMatch = cp.name.toLowerCase() === name.toLowerCase() && 
-                           cp.brandName.toLowerCase() === normalizedBrand;
+          const exactMatch =
+            cp.name.toLowerCase() === name.toLowerCase() && cp.brandName.toLowerCase() === normalizedBrand;
           const similarity = exactMatch ? 90 : 70;
           results.push({ type: 'community', product: cp, similarity });
         });
@@ -108,15 +115,45 @@ export async function searchProducts(params: {
  */
 export async function createItemOwnership(
   payload: CreateItemPayload,
-  userId: string
+  userId: string,
 ): Promise<{ data: Ownership | null; error: string | null }> {
   try {
-    // Call the edge function
+    const formData = new FormData();
+
+    // Add all the text fields
+    formData.append('name', payload.name);
+    formData.append('brandName', payload.brandName);
+    formData.append('ownerId', userId);
+
+    if (payload.upc) formData.append('upc', payload.upc);
+    if (payload.category) formData.append('category', payload.category);
+    if (payload.description) formData.append('description', payload.description);
+    if (payload.condition) formData.append('condition', payload.condition);
+    if (payload.notes) formData.append('notes', payload.notes);
+    if (payload.purchasePrice) formData.append('purchasePrice', payload.purchasePrice.toString());
+    if (payload.purchaseDate) formData.append('purchaseDate', payload.purchaseDate.toString());
+
+    // Add the image file if it exists
+    if (payload.imageUri) {
+      // Fetch the image from the URI and convert to blob
+      const response = await fetch(payload.imageUri);
+      const blob = await response.blob();
+
+      // Get file extension from URI or default to jpg
+      const uriParts = payload.imageUri.split('.');
+      const fileExtension = uriParts[uriParts.length - 1].split('?')[0] || 'jpg';
+
+      // Create file from blob
+      const file = new File([blob], `image.${fileExtension}`, {
+        type: blob.type || 'image/jpeg',
+      });
+
+      formData.append('image', file);
+    }
+
+    // Call the edge function with FormData
     const { data, error } = await supabase.functions.invoke('create-item-ownership', {
-      body: {
-        ...payload,
-        ownerId: userId,
-      },
+      body: formData,
     });
 
     if (error) throw error;
@@ -126,36 +163,8 @@ export async function createItemOwnership(
 
     return { data: data.ownership as Ownership, error: null };
   } catch (err: any) {
+    console.error('Create item ownership error:', err);
     return { data: null, error: err.message || 'Failed to create item ownership' };
-  }
-}
-
-/**
- * Get ownership by ID with full product details
- */
-export async function getOwnershipById(
-  ownershipId: string
-): Promise<{ data: Ownership | null; error: string | null }> {
-  try {
-    const { data, error } = await supabase
-      .from('Ownership')
-      .select(
-        `
-        *,
-        prototype:prototypeId (
-          *,
-          brand:brandId (*)
-        ),
-        communityProduct:communityProductId (*)
-      `
-      )
-      .eq('id', ownershipId)
-      .single();
-
-    if (error) throw error;
-    return { data: data as Ownership, error: null };
-  } catch (err: any) {
-    return { data: null, error: err.message || 'Failed to fetch ownership' };
   }
 }
 
@@ -165,7 +174,7 @@ export async function getOwnershipById(
 export async function getUserOwnerships(
   userId: string,
   limit = 20,
-  offset = 0
+  offset = 0,
 ): Promise<{ data: Ownership[] | null; error: string | null }> {
   try {
     const { data, error } = await supabase
@@ -178,7 +187,7 @@ export async function getUserOwnerships(
           brand:brandId (*)
         ),
         communityProduct:communityProductId (*)
-      `
+      `,
       )
       .eq('ownerId', userId)
       .eq('status', 'owned')
@@ -197,15 +206,10 @@ export async function getUserOwnerships(
  */
 export async function updateOwnership(
   ownershipId: string,
-  updates: Partial<Ownership>
+  updates: Partial<Ownership>,
 ): Promise<{ data: Ownership | null; error: string | null }> {
   try {
-    const { data, error } = await supabase
-      .from('Ownership')
-      .update(updates)
-      .eq('id', ownershipId)
-      .select()
-      .single();
+    const { data, error } = await supabase.from('Ownership').update(updates).eq('id', ownershipId).select().single();
 
     if (error) throw error;
     return { data: data as Ownership, error: null };
@@ -262,7 +266,7 @@ export async function getAllBrands(limit = 100): Promise<{ data: Brand[] | null;
  * Used to check if image processing is complete
  */
 export async function checkProcessingStatus(
-  ownershipId: string
+  ownershipId: string,
 ): Promise<{ data: { processingStatus: string; processedImageUrl?: string } | null; error: string | null }> {
   try {
     const { data, error } = await supabase
