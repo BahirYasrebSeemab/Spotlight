@@ -12,6 +12,9 @@ import {
   ProductSearchResult,
 } from '../types/item.types';
 
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+
+
 /**
  * Search for existing products (Prototype or CommunityProduct)
  * Used to find if product already exists before creating new one
@@ -140,25 +143,46 @@ export async function createItemOwnership(
     // Add the image file if it exists
     if (payload.imageUri) {
       try {
-        // Fetch the image from the URI and convert to blob
-        const response = await fetch(payload.imageUri);
-        const blob = await response.blob();
+        console.log('Processing image from URI:', payload.imageUri);
 
-        // Get file extension from URI or default to jpg
-        const uriParts = payload.imageUri.split('.');
-        const fileExtension = uriParts[uriParts.length - 1].split('?')[0] || 'jpg';
+        // Fetch the image from the URI
+        const imageResponse = await fetch(payload.imageUri);
+        if (!imageResponse.ok) {
+          throw new Error('Failed to fetch image from URI');
+        }
 
-        // Create file from blob with proper MIME type
-        const mimeType = blob.type || 'image/jpeg';
-        const file = new File([blob], `image.${fileExtension}`, {
-          type: mimeType,
+        const blob = await imageResponse.blob();
+        console.log('Image blob size:', blob.size, 'type:', blob.type);
+
+        if (blob.size === 0) {
+          throw new Error('Image file is empty');
+        }
+
+        // Get file extension from URI or blob type
+        let fileExtension = 'jpg';
+        if (payload.imageUri.includes('.')) {
+          const uriParts = payload.imageUri.split('.');
+          fileExtension = uriParts[uriParts.length - 1].split('?')[0] || 'jpg';
+        } else if (blob.type) {
+          // Extract extension from MIME type (e.g., "image/jpeg" -> "jpeg")
+          fileExtension = blob.type.split('/')[1] || 'jpg';
+        }
+
+        // CRITICAL: React Native FormData needs this specific format
+        // @ts-ignore - React Native specific FormData format
+        formData.append('image', {
+          uri: payload.imageUri,
+          type: blob.type || 'image/jpeg',
+          name: `photo.${fileExtension}`,
         });
 
-        formData.append('image', file);
-      } catch (imageError) {
+        console.log('Image added to FormData with name:', `photo.${fileExtension}`, 'type:', blob.type);
+      } catch (imageError: string | any) {
         console.error('Error processing image:', imageError);
-        throw new Error('Failed to process image file');
+        throw new Error(`Failed to process image file: ${imageError.message}`);
       }
+    } else {
+      console.log('No image URI provided');
     }
 
     // Get the current session token
@@ -167,12 +191,30 @@ export async function createItemOwnership(
     } = await supabase.auth.getSession();
     if (!session) throw new Error('No active session');
 
-    // Call the edge function with FormData
-    const { data, error } = await supabase.functions.invoke('create-item-ownership', {
+    console.log('Sending request to edge function with FormData...');
+    console.log('Has image:', !!payload.imageUri);
+
+    // Use fetch directly - better FormData support in React Native
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/create-item-ownership`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        // CRITICAL: Don't set Content-Type - let fetch handle multipart/form-data boundary
+      },
       body: formData,
     });
 
-    if (error) throw error;
+    console.log('Response status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Edge function error response:', errorText);
+      throw new Error(`Edge function failed: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('Response data:', data);
+
     if (!data || !data.success) {
       throw new Error(data?.error || 'Failed to create ownership');
     }
@@ -180,10 +222,12 @@ export async function createItemOwnership(
     return { data: data.ownership as Ownership, error: null };
   } catch (err: any) {
     console.error('Create item ownership error:', err);
-    return { data: null, error: err.message || 'Failed to create item ownership' };
+    return {
+      data: null,
+      error: err.message || 'Failed to create item ownership',
+    };
   }
 }
-
 /**
  * Get user's ownerships with pagination
  */
