@@ -13,7 +13,7 @@ serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '')
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
-    
+
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     if (authError || !user) throw new Error('Unauthorized')
 
@@ -180,22 +180,7 @@ serve(async (req) => {
           .from('Ownership')
           .update({ originalImageUrl: originalUrl })
           .eq('id', ownership.id)
-
-        console.log('Triggering background processing')
-
-        // Trigger background processing (fire and forget)
-        fetch(`${SUPABASE_URL}/functions/v1/process-item-upload`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`
-          },
-          body: JSON.stringify({
-            ownershipId: ownership.id,
-            originalPath: filePath
-          })
-        }).catch(err => console.error('Failed to trigger processing:', err))
-
+          
       } catch (imageError) {
         console.error('Image processing error:', imageError)
         // Don't fail the whole request, just mark processing as failed
