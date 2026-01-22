@@ -7,16 +7,61 @@ const CLIPDROP_API_KEY = Deno.env.get('CLIPDROP_API_KEY')!
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-interface ProcessRequest {
-  ownershipId: string
-  originalPath: string // e.g., "user-id/ownership-id_original.jpg"
+interface WebhookPayload {
+  type: 'INSERT' | 'UPDATE' | 'DELETE'
+  table: string
+  record: {
+    id: string
+    ownerId: string
+    originalImageUrl: string
+    processingStatus: string
+  }
+  old_record?: any
 }
 
 serve(async (req) => {
   try {
-    const { ownershipId, originalPath }: ProcessRequest = await req.json()
+    console.log('=== Process Item Upload Triggered ===')
     
-    console.log(`Processing item upload for ownership: ${ownershipId}`)
+    const payload = await req.json()
+    console.log('Received payload:', JSON.stringify(payload, null, 2))
+
+    let ownershipId: string
+    let originalPath: string
+
+    // Check if it's a webhook payload or direct call
+    if (payload.type && payload.record) {
+      // Webhook format
+      console.log('Processing webhook payload')
+      const record = payload.record
+      ownershipId = record.id
+      
+      if (!record.originalImageUrl) {
+        console.log('No originalImageUrl in record, skipping')
+        return new Response(
+          JSON.stringify({ success: true, message: 'No image to process' }),
+          { headers: { 'Content-Type': 'application/json' }, status: 200 }
+        )
+      }
+
+      // Extract path from URL
+      // URL format: https://[project].supabase.co/storage/v1/object/public/item-originals/[userId]/[filename]
+      const urlParts = record.originalImageUrl.split('/item-originals/')
+      if (urlParts.length < 2) {
+        throw new Error('Invalid originalImageUrl format')
+      }
+      originalPath = urlParts[1]
+      
+    } else if (payload.ownershipId && payload.originalPath) {
+      // Direct call format (backwards compatible)
+      console.log('Processing direct call payload')
+      ownershipId = payload.ownershipId
+      originalPath = payload.originalPath
+    } else {
+      throw new Error('Invalid payload format')
+    }
+    
+    console.log(`Processing ownership: ${ownershipId}, path: ${originalPath}`)
 
     // Initialize Supabase client with service role (bypass RLS)
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
@@ -31,6 +76,8 @@ serve(async (req) => {
       console.error('Failed to update status:', statusError)
       throw new Error('Failed to update processing status')
     }
+
+    console.log('Status updated to processing')
 
     // Step 2: Download original image from item-originals bucket
     const { data: originalFile, error: downloadError } = await supabase.storage
@@ -47,6 +94,8 @@ serve(async (req) => {
     // Step 3: Call Clipdrop API to remove background
     const formData = new FormData()
     formData.append('image_file', originalFile, 'image.jpg')
+
+    console.log('Calling Clipdrop API...')
 
     const clipdropResponse = await fetch(
       'https://clipdrop-api.co/remove-background/v1',
@@ -70,7 +119,8 @@ serve(async (req) => {
 
     // Step 4: Upload processed image to item-processed bucket
     const userId = originalPath.split('/')[0]
-    const processedFilename = originalPath.split('/')[1].replace('_original', '_processed').replace(/\.(jpg|jpeg|heic)$/i, '.png')
+    const originalFilename = originalPath.split('/')[1]
+    const processedFilename = originalFilename.replace('_original', '_processed').replace(/\.(jpg|jpeg|heic)$/i, '.png')
     const processedPath = `${userId}/${processedFilename}`
 
     const { error: processedUploadError } = await supabase.storage
@@ -90,7 +140,7 @@ serve(async (req) => {
     // Step 5: Create thumbnail (300x300)
     const thumbnailBlob = await createThumbnail(processedBlob)
 
-    const thumbnailFilename = originalPath.split('/')[1].replace('_original', '_thumb').replace(/\.(jpg|jpeg|png|heic)$/i, '.webp')
+    const thumbnailFilename = originalFilename.replace('_original', '_thumb').replace(/\.(jpg|jpeg|png|heic)$/i, '.webp')
     const thumbnailPath = `${userId}/${thumbnailFilename}`
 
     const { error: thumbnailUploadError } = await supabase.storage
@@ -151,13 +201,22 @@ serve(async (req) => {
 
     // Try to mark ownership as failed
     try {
-      const { ownershipId } = await req.json()
+      const payload = await req.json()
+      let ownershipId: string | undefined
+
+      if (payload.record?.id) {
+        ownershipId = payload.record.id
+      } else if (payload.ownershipId) {
+        ownershipId = payload.ownershipId
+      }
+
       if (ownershipId) {
         const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
         await supabase
           .from('Ownership')
           .update({ processingStatus: 'failed' })
           .eq('id', ownershipId)
+        console.log('Marked ownership as failed:', ownershipId)
       }
     } catch (e) {
       console.error('Failed to update error status:', e)
@@ -178,17 +237,7 @@ serve(async (req) => {
 
 // Helper function to create thumbnail
 async function createThumbnail(blob: Blob): Promise<Blob> {
-  // For now, using a simple approach
-  // In production, you'd use image processing library
-  // or call another API for resizing
-  
-  // Option 1: Return original (placeholder)
-  // return blob
-  
-  // Option 2: Use Deno image library (when available)
-  // Option 3: Call Cloudflare Images or similar API
-  
-  // Placeholder: Just return the blob
-  // TODO: Implement actual thumbnail generation with proper library
+  // Placeholder: Just return the blob for now
+  // TODO: Implement actual thumbnail generation
   return blob
 }
