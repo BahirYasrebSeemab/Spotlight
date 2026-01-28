@@ -39,8 +39,10 @@ model User {
   following                Follower[]         @relation("Follower_followingIdToUser")
   likes                    Like[]
   matches                  Match[]
+  memories                 Memory[]
   ownerships               Ownership[]
   posts                    Post[]
+  receivedTransfers        OwnershipTransfer[] @relation("TransferReceiver")
 
   @@index([email])
   @@index([username])
@@ -59,8 +61,6 @@ model Follower {
   @@index([followingId])
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model FollowRequest {
   id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   requesterId String   @db.Uuid
@@ -78,27 +78,45 @@ model FollowRequest {
 }
 
 model Brand {
-  name        String       @unique
-  description String?
-  logoUrl     String?
-  verified    Boolean      @default(false)
-  type        BrandType    @default(LOCAL)
-  createdAt   DateTime     @default(now())
-  id          String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  updatedAt   DateTime     @default(now()) @updatedAt
-  brandAdmins BrandAdmin[]
-  prototypes  Prototype[]
+  name              String              @unique
+  description       String?
+  logoUrl           String?
+  verified          Boolean             @default(false)
+  type              BrandType           @default(LOCAL)
+  createdAt         DateTime            @default(now())
+  id                String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  updatedAt         DateTime            @default(now()) @updatedAt
+  
+  // Transfer quota system (based on contract/package)
+  transferQuota     Int                 @default(0)  // Total transfers allowed
+  transfersUsed     Int                 @default(0)  // Transfers used
+  contractTier      String?             // "basic", "premium", "enterprise", etc.
+  contractStartDate DateTime?           // When contract started
+  contractEndDate   DateTime?           // When contract expires
+  
+  // Application/approval tracking
+  applicationStatus String              @default("pending") // "pending", "approved", "rejected"
+  appliedAt         DateTime?           // When they applied
+  approvedAt        DateTime?           // When approved by admin
+  approvedBy        String?             @db.Uuid // Admin who approved
+  rejectionReason   String?             // Why rejected (if applicable)
+  
+  brandAdmins       BrandAdmin[]
+  prototypes        Prototype[]
+  claimedProducts   CommunityProduct[]  @relation("BrandClaimedProducts")
+  transfers         OwnershipTransfer[]
 
   @@index([name])
   @@index([verified])
   @@index([type])
+  @@index([applicationStatus])
 }
 
 model BrandAdmin {
   id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   userId    String   @db.Uuid
   brandId   String   @db.Uuid
-  role      String   @default("admin")
+  role      String   @default("admin") // "admin", "owner", "manager"
   createdAt DateTime @default(now())
   brand     Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -117,78 +135,139 @@ model Prototype {
   upc          String?
   category     String?
   retailPrice  Decimal?    @db.Decimal(10, 2)
-  imageUrl     String?
-  thumbnailUrl String?
-  variants     Json?
-  isVerified   Boolean     @default(true)
+  imageUrl     String?     // Official brand photo
+  thumbnailUrl String?     // Official thumbnail
+  variants     Json?       // Size, color options, etc.
+  
+  // Verification info
+  isVerified   Boolean     @default(true)  // All prototypes are verified by definition
   verifiedAt   DateTime    @default(now())
-  verifiedBy   String?     @db.Uuid
+  verifiedBy   String?     @db.Uuid        // BrandAdmin who created it
+  
+  // Status
   isActive     Boolean     @default(true)
+  
+  // Migration tracking (if converted from CommunityProduct)
+  migratedFromCommunityProductId String? @db.Uuid
+  
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @default(now()) @updatedAt
-  ownerships   Ownership[]
+  
   brand        Brand       @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  ownerships   Ownership[]
+  transfers    OwnershipTransfer[]
 
   @@index([brandId])
   @@index([sku])
   @@index([upc])
   @@index([category])
   @@index([isActive])
+  @@index([name]) // For search
 }
 
 model CommunityProduct {
   id                    String                 @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   name                  String
-  brandName             String
+  brandName             String                 // Text field, not linked to Brand
   description           String?
   upc                   String?
   category              String?
-  imageUrl              String?
+  imageUrl              String?                // User-uploaded photo
   thumbnailUrl          String?
+  
+  // Creator info
   createdBy             String                 @db.Uuid
+  
+  // Status tracking
   status                CommunityProductStatus @default(ACTIVE)
+  
+  // Brand claim tracking
+  claimedByBrandId      String?                @db.Uuid
+  claimedAt             DateTime?
+  brandNotified         Boolean                @default(false) // Has matching brand been notified?
+  
+  // Migration tracking
   migratedToPrototypeId String?                @db.Uuid
+  
+  // Stats
   ownershipCount        Int                    @default(0)
   flagCount             Int                    @default(0)
+  
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @default(now()) @updatedAt
+  
   creator               User                   @relation("CommunityProductCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  claimedByBrand        Brand?                 @relation("BrandClaimedProducts", fields: [claimedByBrandId], references: [id])
   ownerships            Ownership[]
 
   @@index([brandName])
   @@index([upc])
   @@index([status])
   @@index([createdBy])
+  @@index([claimedByBrandId])
+  @@index([name]) // For search
 }
 
 model Ownership {
-  status             String            @default("owned")
-  verified           Boolean           @default(false)
-  createdAt          DateTime          @default(now())
   id                 String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   ownerId            String            @db.Uuid
-  communityProductId String?           @db.Uuid
-  condition          String?
-  isAuthenticated    Boolean           @default(false)
-  notes              String?
-  originalImageUrl   String?
-  ownershipChain     Json?
-  processedImageUrl  String?
-  processingStatus   String            @default("pending")
+  
+  // Product relationship (ONE of these should be set)
   prototypeId        String?           @db.Uuid
+  communityProductId String?           @db.Uuid
+  
+  // Verification status
+  verified           Boolean           @default(false) // true = brand-transferred, false = user-claimed
+  verifiedBy         String?           @db.Uuid        // BrandAdmin who verified/transferred
+  verifiedAt         DateTime?         // When verified
+  verificationCode   String?           @unique         // Unique code for verified ownerships
+  
+  // Transfer tracking
+  transferId         String?           @db.Uuid        // Link to OwnershipTransfer if brand-transferred
+  
+  // Ownership status
+  status             String            @default("owned") // "owned", "sold", "gifted", "lost"
+  
+  // Item condition & details
+  condition          String?           // "new", "like-new", "good", "fair", "poor"
+  notes              String?
   purchaseDate       DateTime?
   purchasePrice      Decimal?          @db.Decimal(10, 2)
-  selectedVariant    Json?
+  selectedVariant    Json?             // Which variant they own (size, color, etc.)
   serialNumber       String?           @unique
-  thumbnailUrl       String?
+  
+  // Authentication
+  isAuthenticated    Boolean           @default(false)
+  
+  // Images - IMPORTANT CHANGE
+  useOfficialImage   Boolean           @default(true)  // true = use prototype/community image, false = use own
+  originalImageUrl   String?           // User's own photo of their item
+  processedImageUrl  String?           // Processed version of user's photo
+  thumbnailUrl       String?           // Thumbnail of user's photo
+  processingStatus   String            @default("completed") // "pending", "processing", "completed", "failed"
+  
+  // Ownership chain (for transfers)
+  ownershipChain     Json?
   transferable       Boolean           @default(false)
+  
+  // Flag tracking (if brand flags as fake)
+  flagged            Boolean           @default(false)
+  flagReason         String?
+  flaggedBy          String?           @db.Uuid
+  flaggedAt          DateTime?
+  
+  createdAt          DateTime          @default(now())
   updatedAt          DateTime          @default(now()) @updatedAt
-  closetItems        ClosetItem[]
-  matchItems         MatchItem[]
-  communityProduct   CommunityProduct? @relation(fields: [communityProductId], references: [id])
+  
   owner              User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   prototype          Prototype?        @relation(fields: [prototypeId], references: [id])
+  communityProduct   CommunityProduct? @relation(fields: [communityProductId], references: [id])
+  transfer           OwnershipTransfer? @relation(fields: [transferId], references: [id])
+  
+  closetItems        ClosetItem[]
+  matchItems         MatchItem[]
   postItems          PostItem[]
+  memoryItems        MemoryItem[]
 
   @@unique([ownerId, prototypeId, serialNumber])
   @@index([ownerId])
@@ -197,6 +276,77 @@ model Ownership {
   @@index([serialNumber])
   @@index([status])
   @@index([processingStatus])
+  @@index([verified])
+  @@index([flagged])
+}
+
+// NEW: Track brand transfers (contract-based quota system)
+model OwnershipTransfer {
+  id              String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  brandId         String     @db.Uuid
+  prototypeId     String     @db.Uuid
+  recipientId     String     @db.Uuid   // User receiving the ownership
+  
+  // Transfer details
+  transferredBy   String     @db.Uuid   // BrandAdmin who made the transfer
+  transferredAt   DateTime   @default(now())
+  
+  // Optional transfer info
+  verificationCode String    @unique    // Unique code generated for this transfer
+  purchaseOrderId  String?              // Optional PO/order reference
+  notes            String?              // Optional notes from brand
+  
+  // Status
+  status          String     @default("completed") // "pending", "completed", "cancelled"
+  
+  brand           Brand      @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  prototype       Prototype  @relation(fields: [prototypeId], references: [id], onDelete: Cascade)
+  recipient       User       @relation("TransferReceiver", fields: [recipientId], references: [id], onDelete: Cascade)
+  ownerships      Ownership[] // One transfer can create one ownership (1:1 relationship in practice)
+
+  @@index([brandId])
+  @@index([prototypeId])
+  @@index([recipientId])
+  @@index([transferredAt])
+  @@index([status])
+}
+
+// NEW: Memories (photos/videos attached to ownerships)
+model Memory {
+  id          String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId      String       @db.Uuid
+  title       String?
+  description String?
+  mediaUrl    String       // Photo or video URL
+  mediaType   String       // "photo" or "video"
+  thumbnailUrl String?
+  
+  // Date/location
+  takenAt     DateTime?    // When photo/video was taken
+  location    String?      // Optional location
+  
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
+  
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       MemoryItem[] // Link to ownerships (can be multiple)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// NEW: Link memories to ownerships (many-to-many)
+model MemoryItem {
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  memoryId    String    @db.Uuid
+  ownershipId String    @db.Uuid
+  
+  memory      Memory    @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+  ownership   Ownership @relation(fields: [ownershipId], references: [id], onDelete: Cascade)
+
+  @@unique([memoryId, ownershipId])
+  @@index([memoryId])
+  @@index([ownershipId])
 }
 
 model Closet {
@@ -221,36 +371,6 @@ model ClosetItem {
 
   @@unique([closetId, ownershipId])
   @@index([closetId])
-  @@index([ownershipId])
-}
-
-model Post {
-  caption       String?
-  mediaUrl      String?
-  createdAt     DateTime   @default(now())
-  likesCount    Int        @default(0)
-  commentsCount Int        @default(0)
-  id            String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  authorId      String     @db.Uuid
-  updatedAt     DateTime   @default(now()) @updatedAt
-  comments      Comment[]
-  likes         Like[]
-  author        User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  items         PostItem[]
-
-  @@index([authorId])
-  @@index([createdAt])
-}
-
-model PostItem {
-  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  postId      String    @db.Uuid
-  ownershipId String    @db.Uuid
-  ownership   Ownership @relation(fields: [ownershipId], references: [id], onDelete: Cascade)
-  post        Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  @@unique([postId, ownershipId])
-  @@index([postId])
   @@index([ownershipId])
 }
 
@@ -316,4 +436,5 @@ enum CommunityProductStatus {
   UNDER_REVIEW
   MIGRATED
   DELETED
+  FLAGGED
 }
