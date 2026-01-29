@@ -32,6 +32,7 @@ export default function SettingsScreen() {
   return (
     <View className="flex-1 bg-white dark:bg-black p-6">
       <Text className="text-xl font-bold text-black dark:text-white mb-4">Account</Text>
+      <Row label="Account Privacy" onPress={() => router.navigate('(tabs)/profile/account-privacy')} />
 
       <Row label="Edit Profile" onPress={() => router.navigate('(tabs)/profile/edit-profile')} />
       <Row label="Change Password" onPress={() => router.navigate('(tabs)/profile/change-password')} />
@@ -40,7 +41,6 @@ export default function SettingsScreen() {
       <Row label="Delete Account" danger onPress={() => setDeleteModalVisible(true)} />
 
       <Row label="Logout" danger onPress={handleLogout} />
-      <Row label="Account Privacy" onPress={() => router.navigate('(tabs)/profile/account-privacy')} />
       {/* BlurConfirmModal */}
       <BlurConfirmModal
         visible={deleteModalVisible}
