@@ -42,7 +42,6 @@ model User {
   memories                 Memory[]
   ownerships               Ownership[]
   receivedTransfers        OwnershipTransfer[] @relation("TransferReceiver")
-  comments                 Comment[]
 
   @@index([email])
   @@index([username])
