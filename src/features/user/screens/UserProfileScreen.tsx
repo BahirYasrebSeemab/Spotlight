@@ -12,7 +12,7 @@ import { Spotlight } from '@/src/shared/components/Spotlight';
 
 // Import ENHANCED hooks
 import { useUserProfile } from '@/src/features/user/hooks/useUserProfile';
-import { useUserPosts } from '@/src/features/user/hooks/useUserPosts';
+import { useUserMemories } from '@/src/features/user/hooks/useUserMemories';
 import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
 import { useFollowUser } from '@/src/features/user/hooks/useFollowUser';
 import { useFollowRequests } from '@/src/features/user/hooks/useFollowRequests';
@@ -36,18 +36,18 @@ export default function UserProfileScreen() {
 
   const isOwnProfile = currentUser?.id === id;
 
-  // Only fetch posts if: own profile OR account is public OR user is following
-  const shouldFetchPosts = isOwnProfile || !user?.isPrivate || followStatus?.isFollowing;
+  // Only fetch memories if: own profile OR account is public OR user is following
+  const shouldFetchMemories = isOwnProfile || !user?.isPrivate || followStatus?.isFollowing;
 
-  // // Fetch user posts (conditionally enabled)
+  // // Fetch user memories (conditionally enabled)
   // const {
-  //   data: postsData,
-  //   isLoading: postsLoading,
+  //   data: memoriesData,
+  //   isLoading: memoriesLoading,
   //   fetchNextPage,
   //   hasNextPage,
   //   isFetchingNextPage,
-  //   refetch: refetchPosts,
-  // } = useUserPosts(id, { enabled: shouldFetchPosts });
+  //   refetch: refetchMemories,
+  // } = useUserMemories(id, { enabled: shouldFetchMemories });
 
   // Follow/unfollow mutation with optimistic updates
   const { follow, unfollow, isLoading: followLoading, error: followError } = useFollowUser();
@@ -58,8 +58,8 @@ export default function UserProfileScreen() {
   // Refresh state
   const [refreshing, setRefreshing] = useState(false);
 
-  // Flatten posts from infinite query
-  // const posts = postsData?.pages.flatMap(page => page) || [];
+  // Flatten memories from infinite query
+  // const memories = memoriesData?.pages.flatMap(page => page) || [];
 
   // Set header
   useLayoutEffect(() => {
@@ -87,8 +87,8 @@ export default function UserProfileScreen() {
     setRefreshing(true);
     try {
       const refreshPromises = [refetchUser(), refetchFollowStatus(), refetchRequestStatus()];
-      // if (shouldFetchPosts) {
-      //   refreshPromises.push(refetchPosts());
+      // if (shouldFetchMemories) {
+      //   refreshPromises.push(refetchMemories());
       // }
       await Promise.all(refreshPromises);
     } catch (error) {
@@ -158,9 +158,7 @@ export default function UserProfileScreen() {
       <Spotlight intensity={0.2}>
         <View className="flex-1 items-center justify-center bg-black px-8">
           <Text className="text-xl font-bold text-white mb-2">User not found</Text>
-          <Text className="text-gray-400 text-center">
-            This user doesn't exist or has been removed
-          </Text>
+          <Text className="text-gray-400 text-center">This user doesn't exist or has been removed</Text>
         </View>
       </Spotlight>
     );
@@ -175,8 +173,8 @@ export default function UserProfileScreen() {
   // Check if private and not following - show private account message
   const isPrivateAndNotFollowing = user.isPrivate && !followStatus?.isFollowing && !isOwnProfile;
 
-  // // Filter posts based on active tab
-  // const filteredPosts = posts.filter((post: any) => {
+  // // Filter memories based on active tab
+  // const filteredMemories = memories.filter((memory: any) => {
   //   if (activeTab === 'all') return true;
   //   if (activeTab === 'photos') return post.mediaUrl && !post.mediaUrl.includes('.mp4');
   //   if (activeTab === 'videos') return post.mediaUrl && post.mediaUrl.includes('.mp4');
@@ -184,10 +182,10 @@ export default function UserProfileScreen() {
   // });
 
   // // Map to grid format
-  // const gridPosts = filteredPosts.map((post: any) => ({
-  //   id: post.id,
-  //   imageUrl: post.mediaUrl || '',
-  //   type: post.mediaUrl?.includes('.mp4') ? ('video' as const) : ('photo' as const),
+  // const gridMemories = filteredMemories.map((memory: any) => ({
+  //   id: memory.id,
+  //   imageUrl: memory.mediaUrl || '',
+  //   type: memory.mediaUrl?.includes('.mp4') ? ('video' as const) : ('photo' as const),
   // }));
 
   // Private account content view
@@ -197,69 +195,67 @@ export default function UserProfileScreen() {
         <Lock size={40} color="#ffffff" strokeWidth={1.5} />
       </View>
       <Text className="text-2xl font-bold text-white mb-3 text-center">This Account is Private</Text>
-      <Text className="text-gray-400 text-center text-base leading-6">
-        Follow this account to see their posts
-      </Text>
+      <Text className="text-gray-400 text-center text-base leading-6">Follow this account to see their Memories</Text>
     </View>
   );
 
   return (
     <Spotlight intensity={0.2}>
       <View className="flex-1 bg-black">
-      <FlatList
-        inverted
-        data={[]}
-        keyExtractor={(_, index) => `placeholder-${index}`}
-        renderItem={() => null}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" colors={['#ffffff']} />
-        }
-        ListHeaderComponent={() => (
-          <ProfileIdentity
-            user={user}
-            loading={false}
-            isOwnProfile={false}
-            isFollowing={followStatus?.isFollowing}
-            followRequestStatus={requestStatus?.status || null}
-            onFollowToggle={handleFollowToggle}
-            onCancelRequest={handleCancelRequest}
-            onAvatarPress={() => router.push(`/user/${id}/avatar`)}
-            onFollowersPress={isPrivateAndNotFollowing ? undefined : () => router.push(`/user/${user.id}/followers`)}
-            onFollowingPress={isPrivateAndNotFollowing ? undefined : () => router.push(`/user/${user.id}/following`)}
-            followLoading={followLoading || isSending || isCanceling}
-          />
-        )}
-        ListFooterComponent={() => (
-          <View>
-            <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={false} />
-            <View className="min-h-screen">
-              {isPrivateAndNotFollowing ? (
-                renderPrivateContent()
-              // ) : postsLoading ? (
-              //   <View className="py-20">
-              //     <ActivityIndicator size="large" color="#8B5CF6" />
-              //   </View>
-              // ) : gridPosts.length > 0 ? (
-              //   <ProfileContentGrid
-              //     posts={gridPosts}
-              //     onPostPress={postId => router.push(`/post/${postId}`)}
-              //     columns={3}
-              //   />
-              ) : (
-                <EmptyProfileContent isOwnProfile={false} activeTab={activeTab} />
-              )}
+        <FlatList
+          inverted
+          data={[]}
+          keyExtractor={(_, index) => `placeholder-${index}`}
+          renderItem={() => null}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" colors={['#ffffff']} />
+          }
+          ListHeaderComponent={() => (
+            <ProfileIdentity
+              user={user}
+              loading={false}
+              isOwnProfile={false}
+              isFollowing={followStatus?.isFollowing}
+              followRequestStatus={requestStatus?.status || null}
+              onFollowToggle={handleFollowToggle}
+              onCancelRequest={handleCancelRequest}
+              onAvatarPress={() => router.push(`/user/${id}/avatar`)}
+              onFollowersPress={isPrivateAndNotFollowing ? undefined : () => router.push(`/user/${user.id}/followers`)}
+              onFollowingPress={isPrivateAndNotFollowing ? undefined : () => router.push(`/user/${user.id}/following`)}
+              followLoading={followLoading || isSending || isCanceling}
+            />
+          )}
+          ListFooterComponent={() => (
+            <View>
+              <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={false} />
+              <View className="min-h-screen">
+                {isPrivateAndNotFollowing ? (
+                  renderPrivateContent()
+                ) : (
+                  // ) : memoriesLoading ? (
+                  //   <View className="py-20">
+                  //     <ActivityIndicator size="large" color="#8B5CF6" />
+                  //   </View>
+                  // ) : gridMemories.length > 0 ? (
+                  //   <ProfileContentGrid
+                  //     memories={gridMemories}
+                  //     onPostPress={postId => router.push(`/post/${postId}`)}
+                  //     columns={3}
+                  //   />
+                  <EmptyProfileContent isOwnProfile={false} activeTab={activeTab} />
+                )}
+              </View>
             </View>
-          </View>
-        )}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1 }}
-        onEndReached={() => {
-          // if (hasNextPage && !isFetchingNextPage && !isPrivateAndNotFollowing) {
-          //   fetchNextPage();
-          // }
-        }}
-        onEndReachedThreshold={0.5}
-      />
+          )}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1 }}
+          onEndReached={() => {
+            // if (hasNextPage && !isFetchingNextPage && !isPrivateAndNotFollowing) {
+            //   fetchNextPage();
+            // }
+          }}
+          onEndReachedThreshold={0.5}
+        />
       </View>
     </Spotlight>
   );

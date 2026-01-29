@@ -12,7 +12,7 @@ export interface UserProfileData {
   bio: string | null;
   followersCount: number;
   followingCount: number;
-  postsCount: number;
+  memoriesCount: number;
   ownershipsCount: number;
   internationalCount: number;
   localCount: number;
@@ -21,7 +21,7 @@ export interface UserProfileData {
   dob: string | null;
 }
 
-export interface UserPost {
+export interface UserMemories {
   id: string;
   caption: string | null;
   mediaUrl: string | null;
@@ -109,7 +109,7 @@ export async function getUserProfile(userId: string) {
   try {
     const { data, error } = await supabase
       .from('User')
-      .select('id, username, name, avatarUrl, bio, isPrivate, followersCount, followingCount, postsCount, createdAt')
+      .select('id, username, name, avatarUrl, bio, isPrivate, followersCount, followingCount, memoriesCount, createdAt')
       .eq('id', userId)
       .single();
 
@@ -132,11 +132,11 @@ export async function getUserProfileByUsername(username: string) {
   }
 }
 
-// Fetch user's posts
-export async function getUserPosts(userId: string, limit = 20, offset = 0) {
+// Fetch user's memories
+export async function getUsersMemories(userId: string, limit = 20, offset = 0) {
   try {
     const { data, error } = await supabase
-      .from('Post')
+      .from('Memories')
       .select(
         `
         id,
@@ -159,7 +159,7 @@ export async function getUserPosts(userId: string, limit = 20, offset = 0) {
     if (error) throw error;
     return { data, error: null };
   } catch (err: any) {
-    return { data: null, error: err.message || 'Failed to fetch posts' };
+    return { data: null, error: err.message || 'Failed to fetch memories' };
   }
 }
 

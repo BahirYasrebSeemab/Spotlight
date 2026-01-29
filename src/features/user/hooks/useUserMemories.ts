@@ -2,14 +2,14 @@
 // src/features/profile/hooks/useUserPosts.ts
 // ========================================
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { getUserPosts } from '@/src/features/user/services/user.services';
+import { getUsersMemories } from '@/src/features/user/services/user.services';
 
-export function useUserPosts(userId: string | undefined, limit = 20) {
+export function useUserMemories(userId: string | undefined, limit = 20) {
   return useInfiniteQuery({
-    queryKey: ['user-posts', userId],
+    queryKey: ['user-memories', userId],
     queryFn: async ({ pageParam }) => {
       if (!userId) throw new Error('User ID is required');
-      const { data, error } = await getUserPosts(userId, limit, pageParam as number);
+      const { data, error } = await getUsersMemories(userId, limit, pageParam as number);
       if (error) throw new Error(error);
       return data || [];
     },

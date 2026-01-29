@@ -12,7 +12,7 @@ import { ProfileTabBar } from '@/src/features/user/components/ProfileTabBar';
 import { ProfileContentGrid } from '@/src/features/user/components/ProfileContentGrid';
 import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
 import { useUserProfile } from '@/src/features/user/hooks/useUserProfile';
-import { useUserPosts } from '@/src/features/user/hooks/useUserPosts';
+import { useUserMemories } from '@/src/features/user/hooks/useUserMemories';
 import { Spotlight } from '@/src/shared/components/Spotlight';
 
 export default function ProfileScreen() {
@@ -25,15 +25,15 @@ export default function ProfileScreen() {
   // Fetch full profile data with React Query
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useUserProfile(authUser?.id);
 
-  // Fetch user posts
+  // Fetch user memories with React Query
   const {
-    data: postsData,
-    isLoading: postsLoading,
-    refetch: refetchPosts,
+    data: memoriesData,
+    isLoading: memoriesLoading,
+    refetch: refetchMemories,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useUserPosts(authUser?.id);
+  } = useUserMemories(authUser?.id);
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -51,7 +51,7 @@ export default function ProfileScreen() {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      await Promise.all([refetchProfile(), refetchPosts()]);
+      await Promise.all([refetchProfile(), refetchMemories()]);
     } catch (error) {
       console.error('Error refreshing:', error);
     } finally {
@@ -70,22 +70,22 @@ export default function ProfileScreen() {
     );
   }
 
-  // Flatten posts from infinite query
-  const posts = postsData?.pages.flatMap(page => page) || [];
+  // Flatten memories from infinite query
+  const memories = memoriesData?.pages.flatMap(page => page) || [];
 
-  // Filter posts based on active tab
-  const filteredPosts = posts.filter((post: any) => {
+  // Filter memories based on active tab
+  const filteredMemories = memories.filter((memory: any) => {
     if (activeTab === 'all') return true;
-    if (activeTab === 'photos') return post.mediaUrl && !post.mediaUrl.includes('.mp4');
-    if (activeTab === 'videos') return post.mediaUrl && post.mediaUrl.includes('.mp4');
+    if (activeTab === 'photos') return memory.mediaUrl && !memory.mediaUrl.includes('.mp4');
+    if (activeTab === 'videos') return memory.mediaUrl && memory.mediaUrl.includes('.mp4');
     return true;
   });
 
-  // Map posts to grid format
-  const gridPosts = filteredPosts.map((post: any) => ({
-    id: post.id,
-    imageUrl: post.mediaUrl || '',
-    type: post.mediaUrl?.includes('.mp4') ? ('video' as const) : ('photo' as const),
+  // Map memories to grid format
+  const gridMemories = filteredMemories.map((memory: any) => ({
+    id: memory.id,
+    imageUrl: memory.mediaUrl || '',
+    type: memory.mediaUrl?.includes('.mp4') ? ('video' as const) : ('photo' as const),
   }));
 
   return (
@@ -116,13 +116,13 @@ export default function ProfileScreen() {
           <View>
             <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={true} />
             <View className="min-h-screen">
-              {postsLoading ? (
+              {memoriesLoading ? (
                 <View className="py-20">
                   <ActivityIndicator size="large" color="#ffffff" />
                 </View>
-              ) : gridPosts.length > 0 ? (
+              ) : gridMemories.length > 0 ? (
                 <ProfileContentGrid
-                  posts={gridPosts}
+                  posts={gridMemories}
                   onPostPress={postId => router.push(`/post/${postId}`)}
                   columns={3}
                 />
