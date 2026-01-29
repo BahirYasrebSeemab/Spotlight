@@ -4,8 +4,8 @@ import { useAppDispatch } from '@/src/shared/hooks/redux';
 import { updateUser } from '@/src/features/user/services/user.services';
 import { uploadAvatarToSupabase } from '@/src/features/user/services/user.services';
 import { useValidation } from '@/src/shared/hooks/validation';
-import { updateUserLocal } from '../slices/userSlice';
 import { useRouter } from 'expo-router';
+import { pickAvatar } from '@/src/shared/helpers/helpers';
 
 export function useEditProfile(userId: string, defaultValues: any) {
   const [name, setName] = useState(defaultValues.name || '');
@@ -14,6 +14,7 @@ export function useEditProfile(userId: string, defaultValues: any) {
   const [avatarUrl, setAvatarUrl] = useState(defaultValues.avatarUrl || '');
   const [avatarFile, setAvatarFile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [privacy, setPrivacy] = useState<'public' | 'private'>(defaultValues.privacy || 'public');
 
   const { validateUsername, error, setError } = useValidation();
   const dispatch = useAppDispatch();
@@ -66,20 +67,6 @@ export function useEditProfile(userId: string, defaultValues: any) {
 
       const { data, error: updateErr } = await updateUser(userId, payload);
       if (updateErr) throw updateErr;
-
-      dispatch(
-        updateUserLocal({
-          id: data.id,
-          email: data.email,
-          username: data.username,
-          name: data.name,
-          avatarUrl: data.avatarUrl,
-          bio: data.bio,
-          createdAt: data.createdAt,
-          updatedAt: data.updatedAt,
-        }),
-      );
-
       router.back();
       setLoading(false);
       return true;

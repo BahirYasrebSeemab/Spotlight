@@ -60,6 +60,12 @@ export default function ProfileLayout() {
         }}
       />
       <Stack.Screen
+        name="account-privacy"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
         name="danger"
         options={{
           title: 'Account Management',

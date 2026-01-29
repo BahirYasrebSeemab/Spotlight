@@ -28,6 +28,7 @@ export interface UserProfile {
   avatarUrl?: string;
   createdAt?: string;
   updatedAt?: string;
+  isPrivate?: boolean;
 }
 
 export interface UpdateUserPayload {
@@ -35,6 +36,7 @@ export interface UpdateUserPayload {
   name?: string;
   bio?: string;
   avatarUrl?: string;
+  isPrivate?: boolean;
 }
 
 export interface OnboardingData {
