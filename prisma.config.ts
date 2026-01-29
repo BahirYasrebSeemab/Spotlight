@@ -6,10 +6,7 @@ export default defineConfig({
   migrations: {
     path: 'prisma/migrations',
   },
-  engine: 'classic',
   datasource: {
-    adapter: 'postgresql',
     url: env('DIRECT_URL'),
-  },
+  }
 });
-
