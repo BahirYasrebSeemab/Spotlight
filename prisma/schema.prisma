@@ -21,7 +21,7 @@ model User {
   localCount               Int                @default(0)
   name                     String?
   ownershipsCount          Int                @default(0)
-  postsCount               Int                @default(0)
+  memoriesCount            Int                @default(0)
   tailoredCount            Int                @default(0)
   updatedAt                DateTime           @default(now()) @updatedAt
   dob                      DateTime?          @default(dbgenerated("'1970-01-01 00:00:00'::timestamp without time zone"))
@@ -41,8 +41,8 @@ model User {
   matches                  Match[]
   memories                 Memory[]
   ownerships               Ownership[]
-  posts                    Post[]
   receivedTransfers        OwnershipTransfer[] @relation("TransferReceiver")
+  comments                 Comment[]
 
   @@index([email])
   @@index([username])
@@ -266,7 +266,6 @@ model Ownership {
   
   closetItems        ClosetItem[]
   matchItems         MatchItem[]
-  postItems          PostItem[]
   memoryItems        MemoryItem[]
 
   @@unique([ownerId, prototypeId, serialNumber])
@@ -311,28 +310,37 @@ model OwnershipTransfer {
   @@index([status])
 }
 
-// NEW: Memories (photos/videos attached to ownerships)
+// Memories - Main social content (replaces Posts)
 model Memory {
-  id          String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  userId      String       @db.Uuid
-  title       String?
-  description String?
-  mediaUrl    String       // Photo or video URL
-  mediaType   String       // "photo" or "video"
+  id           String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId       String       @db.Uuid
+  
+  // Content
+  title        String?
+  caption      String?      // Main description/caption
+  mediaUrl     String       // Photo or video URL
+  mediaType    String       // "photo" or "video"
   thumbnailUrl String?
   
   // Date/location
-  takenAt     DateTime?    // When photo/video was taken
-  location    String?      // Optional location
+  takenAt      DateTime?    // When photo/video was taken
+  location     String?      // Optional location
   
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now()) @updatedAt
+  // Social engagement
+  likesCount   Int          @default(0)
+  commentsCount Int         @default(0)
   
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items       MemoryItem[] // Link to ownerships (can be multiple)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @default(now()) @updatedAt
+  
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items        MemoryItem[] // Link to ownerships (outfit items)
+  likes        Like[]       // Who liked this memory
+  comments     Comment[]    // Comments on this memory
 
   @@index([userId])
   @@index([createdAt])
+  @@index([mediaType])
 }
 
 // NEW: Link memories to ownerships (many-to-many)
@@ -377,13 +385,13 @@ model ClosetItem {
 model Like {
   createdAt DateTime @default(now())
   id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  postId    String   @db.Uuid
+  memoryId  String   @db.Uuid
   userId    String   @db.Uuid
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  memory    Memory   @relation(fields: [memoryId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([postId, userId])
-  @@index([postId])
+  @@unique([memoryId, userId])
+  @@index([memoryId])
   @@index([userId])
 }
 
@@ -391,13 +399,13 @@ model Comment {
   content   String
   createdAt DateTime @default(now())
   id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  postId    String   @db.Uuid
+  memoryId  String   @db.Uuid
   userId    String   @db.Uuid
   updatedAt DateTime @default(now()) @updatedAt
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  memory    Memory   @relation(fields: [memoryId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([postId])
+  @@index([memoryId])
   @@index([userId])
 }
 
