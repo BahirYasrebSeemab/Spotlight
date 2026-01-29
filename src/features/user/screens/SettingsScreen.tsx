@@ -40,7 +40,7 @@ export default function SettingsScreen() {
       <Row label="Delete Account" danger onPress={() => setDeleteModalVisible(true)} />
 
       <Row label="Logout" danger onPress={handleLogout} />
-
+      <Row label="Account Privacy" onPress={() => router.navigate('(tabs)/profile/account-privacy')} />
       {/* BlurConfirmModal */}
       <BlurConfirmModal
         visible={deleteModalVisible}
