@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { TextInputProps } from 'react-native';
 
 export interface InputFieldProps extends TextInputProps {
-  label: string;
+  label?: string;
   error?: string;
   password?: boolean;
   value?: string;
@@ -49,9 +49,9 @@ export const InputField = ({ label, error, password, value, ...props }: InputFie
 
   return (
     <View className="mb-5 relative">
-      <Animated.Text className="z-10" style={labelStyle}>
+      {label && (<Animated.Text className="z-10" style={labelStyle}>
         {label}
-      </Animated.Text>
+      </Animated.Text>)}
 
       <TextInput
         value={value}
