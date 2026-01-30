@@ -5,7 +5,7 @@ import { View, Text, TouchableOpacity, Image, Alert, ActivityIndicator } from 'r
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { InputField } from '@/src/shared/components/InputField';
 import { useAppSelector } from '@/src/shared/hooks/redux';
-import { useUserProfile } from '@/src/features/user/hooks/useUserProfile';
+import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
 import { useEditProfile } from '@/src/features/user/hooks/useEditUser';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -44,7 +44,7 @@ export default function EditProfileScreen() {
   };
 
   const handleSave = async () => {
-    const {publicUrl} = await uploadAvatar(profile.id, avatarUrl);
+    const { publicUrl } = await uploadAvatar(profile.id, avatarUrl);
 
     const success = await submit({
       userId: profile.id,
@@ -52,7 +52,7 @@ export default function EditProfileScreen() {
         name,
         username,
         bio,
-        avatarUrl,
+        avatarUrl: publicUrl || profile.avatarUrl,
       },
     });
     if (success) {
@@ -77,7 +77,7 @@ export default function EditProfileScreen() {
             <Image source={{ uri: avatarUrl }} className="w-32 h-32 rounded-full bg-gray-300" />
           ) : (
             <View className="w-32 h-32 rounded-full bg-purple-500 items-center justify-center">
-              <Text className="text-white text-5xl font-bold">{profile.name?.[0] || profile.username?.[0] || '?'}</Text>
+              <Text className="text-white text-5xl font-bold">{profile.name || profile.username || '?'}</Text>
             </View>
           )}
           <Text className="text-center text-blue-500 dark:text-blue-400 mt-2">Change Avatar</Text>

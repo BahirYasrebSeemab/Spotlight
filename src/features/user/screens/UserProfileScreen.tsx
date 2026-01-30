@@ -11,7 +11,7 @@ import { Share, MoreVertical, Lock } from 'lucide-react-native';
 import { Spotlight } from '@/src/shared/components/Spotlight';
 
 // Import ENHANCED hooks
-import { useUserProfile } from '@/src/features/user/hooks/useUserProfile';
+import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
 import { useUserMemories } from '@/src/features/user/hooks/useUserMemories';
 import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
 import { useFollowUser } from '@/src/features/user/hooks/useFollowUser';

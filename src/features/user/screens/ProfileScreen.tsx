@@ -11,7 +11,7 @@ import { ProfileIdentity } from '@/src/features/user/components/ProfileIdentity'
 import { ProfileTabBar } from '@/src/features/user/components/ProfileTabBar';
 import { ProfileContentGrid } from '@/src/features/user/components/ProfileContentGrid';
 import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
-import { useUserProfile } from '@/src/features/user/hooks/useUserProfile';
+import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
 import { useUserMemories } from '@/src/features/user/hooks/useUserMemories';
 import { Spotlight } from '@/src/shared/components/Spotlight';
 
@@ -91,56 +91,56 @@ export default function ProfileScreen() {
   return (
     <Spotlight intensity={0.2}>
       <View className="flex-1 bg-black">
-      <FlatList
-        inverted
-        data={[]}
-        keyExtractor={(_, index) => `placeholder-${index}`}
-        renderItem={() => null}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" colors={['#ffffff']} />
-        }
-        ListHeaderComponent={() => (
-          <ProfileIdentity
-            user={profile}
-            loading={false}
-            isOwnProfile={true}
-            onEditProfile={() => router.push('/(tabs)/profile/edit-profile')}
-            onAvatarPress={() => {
-              console.log('Avatar pressed');
-            }}
-            onFollowersPress={() => router.push(`/user/${profile.id}/followers`)}
-            onFollowingPress={() => router.push(`/user/${profile.id}/following`)}
-          />
-        )}
-        ListFooterComponent={() => (
-          <View>
-            <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={true} />
-            <View className="min-h-screen">
-              {memoriesLoading ? (
-                <View className="py-20">
-                  <ActivityIndicator size="large" color="#ffffff" />
-                </View>
-              ) : gridMemories.length > 0 ? (
-                <ProfileContentGrid
-                  posts={gridMemories}
-                  onPostPress={postId => router.push(`/post/${postId}`)}
-                  columns={3}
-                />
-              ) : (
-                <EmptyProfileContent isOwnProfile={true} activeTab={activeTab} />
-              )}
-            </View>
-          </View>
-        )}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1 }}
-        onEndReached={() => {
-          if (hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
+        <FlatList
+          inverted
+          data={[]}
+          keyExtractor={(_, index) => `placeholder-${index}`}
+          renderItem={() => null}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" colors={['#ffffff']} />
           }
-        }}
-        onEndReachedThreshold={0.5}
-      />
+          ListHeaderComponent={() => (
+            <ProfileIdentity
+              user={profile}
+              loading={false}
+              isOwnProfile={true}
+              onEditProfile={() => router.push('/(tabs)/profile/edit-profile')}
+              onAvatarPress={() => {
+                console.log('Avatar pressed');
+              }}
+              onFollowersPress={() => router.push(`/user/${profile.id}/followers`)}
+              onFollowingPress={() => router.push(`/user/${profile.id}/following`)}
+            />
+          )}
+          ListFooterComponent={() => (
+            <View>
+              <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={true} />
+              <View className="min-h-screen">
+                {memoriesLoading ? (
+                  <View className="py-20">
+                    <ActivityIndicator size="large" color="#ffffff" />
+                  </View>
+                ) : gridMemories.length > 0 ? (
+                  <ProfileContentGrid
+                    posts={gridMemories}
+                    onPostPress={postId => router.push(`/post/${postId}`)}
+                    columns={3}
+                  />
+                ) : (
+                  <EmptyProfileContent isOwnProfile={true} activeTab={activeTab} />
+                )}
+              </View>
+            </View>
+          )}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1 }}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+        />
       </View>
     </Spotlight>
   );
