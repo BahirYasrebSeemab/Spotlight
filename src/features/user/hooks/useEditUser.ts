@@ -1,24 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { useAppDispatch } from '@/src/shared/hooks/redux';
-import { updateUser } from '@/src/features/user/services/user.services';
-import { uploadAvatarToSupabase } from '@/src/features/user/services/user.services';
 import { useValidation } from '@/src/shared/hooks/validation';
-import { useRouter } from 'expo-router';
-import { pickAvatar } from '@/src/shared/helpers/helpers';
+import { useUpdateUser } from '@/src/shared/hooks/useUpdateUser';
 
-export function useEditProfile(userId: string, defaultValues: any) {
-  const [name, setName] = useState(defaultValues.name || '');
-  const [username, setUsername] = useState(defaultValues.username || '');
-  const [bio, setBio] = useState(defaultValues.bio || '');
-  const [avatarUrl, setAvatarUrl] = useState(defaultValues.avatarUrl || '');
-  const [avatarFile, setAvatarFile] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [privacy, setPrivacy] = useState<'public' | 'private'>(defaultValues.privacy || 'public');
+type Defaults = {
+  name: string;
+  username: string;
+  bio: string;
+  avatarUrl: string;
+};
+
+export function useEditProfile(userId: string, defaults: Defaults) {
+  const [name, setName] = useState(defaults.name);
+  const [username, setUsername] = useState(defaults.username);
+  const [bio, setBio] = useState(defaults.bio);
+  const [avatarUrl, setAvatarUrl] = useState(defaults.avatarUrl);
+  const [avatarFile, setAvatarFile] = useState<string | null>(null);
 
   const { validateUsername, error, setError } = useValidation();
-  const dispatch = useAppDispatch();
-  const router = useRouter();
+  const { uploadAvatar, updateProfile, isUpdating, isUploading } = useUpdateUser();
 
   const pickAvatar = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -29,50 +29,35 @@ export function useEditProfile(userId: string, defaultValues: any) {
     });
 
     if (!result.canceled) {
-      const file = result.assets[0];
-      setAvatarUrl(file.uri);
-      setAvatarFile(file);
-      return file;
+      setAvatarUrl(result.assets[0].uri);
+      setAvatarFile(result.assets[0].uri);
     }
   };
 
   const submit = async () => {
-    setLoading(true);
     setError(null);
 
-    if (!validateUsername(username)) {
-      setLoading(false);
-      return false;
-    }
+    if (!validateUsername(username)) return false;
 
     try {
       let finalAvatar = avatarUrl;
 
-      // Upload avatar only if it's a new local image
-      if (avatarFile && avatarUrl.startsWith('file://')) {
-        try {
-          finalAvatar = await uploadAvatarToSupabase(userId, avatarUrl);
-        } catch (err) {
-          setError('Failed to upload avatar');
-          setLoading(false);
-          return false;
-        }
+      if (avatarFile && avatarFile.startsWith('file://')) {
+        finalAvatar = await uploadAvatar({ userId, uri: avatarFile });
       }
 
       const payload: any = {};
-      if (name !== defaultValues.name) payload.name = name;
-      if (username !== defaultValues.username) payload.username = username;
-      if (bio !== defaultValues.bio) payload.bio = bio;
-      if (finalAvatar !== defaultValues.avatarUrl) payload.avatarUrl = finalAvatar;
+      if (name !== defaults.name) payload.name = name;
+      if (username !== defaults.username) payload.username = username;
+      if (bio !== defaults.bio) payload.bio = bio;
+      if (finalAvatar !== defaults.avatarUrl) payload.avatarUrl = finalAvatar;
 
-      const { data, error: updateErr } = await updateUser(userId, payload);
-      if (updateErr) throw updateErr;
-      router.back();
-      setLoading(false);
+      if (Object.keys(payload).length === 0) return true;
+
+      await updateProfile({ userId, payload });
       return true;
-    } catch (err: any) {
-      setError(err.message || 'Failed to update profile');
-      setLoading(false);
+    } catch (e: any) {
+      setError(e.message || 'Failed to update profile');
       return false;
     }
   };
@@ -87,7 +72,7 @@ export function useEditProfile(userId: string, defaultValues: any) {
     avatarUrl,
     pickAvatar,
     submit,
-    loading,
+    loading: isUpdating || isUploading,
     error,
   };
 }

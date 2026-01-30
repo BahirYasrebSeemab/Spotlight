@@ -1,35 +1,44 @@
-import { View, Text, TouchableOpacity } from 'react-native';
-import { ToggleLeft } from 'lucide-react-native';
-import { useUpdateUser } from '../hooks/useUpdateUser';
+import { View, Text, Switch, ActivityIndicator } from 'react-native';
+import { useUpdateUser } from '@/src/shared/hooks/useUpdateUser';
 import { useAppSelector } from '@/src/shared/hooks/redux';
-import { useUserProfile } from '../../../shared/hooks/useUserProfile';
+import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
+import { BWToggle } from '@/src/shared/components/BWToggle';
 
 export default function AccountPrivacyScreen() {
-  const { submit } = useUpdateUser();
   const userId = useAppSelector(state => state.auth.user?.id);
-  const isPrivate = useUserProfile(userId).data?.isPrivate;
 
-  const handleTogglePrivacy = async () => {
+  const { data: profile, isLoading } = useUserProfile(userId || '');
+  const { updateProfile, isUpdating } = useUpdateUser();
+
+  if (!profile || isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
+  const isPrivate = profile.isPrivate;
+
+  const togglePrivacy = async () => {
     if (!userId) return;
-    await submit({ userId, payload: { isPrivate: !isPrivate } });
+    await updateProfile({
+      userId,
+      payload: { isPrivate: !isPrivate },
+    });
   };
 
   return (
-    <View className="flex-1 bg-white dark:bg-black p-6">
-      <TouchableOpacity onPress={handleTogglePrivacy}>
-        {isPrivate ? <ToggleLeft size={24} color="black" /> : <ToggleLeft size={24} color="black" />}
-      </TouchableOpacity>
-      {isPrivate ? (
-        <Text className="text-base text-black dark:text-white mb-4">
-          Your account is currently Private. Only approved followers can see your memories.
-        </Text>
-      ) : (
-        <Text className="text-base text-black dark:text-white mb-4">
-          Your account is currently Public. Anyone can see your memories.
-        </Text>
-      )}
-      <Text className="text-xl font-bold text-black dark:text-white mb-4">Account Privacy Settings</Text>
-      {/* Add your privacy settings options here */}
+    <View className="flex-1 bg-white dark:bg-black px-6 py-8">
+      <View className="flex-row items-center justify-between mb-6">
+        <Text className="text-lg font-semibold text-black dark:text-white">Private Account</Text>
+
+        <BWToggle value={isPrivate} onToggle={togglePrivacy} disabled={isUpdating} />
+      </View>
+
+      <Text className="text-sm text-gray-600 dark:text-gray-400">
+        {isPrivate ? 'Only approved followers can see your memories.' : 'Anyone can see your memories.'}
+      </Text>
     </View>
   );
 }
