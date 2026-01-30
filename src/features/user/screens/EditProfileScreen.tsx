@@ -1,3 +1,4 @@
+
 // ========================================
 // app/(tabs)/profile/edit-profile.tsx - FIXED Edit Profile
 // ========================================
@@ -8,9 +9,6 @@ import { useAppSelector } from '@/src/shared/hooks/redux';
 import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
 import { useEditProfile } from '@/src/features/user/hooks/useEditUser';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { pickAvatar } from '@/src/shared/helpers/helpers';
-import { useUpdateUser } from '../hooks/useUpdateUser';
 
 export default function EditProfileScreen() {
   const authUser = useAppSelector(state => state.auth.user);
@@ -19,13 +17,14 @@ export default function EditProfileScreen() {
   // Fetch full profile data
   const { data: profile, isLoading: profileLoading } = useUserProfile(authUser?.id);
 
-  const [avatarUrl, setAvatarUrl] = useState(profile?.avatarUrl || '');
-  const [avatarFile, setAvatarFile] = useState<any>(null);
-  const [name, setName] = useState(profile?.name || '');
-  const [username, setUsername] = useState(profile?.username || '');
-  const [bio, setBio] = useState(profile?.bio || '');
+  const { name, setName, username, setUsername, bio, setBio, avatarUrl, pickAvatar, submit, loading, error } =
+    useEditProfile(authUser?.id || '', {
+      name: profile?.name || '',
+      username: profile?.username || '',
+      avatarUrl: profile?.avatarUrl || '',
+      bio: profile?.bio || '',
+    });
 
-  const { submit, isUploading, isPending, uploadAvatar, error } = useUpdateUser();
   // Loading state
   if (profileLoading || !profile) {
     return (
@@ -36,25 +35,11 @@ export default function EditProfileScreen() {
   }
 
   const handleAvatarPress = async () => {
-    const file = await pickAvatar();
-    if (file) {
-      setAvatarUrl(file.uri);
-      setAvatarFile(file);
-    }
+    await pickAvatar();
   };
 
   const handleSave = async () => {
-    const { publicUrl } = await uploadAvatar(profile.id, avatarUrl);
-
-    const success = await submit({
-      userId: profile.id,
-      payload: {
-        name,
-        username,
-        bio,
-        avatarUrl: publicUrl || profile.avatarUrl,
-      },
-    });
+    const success = await submit();
     if (success) {
       Alert.alert('Success', 'Profile updated successfully!', [{ text: 'OK', onPress: () => router.back() }]);
     }
@@ -72,12 +57,12 @@ export default function EditProfileScreen() {
         <Text className="text-3xl font-extrabold text-center text-black dark:text-white mb-10">Edit Profile</Text>
 
         {/* Avatar */}
-        <TouchableOpacity onPress={handleAvatarPress} disabled={isUploading && isPending} className="mb-8 self-center">
+        <TouchableOpacity onPress={handleAvatarPress} disabled={loading} className="mb-8 self-center">
           {avatarUrl ? (
             <Image source={{ uri: avatarUrl }} className="w-32 h-32 rounded-full bg-gray-300" />
           ) : (
             <View className="w-32 h-32 rounded-full bg-purple-500 items-center justify-center">
-              <Text className="text-white text-5xl font-bold">{profile.name || profile.username || '?'}</Text>
+              <Text className="text-white text-5xl font-bold">{profile.name?.[0] || profile.username?.[0] || '?'}</Text>
             </View>
           )}
           <Text className="text-center text-blue-500 dark:text-blue-400 mt-2">Change Avatar</Text>
@@ -85,7 +70,7 @@ export default function EditProfileScreen() {
 
         <View className="w-full max-w-md">
           {/* Name */}
-          <InputField label="Full Name" value={name} onChangeText={setName} editable={!isUploading && isPending} />
+          <InputField label="Full Name" value={name} onChangeText={setName} editable={!loading} />
 
           {/* Username */}
           <InputField
@@ -93,7 +78,7 @@ export default function EditProfileScreen() {
             autoCapitalize="none"
             value={username}
             onChangeText={setUsername}
-            editable={!isUploading && !isPending}
+            editable={!loading}
           />
 
           {/* Bio */}
@@ -103,23 +88,23 @@ export default function EditProfileScreen() {
             value={bio}
             onChangeText={setBio}
             style={{ height: 100, textAlignVertical: 'top' }}
-            editable={!isUploading && isPending}
+            editable={!loading}
           />
 
           {/* Error message */}
           {error && (
             <View className="bg-red-50 dark:bg-red-900/20 p-3 rounded-xl mb-4">
-              <Text className="text-red-600 dark:text-red-400 text-center">{error.message}</Text>
+              <Text className="text-red-600 dark:text-red-400 text-center">{error}</Text>
             </View>
           )}
 
           {/* Save button */}
           <TouchableOpacity
             onPress={handleSave}
-            disabled={isUploading && isPending}
-            className={`w-full py-3 rounded-xl mt-6 ${isUploading && isPending ? 'bg-gray-400' : 'bg-blue-500 dark:bg-blue-600'}`}
+            disabled={loading}
+            className={`w-full py-3 rounded-xl mt-6 ${loading ? 'bg-gray-400' : 'bg-blue-500 dark:bg-blue-600'}`}
           >
-            {isUploading && isPending ? (
+            {loading ? (
               <ActivityIndicator color="white" />
             ) : (
               <Text className="text-white text-center font-semibold text-base">Save Changes</Text>
