@@ -4,7 +4,7 @@
 import { View, FlatList, Text, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useAppSelector } from '@/src/shared/hooks/redux';
-import { useUserProfile } from '@/src/features/user/hooks/useUserProfile';
+import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
 import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
 import { useUserFollowing } from '@/src/features/user/hooks/useUserFollowing';
 import { FollowerItem } from '@/src/features/user/components/FollowerItem';

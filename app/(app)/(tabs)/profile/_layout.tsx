@@ -3,7 +3,7 @@
 // ========================================
 import { Stack, useRouter } from 'expo-router';
 import { useAppSelector } from '@/src/shared/hooks/redux';
-import { useUserProfile } from '@/src/features/user/hooks/useUserProfile';
+import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
 import { Pressable, ActivityIndicator, View } from 'react-native';
 import { Settings } from 'lucide-react-native';
 
@@ -70,7 +70,7 @@ export default function ProfileLayout() {
         options={{
           title: 'Account Management',
           headerStyle: { backgroundColor: 'transparent' },
-          headerShown: false
+          headerShown: false,
         }}
       />
     </Stack>
