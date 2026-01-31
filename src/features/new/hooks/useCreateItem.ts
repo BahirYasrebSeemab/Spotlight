@@ -4,12 +4,14 @@
 // ========================================
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createItemOwnership, checkProcessingStatus } from '../newServices/item.services';
+import { createItemOwnership, checkProcessingStatus } from '../services/item.services';
 import { CreateItemPayload, Ownership } from '../types/item.types';
 import { useAppSelector } from '@/src/shared/hooks/redux';
 
 export function useCreateItem() {
-  const [processingStatus, setProcessingStatus] = useState<'pending' | 'processing' | 'completed' | 'failed'>('pending');
+  const [processingStatus, setProcessingStatus] = useState<'pending' | 'processing' | 'completed' | 'failed'>(
+    'pending',
+  );
   const queryClient = useQueryClient();
   const authUser = useAppSelector(state => state.auth.user);
 
@@ -72,12 +74,15 @@ export function useCreateItem() {
     setTimeout(poll, pollInterval);
   };
 
-  const createItem = (payload: CreateItemPayload, options?: { onSuccess?: () => void; onError?: (error: Error) => void }) => {
+  const createItem = (
+    payload: CreateItemPayload,
+    options?: { onSuccess?: () => void; onError?: (error: Error) => void },
+  ) => {
     createMutation.mutate(payload, {
       onSuccess: () => {
         options?.onSuccess?.();
       },
-      onError: (error) => {
+      onError: error => {
         options?.onError?.(error as Error);
       },
     });

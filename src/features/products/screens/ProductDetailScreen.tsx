@@ -1,33 +1,53 @@
-// app/product/[id]/index.tsx
-import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+// ========================================
+// src/features/products/screens/ProductDetailScreen.tsx
+// Product detail with "Add to Closet" button
+// ========================================
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeft, CheckCircle, Package, Plus } from 'lucide-react-native';
-import { useProductDetail } from '@/src/features/products/hooks/useProductDetails';
+import { ArrowLeft, Plus } from 'lucide-react-native';
+
 import { Spotlight } from '@/src/shared/components/Spotlight';
-import type { ProductType } from '@/src/features/products/types/product.types';
+import { PrimaryButton } from '@/src/shared/components/PrimaryButton';
+import { useProductDetails } from '../hooks/useProductDetails';
 
 export default function ProductDetailScreen() {
+  const params = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { id, type } = useLocalSearchParams<{ id: string; type: ProductType }>();
 
-  const { data: product, isLoading, error } = useProductDetail(id, type);
+  const { data: product, isLoading } = useProductDetails(params.id);
+
+  const handleAddToCloset = () => {
+    if (!product) return;
+
+    // Determine product type
+    const productType = product.prototypeId ? 'prototype' : 'community';
+
+    // Navigate to ownership creation
+    router.push({
+      pathname: '/ownership/create',
+      params: {
+        productId: params.id,
+        type: productType,
+      },
+    });
+  };
 
   if (isLoading) {
     return (
       <Spotlight intensity={0.25}>
         <View className="flex-1 items-center justify-center bg-black">
-          <ActivityIndicator size="large" color="#FFF" />
+          <ActivityIndicator size="large" color="#ffffff" />
         </View>
       </Spotlight>
     );
   }
 
-  if (error || !product) {
+  if (!product) {
     return (
       <Spotlight intensity={0.25}>
-        <View className="flex-1 items-center justify-center bg-black px-8">
-          <Text className="text-lg font-semibold text-white mb-2">Product not found</Text>
-          <TouchableOpacity onPress={() => router.back()} className="mt-4 bg-white px-6 py-3 rounded-xl">
+        <View className="flex-1 items-center justify-center bg-black px-6">
+          <Text className="text-white text-lg text-center mb-4">Product not found</Text>
+          <TouchableOpacity onPress={() => router.back()} className="bg-white px-6 py-3 rounded-xl">
             <Text className="text-black font-semibold">Go Back</Text>
           </TouchableOpacity>
         </View>
@@ -35,92 +55,137 @@ export default function ProductDetailScreen() {
     );
   }
 
-  const isVerified = product.type === 'PROTOTYPE';
+  const brandName = product.brand?.name || product.brandName || 'Unknown Brand';
+  const isVerified = !!product.verified;
+  const variants = product.variants || {};
 
   return (
     <Spotlight intensity={0.25}>
-      <ScrollView className="flex-1 bg-black">
+      <View className="flex-1 bg-black">
         {/* Header */}
-        <View className="flex-row items-center justify-between px-4 py-4 border-b border-gray-800">
-          <TouchableOpacity onPress={() => router.back()} className="p-2">
-            <ArrowLeft size={24} color="#FFF" />
+        <View className="px-5 pt-12 pb-4 flex-row items-center">
+          <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
+            <ArrowLeft size={28} color="#ffffff" />
           </TouchableOpacity>
-          <View className="flex-row items-center">
-            {isVerified ? (
-              <CheckCircle size={18} color="#FFF" fill="#FFF" />
-            ) : (
-              <View className="bg-gray-700 rounded-full p-1">
-                <Package size={12} color="white" />
-              </View>
-            )}
-            <Text className="ml-2 text-sm font-semibold text-gray-400">{isVerified ? 'Verified' : 'Community'}</Text>
-          </View>
+          <Text className="text-xl font-bold text-white ml-3">Product</Text>
         </View>
 
-        {/* Product Image */}
-        <View className="w-full aspect-square bg-gray-900">
-          <Image
-            source={{
-              uri: product.imageUrl || 'https://via.placeholder.com/400',
-            }}
-            className="w-full h-full"
-            resizeMode="contain"
-          />
-        </View>
-
-        {/* Product Info */}
-        <View className="p-6">
-          {/* Brand Name */}
-          <Text className="text-sm font-semibold text-gray-400 mb-1">{product.brandName}</Text>
-
-          {/* Product Name */}
-          <Text className="text-2xl font-bold text-white mb-3">{product.name}</Text>
-
-          {/* Price & Category */}
-          <View className="flex-row items-center mb-4">
-            {product.retailPrice && <Text className="text-xl font-bold text-white mr-4">${product.retailPrice}</Text>}
-            {product.category && (
-              <View className="bg-gray-900 px-3 py-1.5 rounded-full">
-                <Text className="text-sm text-gray-400">{product.category}</Text>
-              </View>
-            )}
+        <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 100 }}>
+          {/* Product Image */}
+          <View className="px-5 mb-6">
+            <Image
+              source={{ uri: product.imageUrl }}
+              className="w-full h-96 rounded-2xl bg-white/5"
+              resizeMode="cover"
+              defaultSource={require('@/assets/placeholder.png')}
+            />
           </View>
 
-          {/* SKU/UPC */}
-          {(product.sku || product.upc) && (
-            <View className="mb-4">
-              {product.sku && <Text className="text-sm text-gray-500">SKU: {product.sku}</Text>}
-              {product.upc && <Text className="text-sm text-gray-500">UPC: {product.upc}</Text>}
+          {/* Product Info */}
+          <View className="px-5">
+            {/* Brand Badge */}
+            <View className="flex-row items-center mb-2">
+              <View
+                className={`px-3 py-1 rounded-full ${
+                  isVerified ? 'bg-white' : 'bg-white/10'
+                }`}
+              >
+                <Text
+                  className={`text-xs font-semibold ${
+                    isVerified ? 'text-black' : 'text-white'
+                  }`}
+                >
+                  {isVerified ? '✓ Verified Brand' : 'Community Product'}
+                </Text>
+              </View>
             </View>
-          )}
 
-          {/* Description */}
-          {product.description && (
-            <View className="mb-6">
-              <Text className="text-base text-gray-300 leading-6">{product.description}</Text>
-            </View>
-          )}
-
-          {/* Ownership Count */}
-          <View className="mb-6">
-            <Text className="text-sm text-gray-500">
-              {product.ownershipCount} {product.ownershipCount === 1 ? 'person owns' : 'people own'} this
+            {/* Product Name */}
+            <Text className="text-white text-3xl font-extrabold mb-2">
+              {product.name}
             </Text>
-          </View>
 
-          {/* Add to Closet Button */}
-          <TouchableOpacity
-            onPress={() => {
-              router.push(`/ownership/create?productId=${product.id}&type=${product.type}`);
-            }}
-            className="bg-white rounded-xl py-4 flex-row items-center justify-center"
-            activeOpacity={0.8}
-          >
-            <Plus size={20} color="black" />
-            <Text className="ml-2 text-black font-bold text-base">Add to Closet</Text>
-          </TouchableOpacity>
+            {/* Brand Name */}
+            <Text className="text-gray-400 text-xl mb-6">{brandName}</Text>
+
+            {/* Description */}
+            {product.description && (
+              <View className="mb-6">
+                <Text className="text-white text-base leading-6">
+                  {product.description}
+                </Text>
+              </View>
+            )}
+
+            {/* Category */}
+            {product.category && (
+              <View className="mb-6">
+                <Text className="text-gray-400 text-sm mb-1">Category</Text>
+                <Text className="text-white text-base font-medium">
+                  {product.category}
+                </Text>
+              </View>
+            )}
+
+            {/* Variants */}
+            {(variants.sizes?.length > 0 || variants.colors?.length > 0) && (
+              <View className="mb-6">
+                <Text className="text-gray-400 text-sm mb-3">Available Variants</Text>
+
+                {variants.sizes?.length > 0 && (
+                  <View className="mb-3">
+                    <Text className="text-white text-sm mb-2 font-medium">Sizes</Text>
+                    <View className="flex-row flex-wrap gap-2">
+                      {variants.sizes.map((size: string) => (
+                        <View
+                          key={size}
+                          className="bg-white/10 px-3 py-1.5 rounded-lg border border-white/20"
+                        >
+                          <Text className="text-white text-sm">{size}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+
+                {variants.colors?.length > 0 && (
+                  <View>
+                    <Text className="text-white text-sm mb-2 font-medium">Colors</Text>
+                    <View className="flex-row flex-wrap gap-2">
+                      {variants.colors.map((color: string) => (
+                        <View
+                          key={color}
+                          className="bg-white/10 px-3 py-1.5 rounded-lg border border-white/20"
+                        >
+                          <Text className="text-white text-sm">{color}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* UPC */}
+            {product.upc && (
+              <View className="mb-6">
+                <Text className="text-gray-400 text-sm mb-1">UPC/Barcode</Text>
+                <Text className="text-white text-base font-mono">{product.upc}</Text>
+              </View>
+            )}
+          </View>
+        </ScrollView>
+
+        {/* Fixed Bottom Button */}
+        <View className="absolute bottom-0 left-0 right-0 bg-black/95 border-t border-white/10 px-5 py-4">
+          <PrimaryButton onPress={handleAddToCloset}>
+            <View className="flex-row items-center justify-center gap-2">
+              <Plus size={20} color="#000000" />
+              <Text className="text-black font-semibold text-base">Add to Closet</Text>
+            </View>
+          </PrimaryButton>
         </View>
-      </ScrollView>
+      </View>
     </Spotlight>
   );
 }
