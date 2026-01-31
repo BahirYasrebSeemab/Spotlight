@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getProductById } from '../services/product.services';
 import type { ProductType } from '../types/product.types';
 
-export function useProductDetail(productId: string, type: ProductType) {
+export function useProductDetails(productId: string, type: ProductType) {
   return useQuery({
     queryKey: ['product-detail', productId, type],
     queryFn: async () => {
