@@ -9,25 +9,23 @@ import { ArrowLeft, Plus } from 'lucide-react-native';
 import { Spotlight } from '@/src/shared/components/Spotlight';
 import { PrimaryButton } from '@/src/shared/components/PrimaryButton';
 import { useProductDetails } from '../hooks/useProductDetails';
+import { ProductType } from '../types/product.types';
 
 export default function ProductDetailScreen() {
-  const params = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id: string; type: ProductType }>();
   const router = useRouter();
 
-  const { data: product, isLoading } = useProductDetails(params.id);
+  const { data: product, isLoading } = useProductDetails(params.id, params.type);
 
   const handleAddToCloset = () => {
     if (!product) return;
-
-    // Determine product type
-    const productType = product.prototypeId ? 'prototype' : 'community';
 
     // Navigate to ownership creation
     router.push({
       pathname: '/ownership/create',
       params: {
         productId: params.id,
-        type: productType,
+        type: params.type,
       },
     });
   };
@@ -55,7 +53,7 @@ export default function ProductDetailScreen() {
     );
   }
 
-  const brandName = product.brand?.name || product.brandName || 'Unknown Brand';
+  const brandName = product.brandName || product.brandName || 'Unknown Brand';
   const isVerified = !!product.verified;
   const variants = product.variants || {};
 
@@ -74,10 +72,10 @@ export default function ProductDetailScreen() {
           {/* Product Image */}
           <View className="px-5 mb-6">
             <Image
-              source={{ uri: product.imageUrl }}
+              source={{ uri: product.imageUrl ?? undefined }}
               className="w-full h-96 rounded-2xl bg-white/5"
               resizeMode="cover"
-              defaultSource={require('@/assets/placeholder.png')}
+              defaultSource={require('@/assets/placeholder-spotlight.png')}
             />
           </View>
 
@@ -85,25 +83,15 @@ export default function ProductDetailScreen() {
           <View className="px-5">
             {/* Brand Badge */}
             <View className="flex-row items-center mb-2">
-              <View
-                className={`px-3 py-1 rounded-full ${
-                  isVerified ? 'bg-white' : 'bg-white/10'
-                }`}
-              >
-                <Text
-                  className={`text-xs font-semibold ${
-                    isVerified ? 'text-black' : 'text-white'
-                  }`}
-                >
+              <View className={`px-3 py-1 rounded-full ${isVerified ? 'bg-white' : 'bg-white/10'}`}>
+                <Text className={`text-xs font-semibold ${isVerified ? 'text-black' : 'text-white'}`}>
                   {isVerified ? '✓ Verified Brand' : 'Community Product'}
                 </Text>
               </View>
             </View>
 
             {/* Product Name */}
-            <Text className="text-white text-3xl font-extrabold mb-2">
-              {product.name}
-            </Text>
+            <Text className="text-white text-3xl font-extrabold mb-2">{product.name}</Text>
 
             {/* Brand Name */}
             <Text className="text-gray-400 text-xl mb-6">{brandName}</Text>
@@ -111,9 +99,7 @@ export default function ProductDetailScreen() {
             {/* Description */}
             {product.description && (
               <View className="mb-6">
-                <Text className="text-white text-base leading-6">
-                  {product.description}
-                </Text>
+                <Text className="text-white text-base leading-6">{product.description}</Text>
               </View>
             )}
 
@@ -121,9 +107,7 @@ export default function ProductDetailScreen() {
             {product.category && (
               <View className="mb-6">
                 <Text className="text-gray-400 text-sm mb-1">Category</Text>
-                <Text className="text-white text-base font-medium">
-                  {product.category}
-                </Text>
+                <Text className="text-white text-base font-medium">{product.category}</Text>
               </View>
             )}
 
@@ -137,10 +121,7 @@ export default function ProductDetailScreen() {
                     <Text className="text-white text-sm mb-2 font-medium">Sizes</Text>
                     <View className="flex-row flex-wrap gap-2">
                       {variants.sizes.map((size: string) => (
-                        <View
-                          key={size}
-                          className="bg-white/10 px-3 py-1.5 rounded-lg border border-white/20"
-                        >
+                        <View key={size} className="bg-white/10 px-3 py-1.5 rounded-lg border border-white/20">
                           <Text className="text-white text-sm">{size}</Text>
                         </View>
                       ))}
@@ -153,10 +134,7 @@ export default function ProductDetailScreen() {
                     <Text className="text-white text-sm mb-2 font-medium">Colors</Text>
                     <View className="flex-row flex-wrap gap-2">
                       {variants.colors.map((color: string) => (
-                        <View
-                          key={color}
-                          className="bg-white/10 px-3 py-1.5 rounded-lg border border-white/20"
-                        >
+                        <View key={color} className="bg-white/10 px-3 py-1.5 rounded-lg border border-white/20">
                           <Text className="text-white text-sm">{color}</Text>
                         </View>
                       ))}
@@ -178,12 +156,7 @@ export default function ProductDetailScreen() {
 
         {/* Fixed Bottom Button */}
         <View className="absolute bottom-0 left-0 right-0 bg-black/95 border-t border-white/10 px-5 py-4">
-          <PrimaryButton onPress={handleAddToCloset}>
-            <View className="flex-row items-center justify-center gap-2">
-              <Plus size={20} color="#000000" />
-              <Text className="text-black font-semibold text-base">Add to Closet</Text>
-            </View>
-          </PrimaryButton>
+          <PrimaryButton onPress={handleAddToCloset} title="Add to Closet" icon={<Plus size={20} color="#000000" />} />
         </View>
       </View>
     </Spotlight>

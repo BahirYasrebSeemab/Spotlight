@@ -19,7 +19,7 @@ import { CreateOwnershipPayload } from '@/src/features/ownerships/types/ownershi
 const CONDITIONS = ['new', 'like-new', 'good', 'fair', 'poor'] as const;
 
 export default function CreateOwnershipScreen() {
-  const params = useLocalSearchParams<{ productId: string; type: 'prototype' | 'community' }>();
+  const params = useLocalSearchParams<{ productId: string; type: 'PROTOTYPE' | 'COMMUNITY' }>();
   const router = useRouter();
 
   const { data: product, isLoading: loadingProduct } = useProductDetails(params.productId, params.type);
@@ -27,7 +27,7 @@ export default function CreateOwnershipScreen() {
 
   const [useOfficialImage, setUseOfficialImage] = useState(true);
   const [customImage, setCustomImage] = useState<string | null>(null);
-  const [condition, setCondition] = useState<typeof CONDITIONS[number] | ''>('');
+  const [condition, setCondition] = useState<(typeof CONDITIONS)[number] | ''>('');
   const [purchaseDate, setPurchaseDate] = useState('');
   const [purchasePrice, setPurchasePrice] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
@@ -65,8 +65,8 @@ export default function CreateOwnershipScreen() {
     if (!product) return;
 
     const payload: CreateOwnershipPayload = {
-      prototypeId: params.type === 'prototype' ? params.productId : undefined,
-      communityProductId: params.type === 'community' ? params.productId : undefined,
+      prototypeId: params.type === 'PROTOTYPE' ? params.productId : undefined,
+      communityProductId: params.type === 'COMMUNITY' ? params.productId : undefined,
       useOfficialImage,
       originalImageUrl: !useOfficialImage ? customImage || undefined : undefined,
       condition: condition || undefined,
@@ -92,7 +92,7 @@ export default function CreateOwnershipScreen() {
           },
         ]);
       },
-      onError: (error) => {
+      onError: error => {
         Alert.alert('Error', error.message);
       },
     });
@@ -121,7 +121,7 @@ export default function CreateOwnershipScreen() {
     );
   }
 
-  const displayImage = useOfficialImage ? product.imageUrl : customImage || product.imageUrl;
+  const displayImage = useOfficialImage ? product.imageUrl : customImage || product.imageUrl || '';
 
   // Parse variants from product
   const variants = product.variants || {};
@@ -149,15 +149,15 @@ export default function CreateOwnershipScreen() {
           {/* Product Preview */}
           <View className="mb-6 bg-white/5 rounded-2xl overflow-hidden">
             <Image
-              source={{ uri: displayImage }}
+              source={{ uri: displayImage || undefined}}
               className="w-full h-72"
               resizeMode="cover"
-              defaultSource={require('@/assets/placeholder.png')}
+              defaultSource={require('@/assets/placeholder-spotlight.png')}
             />
             <View className="p-4">
               <Text className="text-white font-bold text-lg">{product.name}</Text>
               <Text className="text-gray-400 text-sm mt-1">
-                {params.type === 'prototype' ? product.brand?.name : product.brandName}
+                {params.type === 'PROTOTYPE' ? product.brandName : product.brandName}
               </Text>
             </View>
           </View>
@@ -219,7 +219,7 @@ export default function CreateOwnershipScreen() {
           <View className="mb-6">
             <Text className="text-white font-semibold text-base mb-3">Condition</Text>
             <View className="flex-row flex-wrap gap-2">
-              {CONDITIONS.map((cond) => (
+              {CONDITIONS.map(cond => (
                 <TouchableOpacity
                   key={cond}
                   onPress={() => setCondition(cond)}
@@ -227,9 +227,7 @@ export default function CreateOwnershipScreen() {
                     condition === cond ? 'bg-white border-white' : 'bg-transparent border-white/20'
                   }`}
                 >
-                  <Text
-                    className={`font-medium capitalize ${condition === cond ? 'text-black' : 'text-white'}`}
-                  >
+                  <Text className={`font-medium capitalize ${condition === cond ? 'text-black' : 'text-white'}`}>
                     {cond.replace('-', ' ')}
                   </Text>
                 </TouchableOpacity>
@@ -250,9 +248,7 @@ export default function CreateOwnershipScreen() {
                       selectedSize === size ? 'bg-white border-white' : 'bg-transparent border-white/20'
                     }`}
                   >
-                    <Text className={`font-medium ${selectedSize === size ? 'text-black' : 'text-white'}`}>
-                      {size}
-                    </Text>
+                    <Text className={`font-medium ${selectedSize === size ? 'text-black' : 'text-white'}`}>{size}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -312,11 +308,7 @@ export default function CreateOwnershipScreen() {
           />
 
           {/* Submit Button */}
-          <PrimaryButton
-            onPress={handleSubmit}
-            disabled={isPending}
-            className="mt-6"
-          >
+          <PrimaryButton onPress={handleSubmit} disabled={isPending} className="mt-6">
             {isPending ? (
               <View className="flex-row items-center gap-2">
                 <ActivityIndicator size="small" color="#000000" />
