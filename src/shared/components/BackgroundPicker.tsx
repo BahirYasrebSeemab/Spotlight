@@ -53,7 +53,12 @@ function BackgroundOption({ template, selected, onSelect, disabled }: Background
       {/* Preview Circle */}
       <View className={`mb-2 rounded-2xl overflow-hidden border-2 ${selected ? 'border-white' : 'border-white/20'}`}>
         {template.type === 'gradient' && template.colors ? (
-          <LinearGradient colors={template.colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} className="w-20 h-20">
+          <LinearGradient
+            colors={template.colors as any}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            className="w-20 h-20"
+          >
             {selected && (
               <View className="flex-1 items-center justify-center bg-black/20">
                 <View className="bg-white rounded-full p-1">
