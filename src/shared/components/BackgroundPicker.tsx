@@ -5,7 +5,7 @@
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Check } from 'lucide-react-native';
-import { STUDIO_BACKGROUNDS, BackgroundTemplate } from '@/src/shared/constants/studioBackgrounds';
+import { STUDIO_BACKGROUNDS, BackgroundTemplate } from '../constants/studioBackgrounds';
 
 interface BackgroundPickerProps {
   selectedId: string;
@@ -54,7 +54,7 @@ function BackgroundOption({ template, selected, onSelect, disabled }: Background
       <View className={`mb-2 rounded-2xl overflow-hidden border-2 ${selected ? 'border-white' : 'border-white/20'}`}>
         {template.type === 'gradient' && template.colors ? (
           <LinearGradient
-            colors={template.colors as any}
+            colors={template.colors as unknown as readonly [string, string, ...string[]]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             className="w-20 h-20"

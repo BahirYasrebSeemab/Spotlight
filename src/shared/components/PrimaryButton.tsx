@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { ActivityIndicator} from 'react-native';
 import { TouchableOpacity, Text } from 'react-native';
 
 export interface PrimaryButtonProps {
@@ -6,8 +6,6 @@ export interface PrimaryButtonProps {
   onPress: () => void;
   disabled?: boolean;
   px?: string;
-  children?: React.ReactNode;
-  className?: string;
 }
 
 export const PrimaryButton = ({
@@ -16,18 +14,15 @@ export const PrimaryButton = ({
   title,
   onPress,
   disabled,
-  children,
-  className,
 }: PrimaryButtonProps & { icon?: any }) => {
-  if (children) return <View>{children}</View>;
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
-      className={`py-3 ${px} rounded-xl ${disabled ? 'bg-gray-400' : 'bg-blue-500'} ${className}`}
+      className={`py-3 ${px} rounded-xl ${disabled ? 'bg-gray-400' : 'bg-blue-500'}`}
     >
       <Text className="text-white text-center font-semibold">
-        {icon} {title}
+        {disabled ? <ActivityIndicator size="small" color="#000000" /> : title}
       </Text>
     </TouchableOpacity>
   );

@@ -1,6 +1,6 @@
 // ========================================
 // src/features/ownership/services/ownership.services.ts
-// Supabase calls for ownership operations
+// FIXED: Ownership services that work with create-ownership edge function
 // ========================================
 import { supabase } from '@/src/lib/supabase';
 import { CreateOwnershipPayload, Ownership } from '../types/ownership.types';
@@ -42,6 +42,8 @@ export async function createOwnership(
     // If user wants to use their own photo, handle image upload
     if (!payload.useOfficialImage && payload.originalImageUrl) {
       try {
+        console.log('Processing custom image:', payload.originalImageUrl);
+
         const imageResponse = await fetch(payload.originalImageUrl);
         if (!imageResponse.ok) {
           throw new Error('Failed to fetch image from URI');
@@ -62,13 +64,16 @@ export async function createOwnership(
         }
 
         // React Native FormData format
-        // @ts-ignore
+        // @ts-ignore - React Native specific FormData format
         formData.append('image', {
           uri: payload.originalImageUrl,
           type: blob.type || 'image/jpeg',
           name: `item-photo.${fileExtension}`,
         });
+
+        console.log('Image added to FormData');
       } catch (imageError: any) {
+        console.error('Image processing error:', imageError);
         throw new Error(`Failed to process image: ${imageError.message}`);
       }
     }
@@ -81,21 +86,35 @@ export async function createOwnership(
     if (payload.notes) formData.append('notes', payload.notes);
     if (payload.status) formData.append('status', payload.status);
 
+    // Add image processing flags (if custom image is provided)
+    if (!payload.useOfficialImage && payload.originalImageUrl) {
+      // These are passed through from the form
+      formData.append('processImage', (payload as any).processImage?.toString() || 'false');
+      formData.append('backgroundType', (payload as any).backgroundType || 'minimal');
+    }
+
+    console.log('Calling create-ownership edge function...');
+
     // Call edge function
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/create-ownership`, {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/create-item-ownership`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${session.access_token}`,
+        // CRITICAL: Don't set Content-Type - let fetch handle multipart/form-data boundary
       },
       body: formData,
     });
 
+    console.log('Edge function response status:', response.status);
+
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('Edge function error:', errorText);
       throw new Error(`Edge function failed: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('Edge function response:', data);
 
     if (!data || !data.success) {
       throw new Error(data?.error || 'Failed to create ownership');
