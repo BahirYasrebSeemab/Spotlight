@@ -149,10 +149,10 @@ export default function CreateOwnershipScreen() {
           {/* Product Preview */}
           <View className="mb-6 bg-white/5 rounded-2xl overflow-hidden">
             <Image
-              source={{ uri: displayImage || undefined}}
+              source={{ uri: displayImage || undefined }}
               className="w-full h-72"
               resizeMode="cover"
-              defaultSource={require('@/assets/placeholder-spotlight.png')}
+              defaultSource={require('@/assets/images/placeholder-spotlight.png')}
             />
             <View className="p-4">
               <Text className="text-white font-bold text-lg">{product.name}</Text>
@@ -308,16 +308,7 @@ export default function CreateOwnershipScreen() {
           />
 
           {/* Submit Button */}
-          <PrimaryButton onPress={handleSubmit} disabled={isPending} className="mt-6">
-            {isPending ? (
-              <View className="flex-row items-center gap-2">
-                <ActivityIndicator size="small" color="#000000" />
-                <Text className="text-black font-semibold text-base">Adding to closet...</Text>
-              </View>
-            ) : (
-              <Text className="text-black font-semibold text-base">Add to Closet</Text>
-            )}
-          </PrimaryButton>
+          <PrimaryButton px="px-4" title="Add to Closet" onPress={handleSubmit} disabled={isPending} />
         </View>
       </KeyboardAwareScrollView>
     </Spotlight>

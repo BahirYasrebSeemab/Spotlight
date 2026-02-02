@@ -75,7 +75,7 @@ export default function ProductDetailScreen() {
               source={{ uri: product.imageUrl ?? undefined }}
               className="w-full h-96 rounded-2xl bg-white/5"
               resizeMode="cover"
-              defaultSource={require('@/assets/placeholder-spotlight.png')}
+              defaultSource={require('@/assets/images/placeholder-spotlight.png')}
             />
           </View>
 
