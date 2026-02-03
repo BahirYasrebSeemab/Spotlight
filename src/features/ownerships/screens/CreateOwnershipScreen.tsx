@@ -1,20 +1,20 @@
 // ========================================
 // src/features/ownership/screens/CreateOwnershipScreen.tsx
-// Clean ownership creation flow from product detail
+// FIXED: Now sends processImage correctly
 // ========================================
-import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Image, Switch } from 'react-native';
 import { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import * as ImagePicker from 'expo-image-picker';
-import { X, Camera, Check } from 'lucide-react-native';
+import { X, Camera, Sparkles, Info } from 'lucide-react-native';
 
 import { Spotlight } from '@/src/shared/components/Spotlight';
 import { InputField } from '@/src/shared/components/InputField';
 import { PrimaryButton } from '@/src/shared/components/PrimaryButton';
 import { useProductDetails } from '@/src/features/products/hooks/useProductDetails';
-import { useCreateOwnership } from '@/src/features/ownerships/hooks/useCreateOwnership';
-import { CreateOwnershipPayload } from '@/src/features/ownerships/types/ownership.types';
+import { useCreateOwnership } from '../hooks/useCreateOwnership';
+import { CreateOwnershipPayload } from '../types/ownership.types';
 
 const CONDITIONS = ['new', 'like-new', 'good', 'fair', 'poor'] as const;
 
@@ -27,6 +27,7 @@ export default function CreateOwnershipScreen() {
 
   const [useOfficialImage, setUseOfficialImage] = useState(true);
   const [customImage, setCustomImage] = useState<string | null>(null);
+  const [processImage, setProcessImage] = useState(true); // ← ADDED: Default to TRUE
   const [condition, setCondition] = useState<(typeof CONDITIONS)[number] | ''>('');
   const [purchaseDate, setPurchaseDate] = useState('');
   const [purchasePrice, setPurchasePrice] = useState('');
@@ -64,7 +65,7 @@ export default function CreateOwnershipScreen() {
   const handleSubmit = () => {
     if (!product) return;
 
-    const payload: CreateOwnershipPayload = {
+    const payload: CreateOwnershipPayload & { processImage?: boolean } = {
       prototypeId: params.type === 'PROTOTYPE' ? params.productId : undefined,
       communityProductId: params.type === 'COMMUNITY' ? params.productId : undefined,
       useOfficialImage,
@@ -81,7 +82,11 @@ export default function CreateOwnershipScreen() {
           : undefined,
       notes: notes || undefined,
       status: 'owned',
+      // ← ADDED: Include processImage when uploading custom image
+      processImage: !useOfficialImage ? processImage : undefined,
     };
+
+    console.log('Submitting payload:', payload); // ← DEBUG LOG
 
     createOwnership(payload, {
       onSuccess: () => {
@@ -156,9 +161,7 @@ export default function CreateOwnershipScreen() {
             />
             <View className="p-4">
               <Text className="text-white font-bold text-lg">{product.name}</Text>
-              <Text className="text-gray-400 text-sm mt-1">
-                {params.type === 'PROTOTYPE' ? product.brandName : product.brandName}
-              </Text>
+              <Text className="text-gray-400 text-sm mt-1">{product.brandName}</Text>
             </View>
           </View>
 
@@ -209,11 +212,46 @@ export default function CreateOwnershipScreen() {
                   onPress={handlePickImage}
                   className="flex-1 py-3 px-4 rounded-xl bg-white/10 border border-white/20 flex-row items-center justify-center gap-2"
                 >
-                  <Text className="text-white font-medium">Choose from Gallery</Text>
+                  <Text className="text-white font-medium">Gallery</Text>
                 </TouchableOpacity>
               </View>
             )}
           </View>
+
+          {/* ← ADDED: Professional Photo Processing Toggle */}
+          {!useOfficialImage && customImage && (
+            <View className="mb-6 bg-white/5 rounded-2xl p-4 border border-white/10">
+              <View className="flex-row items-start justify-between mb-2">
+                <View className="flex-1 mr-4">
+                  <View className="flex-row items-center gap-2 mb-1">
+                    <Sparkles size={18} color="#ffffff" />
+                    <Text className="text-white font-bold text-base">Professional Photo</Text>
+                  </View>
+                  <Text className="text-gray-400 text-sm leading-5">
+                    Remove background & add clean white backdrop with shadow
+                  </Text>
+                </View>
+                <Switch
+                  value={processImage}
+                  onValueChange={setProcessImage}
+                  trackColor={{ false: '#374151', true: '#ffffff' }}
+                  thumbColor={processImage ? '#000000' : '#9CA3AF'}
+                  ios_backgroundColor="#374151"
+                />
+              </View>
+
+              {/* Info */}
+              {processImage && (
+                <View className="flex-row items-start gap-2 mt-3 pt-3 border-t border-white/10 bg-white/5 rounded-xl p-3">
+                  <Info size={16} color="#9CA3AF" className="mt-0.5" />
+                  <Text className="flex-1 text-gray-400 text-xs leading-4">
+                    Your photo will be professionally processed: background removed, subtle shadow added, clean white
+                    backdrop (or light gray for white items)
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
 
           {/* Condition Picker */}
           <View className="mb-6">
@@ -308,7 +346,23 @@ export default function CreateOwnershipScreen() {
           />
 
           {/* Submit Button */}
-          <PrimaryButton px="px-4" title="Add to Closet" onPress={handleSubmit} disabled={isPending} />
+          <TouchableOpacity
+            onPress={handleSubmit}
+            disabled={isPending}
+            className={`w-full py-4 rounded-xl mb-4 ${isPending ? 'bg-gray-600' : 'bg-white'}`}
+            activeOpacity={0.7}
+          >
+            {isPending ? (
+              <View className="flex-row items-center justify-center">
+                <ActivityIndicator size="small" color="#000000" style={{ marginRight: 8 }} />
+                <Text className="text-black font-semibold text-base">
+                  {processImage && !useOfficialImage ? 'Processing & adding...' : 'Adding to closet...'}
+                </Text>
+              </View>
+            ) : (
+              <Text className="text-black font-semibold text-base text-center">Add to Closet</Text>
+            )}
+          </TouchableOpacity>
         </View>
       </KeyboardAwareScrollView>
     </Spotlight>
