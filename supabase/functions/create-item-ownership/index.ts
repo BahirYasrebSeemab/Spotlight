@@ -91,7 +91,7 @@ async function processWithCloudinary(
 
   const backgroundMap: Record<string, string> = {
     minimal: 'rgb:FAFAFA',
-    dramatic: 'rgb:1A1A1A', 
+    dramatic: 'rgb:1A1A1A',
     warm: 'rgb:FFF5F0',
     cool: 'rgb:F0F9FF',
     neutral: 'rgb:F3F4F6',
