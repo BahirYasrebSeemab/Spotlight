@@ -1,6 +1,6 @@
 // ========================================
 // src/features/ownership/services/ownership.services.ts
-// FIXED: Ownership services that work with create-ownership edge function
+// FIXED: Properly sends processImage parameter
 // ========================================
 import { supabase } from '@/src/lib/supabase';
 import { CreateOwnershipPayload, Ownership } from '../types/ownership.types';
@@ -12,7 +12,7 @@ const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;
  * This handles both prototype-based and community product-based ownerships
  */
 export async function createOwnership(
-  payload: CreateOwnershipPayload,
+  payload: CreateOwnershipPayload & { processImage?: boolean }, // ← ADDED processImage type
 ): Promise<{ data: Ownership | null; error: string | null }> {
   try {
     // Validate: must have either prototypeId or communityProductId
@@ -38,6 +38,12 @@ export async function createOwnership(
 
     // Add image settings
     formData.append('useOfficialImage', payload.useOfficialImage.toString());
+
+    // ← ADDED: Add processImage flag BEFORE image
+    if (payload.processImage !== undefined) {
+      formData.append('processImage', payload.processImage.toString());
+      console.log('✅ processImage set to:', payload.processImage);
+    }
 
     // If user wants to use their own photo, handle image upload
     if (!payload.useOfficialImage && payload.originalImageUrl) {
@@ -85,13 +91,6 @@ export async function createOwnership(
     if (payload.selectedVariant) formData.append('selectedVariant', JSON.stringify(payload.selectedVariant));
     if (payload.notes) formData.append('notes', payload.notes);
     if (payload.status) formData.append('status', payload.status);
-
-    // Add image processing flags (if custom image is provided)
-    if (!payload.useOfficialImage && payload.originalImageUrl) {
-      // These are passed through from the form
-      formData.append('processImage', (payload as any).processImage?.toString() || 'false');
-      formData.append('backgroundType', (payload as any).backgroundType || 'minimal');
-    }
 
     console.log('Calling create-ownership edge function...');
 
