@@ -5,7 +5,7 @@
       "name": "expo-nativewind-typescript-boilerplate",
       "dependencies": {
         "@expo/vector-icons": "^14.1.0",
-        "@prisma/client": "6.18.0",
+        "@prisma/client": "^7.3.0",
         "@react-native-async-storage/async-storage": "2.1.2",
         "@react-native-community/blur": "^4.4.1",
         "@react-navigation/native": "^7.1.6",
@@ -432,7 +432,9 @@
 
     "@pkgr/core": ["@pkgr/core@0.2.4", "", {}, "sha512-ROFF39F6ZrnzSUEmQQZUar0Jt4xVoP9WnDRdWwF4NNcXs3xBTLgBUDoOwW141y1jP+S8nahIbdxbFC7IShw9Iw=="],
 
-    "@prisma/client": ["@prisma/client@6.18.0", "", { "peerDependencies": { "prisma": "*", "typescript": ">=5.1.0" }, "optionalPeers": ["prisma", "typescript"] }, "sha512-jnL2I9gDnPnw4A+4h5SuNn8Gc+1mL1Z79U/3I9eE2gbxJG1oSA+62ByPW4xkeDgwE0fqMzzpAZ7IHxYnLZ4iQA=="],
+    "@prisma/client": ["@prisma/client@7.3.0", "", { "dependencies": { "@prisma/client-runtime-utils": "7.3.0" }, "peerDependencies": { "prisma": "*", "typescript": ">=5.4.0" }, "optionalPeers": ["prisma", "typescript"] }, "sha512-FXBIxirqQfdC6b6HnNgxGmU7ydCPEPk7maHMOduJJfnTP+MuOGa15X4omjR/zpPUUpm8ef/mEFQjJudOGkXFcQ=="],
+
+    "@prisma/client-runtime-utils": ["@prisma/client-runtime-utils@7.3.0", "", {}, "sha512-dG/ceD9c+tnXATPk8G+USxxYM9E6UdMTnQeQ+1SZUDxTz7SgQcfxEqafqIQHcjdlcNK/pvmmLfSwAs3s2gYwUw=="],
 
     "@prisma/config": ["@prisma/config@7.0.1", "", { "dependencies": { "c12": "3.1.0", "deepmerge-ts": "7.1.5", "effect": "3.18.4", "empathic": "2.0.0" } }, "sha512-MacIjXdo+hNKxPvtMzDXykIIc8HCRWoyjQ2nguJTFqLDzJBD5L6QRaANGTLOqbGtJ3sFvLRmfXhrFg3pWoK1BA=="],
 
