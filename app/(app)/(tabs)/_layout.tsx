@@ -1,4 +1,5 @@
 // app/(tabs)/_layout.tsx - Updated with closet icon
+import { Spotlight } from '@/src/shared/components/Spotlight';
 import { Tabs } from 'expo-router';
 import { Search, PlusSquare, Heart, User } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -30,7 +31,7 @@ function ClosetIcon({ color, size }: { color: string; size: number }) {
 
 export default function TabLayout() {
   return (
-    
+     <Spotlight intensity={0.2}>
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -86,5 +87,6 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
+      </Spotlight>
   );
 }
