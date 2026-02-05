@@ -62,11 +62,9 @@ export default function ProfileScreen() {
   // Loading state
   if (profileLoading || !profile) {
     return (
-      <Spotlight intensity={0.2}>
         <View className="flex-1 items-center justify-center bg-black">
           <ActivityIndicator size="large" color="#ffffff" />
         </View>
-      </Spotlight>
     );
   }
 
@@ -89,7 +87,6 @@ export default function ProfileScreen() {
   }));
 
   return (
-    <Spotlight intensity={0.2}>
       <View className="flex-1 bg-black">
         <FlatList
           inverted
@@ -142,6 +139,5 @@ export default function ProfileScreen() {
           onEndReachedThreshold={0.5}
         />
       </View>
-    </Spotlight>
   );
 }
