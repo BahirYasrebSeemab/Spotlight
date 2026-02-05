@@ -54,7 +54,7 @@ export interface BrandApplication {
   description: string;
   logoUri?: string;
   website?: string;
-  instagram?: string;
+  instagram?: string | undefined;
   contactEmail: string;
   applicationReason: string;
 }
