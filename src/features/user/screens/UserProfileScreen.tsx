@@ -8,7 +8,6 @@ import { ProfileTabBar } from '@/src/features/user/components/ProfileTabBar';
 import { ProfileContentGrid } from '@/src/features/user/components/ProfileContentGrid';
 import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
 import { Share, MoreVertical, Lock } from 'lucide-react-native';
-import { Spotlight } from '@/src/shared/components/Spotlight';
 
 // Import ENHANCED hooks
 import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
@@ -144,23 +143,19 @@ export default function UserProfileScreen() {
   // Loading state
   if (userLoading) {
     return (
-      <Spotlight intensity={0.2}>
         <View className="flex-1 items-center justify-center bg-black">
           <ActivityIndicator size="large" color="#ffffff" />
         </View>
-      </Spotlight>
     );
   }
 
   // Not found state
   if (!user) {
     return (
-      <Spotlight intensity={0.2}>
         <View className="flex-1 items-center justify-center bg-black px-8">
           <Text className="text-xl font-bold text-white mb-2">User not found</Text>
           <Text className="text-gray-400 text-center">This user doesn't exist or has been removed</Text>
         </View>
-      </Spotlight>
     );
   }
 
@@ -200,7 +195,6 @@ export default function UserProfileScreen() {
   );
 
   return (
-    <Spotlight intensity={0.2}>
       <View className="flex-1 bg-black">
         <FlatList
           inverted
@@ -257,6 +251,5 @@ export default function UserProfileScreen() {
           onEndReachedThreshold={0.5}
         />
       </View>
-    </Spotlight>
   );
 }

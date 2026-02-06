@@ -6,6 +6,7 @@ import '../global.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { Spotlight } from '@/src/shared/components/Spotlight';
 
 export default function RootLayout() {
   const [queryClient] = useState(() => new QueryClient());
@@ -15,7 +16,9 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <SafeAreaProvider>
           <SafeAreaView className="flex-1 bg-black">
-            <Slot />
+            <Spotlight intensity={0.2}>
+              <Slot />
+            </Spotlight>
           </SafeAreaView>
         </SafeAreaProvider>
       </QueryClientProvider>
