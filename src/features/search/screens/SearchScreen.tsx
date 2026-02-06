@@ -61,7 +61,7 @@ export default function SearchScreen() {
   };
 
   const handleBrandPress = (brand: Brand) => {
-    console.log('Brand pressed:', brand.name);
+    router.push(`/brand/${brand.id}`);
   };
 
   // Product Card

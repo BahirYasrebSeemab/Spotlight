@@ -31,7 +31,7 @@ function ClosetIcon({ color, size }: { color: string; size: number }) {
 
 export default function TabLayout() {
   return (
-     <Spotlight intensity={0.2}>
+     
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -87,6 +87,5 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
-      </Spotlight>
   );
 }
