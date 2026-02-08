@@ -157,6 +157,61 @@ export async function getOwnership(ownershipId: string): Promise<{ data: Ownersh
 }
 
 /**
+ * Get ownership by ID with full details
+ */
+export async function getOwnershipById(ownershipId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('Ownership')
+      .select(
+        `
+        *,
+        owner:ownerId (
+          id,
+          username,
+          name,
+          avatarUrl
+        ),
+        prototype:prototypeId (
+          id,
+          name,
+          description,
+          imageUrl,
+          thumbnailUrl,
+          category,
+          retailPrice,
+          sku,
+          upc,
+          brand:brandId (
+            id,
+            name,
+            logoUrl,
+            verified,
+            type
+          )
+        ),
+        communityProduct:communityProductId (
+          id,
+          name,
+          brandName,
+          description,
+          imageUrl,
+          thumbnailUrl,
+          category
+        )
+      `
+      )
+      .eq('id', ownershipId)
+      .single();
+
+    if (error) throw error;
+    return { data, error: null };
+  } catch (err: any) {
+    return { data: null, error: err.message || 'Failed to fetch ownership details' };
+  }
+}
+
+/**
  * Update ownership
  */
 export async function updateOwnership(
