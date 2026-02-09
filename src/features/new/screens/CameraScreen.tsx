@@ -1,7 +1,3 @@
-// ========================================
-// src/features/new/screens/CameraScreen.tsx
-// Main camera screen for New tab
-// ========================================
 import { View, Text, TouchableOpacity, Image, Alert, StyleSheet } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
@@ -12,10 +8,13 @@ import * as MediaLibrary from 'expo-media-library';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { Image as CompressorImage } from 'react-native-compressor';
 
+type CameraMode = 'own' | 'photo' | 'video';
+
 export default function CameraScreen() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [lastGalleryPhoto, setLastGalleryPhoto] = useState<string | null>(null);
   const [facing, setFacing] = useState<CameraType>('back');
+  const [activeMode, setActiveMode] = useState<CameraMode>('own');
   const [isCompressing, setIsCompressing] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [mediaLibraryPermission, requestMediaLibraryPermission] = MediaLibrary.usePermissions();
@@ -29,7 +28,6 @@ export default function CameraScreen() {
 
   const loadLastGalleryPhoto = async () => {
     try {
-      // Request permission if not granted
       if (mediaLibraryPermission?.status !== 'granted') {
         const { status } = await requestMediaLibraryPermission();
         if (status !== 'granted') {
@@ -38,7 +36,6 @@ export default function CameraScreen() {
         }
       }
 
-      // Get the last photo from the gallery
       const assets = await MediaLibrary.getAssetsAsync({
         first: 1,
         mediaType: 'photo',
@@ -63,8 +60,8 @@ export default function CameraScreen() {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
+        allowsEditing: activeMode === 'own', // Only crop for ownership mode
+        aspect: activeMode === 'own' ? [1, 1] : undefined,
         quality: 0.8,
       });
 
@@ -88,7 +85,7 @@ export default function CameraScreen() {
       if (photo) {
         setCapturedImage(photo.uri);
 
-        // Optionally save to gallery and update the last photo thumbnail
+        // Save to gallery
         if (mediaLibraryPermission?.status === 'granted') {
           await MediaLibrary.saveToLibraryAsync(photo.uri);
           setLastGalleryPhoto(photo.uri);
@@ -104,36 +101,40 @@ export default function CameraScreen() {
     setFacing(current => (current === 'back' ? 'front' : 'back'));
   };
 
-  const handleAddItem = async () => {
+  const handleNext = async () => {
     if (!capturedImage) return;
 
-    try {
-      setIsCompressing(true);
+    if (activeMode === 'own') {
+      // Ownership flow - compress and navigate to item form
+      try {
+        setIsCompressing(true);
 
-      // Compress the image before passing to the form
-      const compressedImage = await CompressorImage.compress(capturedImage, {
-        compressionMethod: 'auto',
-        maxWidth: 1920,
-        maxHeight: 1920,
-        quality: 0.8,
-      });
+        const compressedImage = await CompressorImage.compress(capturedImage, {
+          compressionMethod: 'auto',
+          maxWidth: 1920,
+          maxHeight: 1920,
+          quality: 0.8,
+        });
 
-      // Navigate to item form with compressed image
-      router.push({
-        pathname: '/(app)/(tabs)/new/item-form',
-        params: { imageUri: compressedImage },
-      });
-    } catch (error) {
-      console.error('Error compressing image:', error);
-      Alert.alert('Error', 'Failed to process image');
-    } finally {
-      setIsCompressing(false);
+        router.push({
+          pathname: '/(app)/(tabs)/new/item-form',
+          params: { imageUri: compressedImage },
+        });
+      } catch (error) {
+        console.error('Error compressing image:', error);
+        Alert.alert('Error', 'Failed to process image');
+      } finally {
+        setIsCompressing(false);
+      }
+    } else if (activeMode === 'photo') {
+      // Photo memory flow - TODO: Open closet items selector modal
+      Alert.alert('Coming Soon', 'Select closet items to tag in this memory');
+      // TODO: Open modal to select closet items
+      // After selection, create memory with selected items
+    } else if (activeMode === 'video') {
+      // Video memory flow - TODO: Coming soon
+      Alert.alert('Coming Soon', 'Video memories will be available soon!');
     }
-  };
-
-  const handleAddMemory = () => {
-    // Future feature - for now just show alert
-    Alert.alert('Coming Soon', 'Memory feature will be available soon!');
   };
 
   const resetCamera = () => {
@@ -142,12 +143,10 @@ export default function CameraScreen() {
 
   // Handle camera permissions
   if (!permission) {
-    // Camera permissions are still loading
     return <View className="flex-1 bg-black" />;
   }
 
   if (!permission.granted) {
-    // Camera permissions are not granted yet
     return (
       <Spotlight intensity={0.2}>
         <View className="flex-1 bg-black items-center justify-center px-8">
@@ -161,61 +160,50 @@ export default function CameraScreen() {
     );
   }
 
-  // Show captured image with options
+  // Show captured image with Next button (for Own mode)
   if (capturedImage) {
     return (
       <Spotlight intensity={0.2}>
         <View className="flex-1 bg-black">
           <Image source={{ uri: capturedImage }} className="flex-1" resizeMode="contain" />
 
-          {/* Top bar */}
+          {/* Top bar - Close button */}
           <View className="absolute top-12 left-5 right-5 flex-row justify-between items-center">
             <TouchableOpacity onPress={resetCamera} className="bg-black/70 rounded-full p-3" activeOpacity={0.7}>
               <X size={24} color="#ffffff" />
             </TouchableOpacity>
           </View>
 
-          {/* Bottom options */}
+          {/* Bottom Next button */}
           <View className="absolute bottom-12 left-5 right-5">
-            <View className="bg-black/70 rounded-2xl p-6">
-              <Text className="text-white font-semibold text-lg mb-4 text-center">What would you like to add?</Text>
-
-              <TouchableOpacity
-                onPress={handleAddItem}
-                disabled={isCompressing}
-                className={`py-4 rounded-xl mb-3 ${isCompressing ? 'bg-gray-600' : 'bg-white'}`}
-                activeOpacity={0.7}
-              >
-                <Text className="text-black font-semibold text-center text-base">
-                  {isCompressing ? 'Processing...' : 'Add Item'}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={handleAddMemory}
-                className="bg-gray-800 py-4 rounded-xl border border-gray-600"
-                activeOpacity={0.7}
-              >
-                <Text className="text-white font-semibold text-center text-base">Add Memory (Coming Soon)</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              onPress={handleNext}
+              disabled={isCompressing}
+              className={`py-4 rounded-xl ${isCompressing ? 'bg-gray-600' : 'bg-white'}`}
+              activeOpacity={0.7}
+            >
+              <Text className="text-black font-bold text-center text-lg">
+                {isCompressing ? 'Processing...' : 'Next'}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Spotlight>
     );
   }
 
-  // Camera view with live preview - NO CHILDREN INSIDE CameraView!
+  // Camera view with mode tabs
   return (
     <Spotlight intensity={0.2}>
       <View style={StyleSheet.absoluteFill}>
-        {/* CameraView takes full screen - NO CHILDREN */}
+        {/* CameraView takes full screen */}
         <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing={facing} />
 
-        {/* UI elements positioned OUTSIDE and ABOVE the camera using absolute positioning */}
+        {/* UI elements positioned above camera */}
         <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-          {/* Top bar with gallery and flip icons */}
+          {/* Top bar with gallery and flip */}
           <View className="absolute top-12 left-5 right-5 flex-row justify-between items-center z-10">
+            {/* Gallery button */}
             <TouchableOpacity onPress={openGallery} className="bg-black/70 rounded-full p-2" activeOpacity={0.7}>
               {lastGalleryPhoto ? (
                 <Image source={{ uri: lastGalleryPhoto }} className="w-12 h-12 rounded-full" resizeMode="cover" />
@@ -226,6 +214,40 @@ export default function CameraScreen() {
               )}
             </TouchableOpacity>
 
+            {/* Mode Tabs - Own | Photo | Video */}
+            <View className="flex-row bg-black/70 rounded-full p-1 gap-1">
+              <TouchableOpacity
+                onPress={() => setActiveMode('own')}
+                className={`px-5 py-2 rounded-full ${activeMode === 'own' ? 'bg-white' : 'bg-transparent'}`}
+                activeOpacity={0.7}
+              >
+                <Text className={`font-semibold text-sm ${activeMode === 'own' ? 'text-black' : 'text-white'}`}>
+                  Own
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setActiveMode('photo')}
+                className={`px-5 py-2 rounded-full ${activeMode === 'photo' ? 'bg-white' : 'bg-transparent'}`}
+                activeOpacity={0.7}
+              >
+                <Text className={`font-semibold text-sm ${activeMode === 'photo' ? 'text-black' : 'text-white'}`}>
+                  Photo
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setActiveMode('video')}
+                className={`px-5 py-2 rounded-full ${activeMode === 'video' ? 'bg-white' : 'bg-transparent'}`}
+                activeOpacity={0.7}
+              >
+                <Text className={`font-semibold text-sm ${activeMode === 'video' ? 'text-black' : 'text-white'}`}>
+                  Video
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Flip camera button */}
             <TouchableOpacity onPress={toggleCameraFacing} className="bg-black/70 rounded-full p-3" activeOpacity={0.7}>
               <FlipHorizontal size={24} color="#ffffff" />
             </TouchableOpacity>
@@ -240,7 +262,9 @@ export default function CameraScreen() {
             >
               <View className="w-16 h-16 rounded-full bg-white" />
             </TouchableOpacity>
-            <Text className="text-white text-sm mt-4">Take Photo</Text>
+            <Text className="text-white text-sm mt-4 font-medium">
+              {activeMode === 'own' ? 'Add Item' : activeMode === 'photo' ? 'Take Photo' : 'Record Video'}
+            </Text>
           </View>
         </View>
       </View>

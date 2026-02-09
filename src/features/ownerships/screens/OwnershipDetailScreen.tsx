@@ -77,7 +77,7 @@ export default function OwnershipDetailScreen() {
 
   const handleBrandPress = () => {
     if (ownership?.prototype?.brand) {
-      router.push(`/brands/${ownership.prototype.brand.id}` as any);
+      router.push(`/brand/${ownership.prototype.brand.id}` as any);
     }
   };
 

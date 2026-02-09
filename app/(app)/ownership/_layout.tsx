@@ -8,7 +8,6 @@ export default function ProductRootLayout() {
         headerShown: false,
       }}>
       <Stack.Screen name="index" />
-      <Stack.Screen name="create" />
       </Stack>
   );
 }
