@@ -7,6 +7,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { Image as CompressorImage } from 'react-native-compressor';
+import { useAppSelector } from '@/src/shared/hooks/redux';
 
 type CameraMode = 'own' | 'photo' | 'video';
 
@@ -20,6 +21,7 @@ export default function CameraScreen() {
   const [mediaLibraryPermission, requestMediaLibraryPermission] = MediaLibrary.usePermissions();
   const cameraRef = useRef<CameraView>(null);
   const router = useRouter();
+  const authUser = useAppSelector(state => state.auth.user);
 
   // Get last photo from gallery
   useEffect(() => {
@@ -127,12 +129,29 @@ export default function CameraScreen() {
         setIsCompressing(false);
       }
     } else if (activeMode === 'photo') {
-      // Photo memory flow - TODO: Open closet items selector modal
-      Alert.alert('Coming Soon', 'Select closet items to tag in this memory');
-      // TODO: Open modal to select closet items
-      // After selection, create memory with selected items
+      // Photo memory flow - Navigate to memory form
+      try {
+        setIsCompressing(true);
+
+        const compressedImage = await CompressorImage.compress(capturedImage, {
+          compressionMethod: 'auto',
+          maxWidth: 1920,
+          maxHeight: 1920,
+          quality: 0.8,
+        });
+
+        router.push({
+          pathname: '/(app)/(tabs)/new/memory-form',
+          params: { imageUri: compressedImage },
+        });
+      } catch (error) {
+        console.error('Error compressing image:', error);
+        Alert.alert('Error', 'Failed to process image');
+      } finally {
+        setIsCompressing(false);
+      }
     } else if (activeMode === 'video') {
-      // Video memory flow - TODO: Coming soon
+      // Video memory flow - Coming soon
       Alert.alert('Coming Soon', 'Video memories will be available soon!');
     }
   };
@@ -160,7 +179,7 @@ export default function CameraScreen() {
     );
   }
 
-  // Show captured image with Next button (for Own mode)
+  // Show captured image with Next button
   if (capturedImage) {
     return (
       <Spotlight intensity={0.2}>

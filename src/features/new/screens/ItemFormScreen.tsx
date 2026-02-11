@@ -1,12 +1,8 @@
-// ========================================
-// src/features/new/screens/ItemFormScreen.tsx
-// UPGRADED: Professional image processing & studio backgrounds
-// ========================================
 import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Image, Switch } from 'react-native';
 import { useState, useEffect } from 'react';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { X, Sparkles, Info } from 'lucide-react-native';
+import { X, Sparkles, Info, AlertCircle } from 'lucide-react-native';
 
 import { InputField } from '@/src/shared/components/InputField';
 import { Spotlight } from '@/src/shared/components/Spotlight';
@@ -16,17 +12,39 @@ import { ProductMatchCard } from '../components/ProductMatchCard';
 import { useCreateItem, useSearchProducts } from '../hooks';
 import { CreateItemPayload, ProductSearchResult, Brand } from '../types/item.types';
 
+interface ItemFormParams {
+  imageUri?: string;
+}
+
+interface ItemFormState extends CreateItemPayload {
+  name: string;
+  brandName: string;
+  upc: string;
+  category: string;
+  description: string;
+  imageUri?: string;
+  condition: string;
+  purchasePrice?: number;
+  purchaseDate?: string;
+  notes: string;
+}
+
+interface ProcessingSettings {
+  processImage: boolean;
+  backgroundType: string;
+}
+
 export default function ItemFormScreen() {
-  const params = useLocalSearchParams<{ imageUri?: string }>();
+  const params = useLocalSearchParams();
   const router = useRouter();
 
-  const [form, setForm] = useState<CreateItemPayload>({
+  const [form, setForm] = useState<ItemFormState>({
     name: '',
     brandName: '',
     upc: '',
     category: '',
     description: '',
-    imageUri: params.imageUri,
+    imageUri: params.imageUri as string | undefined,
     condition: '',
     purchasePrice: undefined,
     purchaseDate: undefined,
@@ -35,21 +53,24 @@ export default function ItemFormScreen() {
 
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const [selectedMatch, setSelectedMatch] = useState<ProductSearchResult | null>(null);
+  const [isCreatingNew, setIsCreatingNew] = useState<boolean>(false);
 
   // Image Processing Settings
-  const [processImage, setProcessImage] = useState(true);
-  const [backgroundType, setBackgroundType] = useState('minimal');
+  const [processImage, setProcessImage] = useState<boolean>(true);
+  const [backgroundType, setBackgroundType] = useState<string>('minimal');
 
   const { createItem, isLoading, error, processingStatus, reset } = useCreateItem();
-  const { data: productMatches } = useSearchProducts({
+  const { data: productMatches, isLoading: isSearching } = useSearchProducts({
     name: form.name,
     brandName: form.brandName,
     upc: form.upc,
   });
 
-  const shouldShowMatches = form.name.length > 2 && form.brandName.length > 2 && !selectedMatch;
+  const shouldShowMatches: boolean =
+    form.name.length > 2 && form.brandName.length > 2 && !selectedMatch && !isCreatingNew;
 
-  const handleSubmit = () => {
+  const handleSubmit = (): void => {
+    // Validation
     if (!form.name.trim()) {
       Alert.alert('Required', 'Please enter item name');
       return;
@@ -59,32 +80,50 @@ export default function ItemFormScreen() {
       return;
     }
 
-    createItem(
-      {
-        ...form,
-        processImage,
-        backgroundType,
-      } as any,
-      {
-        onSuccess: () => {
-          Alert.alert('Success', 'Item added to your closet!', [
-            {
-              text: 'OK',
-              onPress: () => {
-                router.back();
-              },
+    // CRITICAL: Must select a product or create new
+    if (!selectedMatch && !isCreatingNew) {
+      Alert.alert('Product Required', 'Please select a matching product or choose "Create New Product" to continue.');
+      return;
+    }
+
+    // Prepare payload with either prototype or community product
+    const payload: any = {
+      ...form,
+      processImage,
+      backgroundType,
+    };
+
+    if (selectedMatch) {
+      if (selectedMatch.type === 'prototype') {
+        payload.prototypeId = selectedMatch.product.id;
+      } else {
+        payload.communityProductId = selectedMatch.product.id;
+      }
+    } else if (isCreatingNew) {
+      // Create new community product
+      payload.createNewCommunityProduct = true;
+    }
+
+    createItem(payload, {
+      onSuccess: () => {
+        Alert.alert('Success', 'Item added to your closet!', [
+          {
+            text: 'OK',
+            onPress: () => {
+              router.replace('/(tabs)');
             },
-          ]);
-        },
-        onError: (err: Error) => {
-          Alert.alert('Error', err.message || 'Failed to add item');
-        },
+          },
+        ]);
       },
-    );
+      onError: (err: Error) => {
+        Alert.alert('Error', err.message || 'Failed to add item');
+      },
+    });
   };
 
-  const handleSelectMatch = (match: ProductSearchResult) => {
+  const handleSelectMatch = (match: ProductSearchResult): void => {
     setSelectedMatch(match);
+    setIsCreatingNew(false);
     const product = match.product;
     setForm(prev => ({
       ...prev,
@@ -95,8 +134,14 @@ export default function ItemFormScreen() {
     }));
   };
 
-  const handleUseNewProduct = () => {
+  const handleCreateNew = (): void => {
     setSelectedMatch(null);
+    setIsCreatingNew(true);
+  };
+
+  const handleUnselectProduct = (): void => {
+    setSelectedMatch(null);
+    setIsCreatingNew(false);
   };
 
   return (
@@ -157,12 +202,10 @@ export default function ItemFormScreen() {
                 />
               </View>
 
-              {/* Background Picker (only show when processing enabled) */}
               {processImage && (
                 <View className="mt-4 pt-4 border-t border-white/10">
                   <BackgroundPicker selectedId={backgroundType} onSelect={setBackgroundType} enabled={processImage} />
 
-                  {/* Info about processing */}
                   <View className="flex-row items-start gap-2 mt-3 bg-white/5 rounded-xl p-3">
                     <Info size={16} color="#9CA3AF" className="mt-0.5" />
                     <Text className="flex-1 text-gray-400 text-xs leading-4">
@@ -175,58 +218,26 @@ export default function ItemFormScreen() {
             </View>
           )}
 
-          {/* Product Matches */}
-          {shouldShowMatches && productMatches && productMatches.length > 0 && !selectedMatch && (
-            <View className="mb-4">
-              <Text className="text-white font-semibold mb-3">Similar items found:</Text>
-              {productMatches.slice(0, 3).map((match, index) => (
-                <ProductMatchCard
-                  key={`${match.type}-${match.product.id}-${index}`}
-                  match={match}
-                  onSelect={() => handleSelectMatch(match)}
-                />
-              ))}
-              <TouchableOpacity onPress={handleUseNewProduct} className="mt-2 self-center">
-                <Text className="text-gray-400 text-sm">Use new product instead</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {/* Selected Match Indicator */}
-          {selectedMatch && (
-            <View className="bg-white/10 rounded-xl p-3 mb-4 flex-row items-center justify-between">
-              <View className="flex-1">
-                <Text className="text-white font-semibold">Using: {selectedMatch.product.name}</Text>
-                <Text className="text-gray-400 text-sm">
-                  {selectedMatch.type === 'prototype' ? 'Verified Product' : 'Community Product'}
-                </Text>
-              </View>
-              <TouchableOpacity onPress={handleUseNewProduct}>
-                <X size={20} color="#ffffff" />
-              </TouchableOpacity>
-            </View>
-          )}
-
           {/* Form Fields */}
           <InputField
             label="Item Name"
             value={form.name}
-            onChangeText={text => setForm(prev => ({ ...prev, name: text }))}
+            onChangeText={(text: string) => setForm(prev => ({ ...prev, name: text }))}
             placeholder="e.g., Air Force 1 Low"
             editable={!isLoading}
           />
 
           <BrandSearchInput
             value={form.brandName}
-            onChangeText={text => setForm(prev => ({ ...prev, brandName: text }))}
-            onBrandSelect={brand => setSelectedBrand(brand)}
+            onChangeText={(text: string) => setForm(prev => ({ ...prev, brandName: text }))}
+            onBrandSelect={(brand: Brand) => setSelectedBrand(brand)}
             placeholder="Brand name"
           />
 
           <InputField
             label="UPC/Barcode (Optional)"
             value={form.upc}
-            onChangeText={text => setForm(prev => ({ ...prev, upc: text }))}
+            onChangeText={(text: string) => setForm(prev => ({ ...prev, upc: text }))}
             placeholder="123456789012"
             keyboardType="numeric"
             editable={!isLoading}
@@ -235,20 +246,91 @@ export default function ItemFormScreen() {
           <InputField
             label="Category (Optional)"
             value={form.category}
-            onChangeText={text => setForm(prev => ({ ...prev, category: text }))}
+            onChangeText={(text: string) => setForm(prev => ({ ...prev, category: text }))}
             placeholder="e.g., Shoes, Shirt, Pants"
             editable={!isLoading}
           />
 
-          <InputField
-            label="Description (Optional)"
-            value={form.description}
-            onChangeText={text => setForm(prev => ({ ...prev, description: text }))}
-            placeholder="Add any additional details"
-            multiline
-            numberOfLines={3}
-            editable={!isLoading}
-          />
+          {/* Product Selection Required Warning */}
+          {!selectedMatch && !isCreatingNew && form.name.length > 2 && form.brandName.length > 2 && (
+            <View className="bg-yellow-500/20 border border-yellow-500 rounded-xl p-4 mb-4 flex-row items-start gap-3">
+              <AlertCircle size={20} color="#EAB308" className="mt-0.5" />
+              <View className="flex-1">
+                <Text className="text-yellow-400 font-semibold mb-1">Product Selection Required</Text>
+                <Text className="text-yellow-300 text-sm">
+                  Select a matching product below or create a new one to continue.
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* Product Matches */}
+          {shouldShowMatches && (
+            <View className="mb-4">
+              {isSearching ? (
+                <View className="py-4 items-center">
+                  <ActivityIndicator size="small" color="#ffffff" />
+                  <Text className="text-gray-400 text-sm mt-2">Searching for matches...</Text>
+                </View>
+              ) : productMatches && productMatches.length > 0 ? (
+                <>
+                  <Text className="text-white font-semibold mb-3">✨ Matching products found:</Text>
+                  {productMatches.slice(0, 3).map((match: ProductSearchResult, index: number) => (
+                    <ProductMatchCard
+                      key={`${match.type}-${match.product.id}-${index}`}
+                      match={match}
+                      onSelect={() => handleSelectMatch(match)}
+                    />
+                  ))}
+                  <TouchableOpacity
+                    onPress={handleCreateNew}
+                    className="mt-3 bg-white/10 border border-white/20 rounded-xl p-4"
+                  >
+                    <Text className="text-white font-semibold text-center">Create New Product</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <View className="bg-white/10 rounded-xl p-4 mb-4">
+                  <Text className="text-white font-semibold mb-2">No matches found</Text>
+                  <Text className="text-gray-400 text-sm mb-3">
+                    We couldn't find this product in our database. You can create it as a new community product.
+                  </Text>
+                  <TouchableOpacity onPress={handleCreateNew} className="bg-white rounded-xl p-3">
+                    <Text className="text-black font-semibold text-center">Create New Product</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Selected Match Indicator */}
+          {selectedMatch && (
+            <View className="bg-green-500/20 border border-green-500 rounded-xl p-4 mb-4 flex-row items-center justify-between">
+              <View className="flex-1">
+                <Text className="text-green-400 font-semibold mb-1">✓ Product Selected</Text>
+                <Text className="text-white font-medium">{selectedMatch.product.name}</Text>
+                <Text className="text-gray-400 text-sm">
+                  {selectedMatch.type === 'prototype' ? 'Verified Product' : 'Community Product'}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={handleUnselectProduct} className="p-2">
+                <X size={20} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Creating New Indicator */}
+          {isCreatingNew && (
+            <View className="bg-blue-500/20 border border-blue-500 rounded-xl p-4 mb-4 flex-row items-center justify-between">
+              <View className="flex-1">
+                <Text className="text-blue-400 font-semibold mb-1">Creating New Community Product</Text>
+                <Text className="text-gray-300 text-sm">This will be added to our database for others to use</Text>
+              </View>
+              <TouchableOpacity onPress={handleUnselectProduct} className="p-2">
+                <X size={20} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+          )}
 
           {/* Processing Status */}
           {processingStatus === 'processing' && (
@@ -263,26 +345,10 @@ export default function ItemFormScreen() {
             </View>
           )}
 
-          {processingStatus === 'completed' && (
-            <View className="bg-white/10 rounded-xl p-4 mb-4 flex-row items-center">
-              <Sparkles size={20} color="#ffffff" style={{ marginRight: 12 }} />
-              <View className="flex-1">
-                <Text className="text-white font-medium">Photo processed successfully!</Text>
-                {processImage && <Text className="text-gray-400 text-xs mt-1">Professional background applied</Text>}
-              </View>
-            </View>
-          )}
-
-          {processingStatus === 'failed' && (
-            <View className="bg-white/10 rounded-xl p-4 mb-4">
-              <Text className="text-white font-medium">Photo processing failed</Text>
-              <Text className="text-gray-400 text-sm mt-1">Your item was still added with the original photo</Text>
-            </View>
-          )}
-
           {/* Error Message */}
           {error && (
-            <View className="bg-white/10 rounded-xl p-4 mb-4">
+            <View className="bg-red-500/20 border border-red-500 rounded-xl p-4 mb-4">
+              <Text className="text-red-400 font-semibold mb-1">Error</Text>
               <Text className="text-white">{error.message}</Text>
             </View>
           )}
@@ -290,9 +356,11 @@ export default function ItemFormScreen() {
           {/* Submit Button */}
           <TouchableOpacity
             onPress={handleSubmit}
-            disabled={isLoading || !form.name.trim() || !form.brandName.trim()}
+            disabled={isLoading || !form.name.trim() || !form.brandName.trim() || (!selectedMatch && !isCreatingNew)}
             className={`w-full py-4 rounded-xl mb-4 ${
-              isLoading || !form.name.trim() || !form.brandName.trim() ? 'bg-gray-600' : 'bg-white'
+              isLoading || !form.name.trim() || !form.brandName.trim() || (!selectedMatch && !isCreatingNew)
+                ? 'bg-gray-600'
+                : 'bg-white'
             }`}
             activeOpacity={0.7}
           >

@@ -11,121 +11,182 @@ const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;
  * Create ownership via Edge Function
  * This handles both prototype-based and community product-based ownerships
  */
-export async function createOwnership(
-  payload: CreateOwnershipPayload & { processImage?: boolean }, // ← ADDED processImage type
-): Promise<{ data: Ownership | null; error: string | null }> {
+// export async function createOwnership(
+//   payload: CreateOwnershipPayload & { processImage?: boolean }, // ← ADDED processImage type
+// ): Promise<{ data: Ownership | null; error: string | null }> {
+//   try {
+//     // Validate: must have either prototypeId or communityProductId
+//     if (!payload.prototypeId && !payload.communityProductId) {
+//       throw new Error('Must provide either prototypeId or communityProductId');
+//     }
+
+//     if (payload.prototypeId && payload.communityProductId) {
+//       throw new Error('Cannot provide both prototypeId and communityProductId');
+//     }
+
+//     // Get the current session token
+//     const {
+//       data: { session },
+//     } = await supabase.auth.getSession();
+//     if (!session) throw new Error('No active session');
+
+//     const formData = new FormData();
+
+//     // Add product reference
+//     if (payload.prototypeId) formData.append('prototypeId', payload.prototypeId);
+//     if (payload.communityProductId) formData.append('communityProductId', payload.communityProductId);
+
+//     // Add image settings
+//     formData.append('useOfficialImage', payload.useOfficialImage.toString());
+
+//     // ← ADDED: Add processImage flag BEFORE image
+//     if (payload.processImage !== undefined) {
+//       formData.append('processImage', payload.processImage.toString());
+//       console.log('✅ processImage set to:', payload.processImage);
+//     }
+
+//     // If user wants to use their own photo, handle image upload
+//     if (!payload.useOfficialImage && payload.originalImageUrl) {
+//       try {
+//         console.log('Processing custom image:', payload.originalImageUrl);
+
+//         const imageResponse = await fetch(payload.originalImageUrl);
+//         if (!imageResponse.ok) {
+//           throw new Error('Failed to fetch image from URI');
+//         }
+
+//         const blob = await imageResponse.blob();
+//         if (blob.size === 0) {
+//           throw new Error('Image file is empty');
+//         }
+
+//         // Get file extension
+//         let fileExtension = 'jpg';
+//         if (payload.originalImageUrl.includes('.')) {
+//           const uriParts = payload.originalImageUrl.split('.');
+//           fileExtension = uriParts[uriParts.length - 1].split('?')[0] || 'jpg';
+//         } else if (blob.type) {
+//           fileExtension = blob.type.split('/')[1] || 'jpg';
+//         }
+
+//         // React Native FormData format
+//         // @ts-ignore - React Native specific FormData format
+//         formData.append('image', {
+//           uri: payload.originalImageUrl,
+//           type: blob.type || 'image/jpeg',
+//           name: `item-photo.${fileExtension}`,
+//         });
+
+//         console.log('Image added to FormData');
+//       } catch (imageError: any) {
+//         console.error('Image processing error:', imageError);
+//         throw new Error(`Failed to process image: ${imageError.message}`);
+//       }
+//     }
+
+//     // Add optional fields
+//     if (payload.condition) formData.append('condition', payload.condition);
+//     if (payload.purchaseDate) formData.append('purchaseDate', payload.purchaseDate);
+//     if (payload.purchasePrice) formData.append('purchasePrice', payload.purchasePrice.toString());
+//     if (payload.selectedVariant) formData.append('selectedVariant', JSON.stringify(payload.selectedVariant));
+//     if (payload.notes) formData.append('notes', payload.notes);
+//     if (payload.status) formData.append('status', payload.status);
+
+//     console.log('Calling create-ownership edge function...');
+
+//     // Call edge function
+//     const response = await fetch(`${SUPABASE_URL}/functions/v1/create-item-ownership`, {
+//       method: 'POST',
+//       headers: {
+//         Authorization: `Bearer ${session.access_token}`,
+//         // CRITICAL: Don't set Content-Type - let fetch handle multipart/form-data boundary
+//       },
+//       body: formData,
+//     });
+
+//     console.log('Edge function response status:', response.status);
+
+//     if (!response.ok) {
+//       const errorText = await response.text();
+//       console.error('Edge function error:', errorText);
+//       throw new Error(`Edge function failed: ${response.status} - ${errorText}`);
+//     }
+
+//     const data = await response.json();
+//     console.log('Edge function response:', data);
+
+//     if (!data || !data.success) {
+//       throw new Error(data?.error || 'Failed to create ownership');
+//     }
+
+//     return { data: data.ownership as Ownership, error: null };
+//   } catch (err: any) {
+//     console.error('Create ownership error:', err);
+//     return {
+//       data: null,
+//       error: err.message || 'Failed to create ownership',
+//     };
+//   }
+// }
+
+export async function createOwnership(payload: any) {
   try {
-    // Validate: must have either prototypeId or communityProductId
-    if (!payload.prototypeId && !payload.communityProductId) {
-      throw new Error('Must provide either prototypeId or communityProductId');
+    // Validation: Must have either prototypeId or communityProductId
+    if (!payload.prototypeId && !payload.communityProductId && !payload.createNewCommunityProduct) {
+      throw new Error('Must provide either a prototype or community product, or create a new one');
     }
 
-    if (payload.prototypeId && payload.communityProductId) {
-      throw new Error('Cannot provide both prototypeId and communityProductId');
+    let communityProductId = payload.communityProductId;
+
+    // If creating new community product
+    if (payload.createNewCommunityProduct) {
+      const { data: newProduct, error: productError } = await supabase
+        .from('CommunityProduct')
+        .insert({
+          name: payload.name,
+          brandName: payload.brandName,
+          category: payload.category,
+          upc: payload.upc,
+          description: payload.description,
+          createdBy: payload.userId,
+        })
+        .select()
+        .single();
+
+      if (productError) throw productError;
+      communityProductId = newProduct.id;
     }
 
-    // Get the current session token
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) throw new Error('No active session');
-
-    const formData = new FormData();
-
-    // Add product reference
-    if (payload.prototypeId) formData.append('prototypeId', payload.prototypeId);
-    if (payload.communityProductId) formData.append('communityProductId', payload.communityProductId);
-
-    // Add image settings
-    formData.append('useOfficialImage', payload.useOfficialImage.toString());
-
-    // ← ADDED: Add processImage flag BEFORE image
-    if (payload.processImage !== undefined) {
-      formData.append('processImage', payload.processImage.toString());
-      console.log('✅ processImage set to:', payload.processImage);
-    }
-
-    // If user wants to use their own photo, handle image upload
-    if (!payload.useOfficialImage && payload.originalImageUrl) {
-      try {
-        console.log('Processing custom image:', payload.originalImageUrl);
-
-        const imageResponse = await fetch(payload.originalImageUrl);
-        if (!imageResponse.ok) {
-          throw new Error('Failed to fetch image from URI');
-        }
-
-        const blob = await imageResponse.blob();
-        if (blob.size === 0) {
-          throw new Error('Image file is empty');
-        }
-
-        // Get file extension
-        let fileExtension = 'jpg';
-        if (payload.originalImageUrl.includes('.')) {
-          const uriParts = payload.originalImageUrl.split('.');
-          fileExtension = uriParts[uriParts.length - 1].split('?')[0] || 'jpg';
-        } else if (blob.type) {
-          fileExtension = blob.type.split('/')[1] || 'jpg';
-        }
-
-        // React Native FormData format
-        // @ts-ignore - React Native specific FormData format
-        formData.append('image', {
-          uri: payload.originalImageUrl,
-          type: blob.type || 'image/jpeg',
-          name: `item-photo.${fileExtension}`,
-        });
-
-        console.log('Image added to FormData');
-      } catch (imageError: any) {
-        console.error('Image processing error:', imageError);
-        throw new Error(`Failed to process image: ${imageError.message}`);
-      }
-    }
-
-    // Add optional fields
-    if (payload.condition) formData.append('condition', payload.condition);
-    if (payload.purchaseDate) formData.append('purchaseDate', payload.purchaseDate);
-    if (payload.purchasePrice) formData.append('purchasePrice', payload.purchasePrice.toString());
-    if (payload.selectedVariant) formData.append('selectedVariant', JSON.stringify(payload.selectedVariant));
-    if (payload.notes) formData.append('notes', payload.notes);
-    if (payload.status) formData.append('status', payload.status);
-
-    console.log('Calling create-ownership edge function...');
-
-    // Call edge function
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/create-item-ownership`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        // CRITICAL: Don't set Content-Type - let fetch handle multipart/form-data boundary
-      },
-      body: formData,
-    });
-
-    console.log('Edge function response status:', response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Edge function error:', errorText);
-      throw new Error(`Edge function failed: ${response.status} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    console.log('Edge function response:', data);
-
-    if (!data || !data.success) {
-      throw new Error(data?.error || 'Failed to create ownership');
-    }
-
-    return { data: data.ownership as Ownership, error: null };
-  } catch (err: any) {
-    console.error('Create ownership error:', err);
-    return {
-      data: null,
-      error: err.message || 'Failed to create ownership',
+    // Create ownership
+    const ownershipData: any = {
+      ownerId: payload.userId,
+      originalImageUrl: payload.imageUri,
+      condition: payload.condition,
+      purchasePrice: payload.purchasePrice,
+      purchaseDate: payload.purchaseDate,
+      notes: payload.notes,
+      processingStatus: payload.processImage ? 'pending' : 'completed',
+      useOfficialImage: false,
     };
+
+    // Set either prototypeId or communityProductId
+    if (payload.prototypeId) {
+      ownershipData.prototypeId = payload.prototypeId;
+    } else if (communityProductId) {
+      ownershipData.communityProductId = communityProductId;
+    }
+
+    const { data: ownership, error: ownershipError } = await supabase
+      .from('Ownership')
+      .insert(ownershipData)
+      .select()
+      .single();
+
+    if (ownershipError) throw ownershipError;
+
+    return { data: ownership, error: null };
+  } catch (err: any) {
+    return { data: null, error: err.message || 'Failed to create ownership' };
   }
 }
 

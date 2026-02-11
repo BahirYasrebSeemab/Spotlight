@@ -1,7 +1,4 @@
-// ========================================
-// app/(tabs)/profile/index.tsx - FIXED Own Profile
-// ========================================
-import { View, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, ScrollView, ActivityIndicator, RefreshControl, Text } from 'react-native';
 import { useAppSelector } from '@/src/shared/hooks/redux';
 import { useNavigation, useRouter } from 'expo-router';
 import { useLayoutEffect, useState } from 'react';
@@ -13,19 +10,17 @@ import { ProfileContentGrid } from '@/src/features/user/components/ProfileConten
 import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
 import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
 import { useUserMemories } from '@/src/features/user/hooks/useUserMemories';
-import { Spotlight } from '@/src/shared/components/Spotlight';
 
 export default function ProfileScreen() {
-  // Get auth user from Redux (just ID)
   const authUser = useAppSelector(state => state.auth.user);
   const navigation = useNavigation();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState<'memories' | 'matches'>('memories');
 
-  // Fetch full profile data with React Query
+  // Fetch full profile data
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useUserProfile(authUser?.id);
 
-  // Fetch user memories with React Query
+  // Fetch user memories
   const {
     data: memoriesData,
     isLoading: memoriesLoading,
@@ -41,7 +36,7 @@ export default function ProfileScreen() {
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={() => router.push('/(tabs)/profile/settings')} className="p-2">
-          <Settings size={22} color={'white'} />
+          <Settings size={22} color="white" />
         </Pressable>
       ),
     });
@@ -71,73 +66,96 @@ export default function ProfileScreen() {
   // Flatten memories from infinite query
   const memories = memoriesData?.pages.flatMap(page => page) || [];
 
-  // Filter memories based on active tab
-  const filteredMemories = memories.filter((memory: any) => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'photos') return memory.mediaUrl && !memory.mediaUrl.includes('.mp4');
-    if (activeTab === 'videos') return memory.mediaUrl && memory.mediaUrl.includes('.mp4');
-    return true;
-  });
-
   // Map memories to grid format
-  const gridMemories = filteredMemories.map((memory: any) => ({
+  const gridMemories = memories.map((memory: any) => ({
     id: memory.id,
-    imageUrl: memory.mediaUrl || '',
-    type: memory.mediaUrl?.includes('.mp4') ? ('video' as const) : ('photo' as const),
+    imageUrl: memory.thumbnailUrl || memory.mediaUrl || '',
+    type: memory.mediaType === 'video' ? ('video' as const) : ('photo' as const),
   }));
+
+  // Render content based on active tab
+  const renderTabContent = () => {
+    if (activeTab === 'memories') {
+      if (memoriesLoading) {
+        return (
+          <View className="py-20">
+            <ActivityIndicator size="large" color="#ffffff" />
+          </View>
+        );
+      }
+
+      if (gridMemories.length === 0) {
+        return <EmptyProfileContent isOwnProfile={true} activeTab="memories" />;
+      }
+
+      return (
+        <ProfileContentGrid
+          posts={gridMemories}
+          onPostPress={memoryId => router.push(`/memory/${memoryId}` as any)}
+          columns={3}
+        />
+      );
+    }
+
+    if (activeTab === 'matches') {
+      // TODO: Matches feature not yet implemented
+      return (
+        <View className="py-20 items-center px-8">
+          <Text className="text-2xl font-bold text-white mb-3 text-center">Matches Coming Soon</Text>
+          <Text className="text-gray-400 text-center">
+            Create outfit combinations and style matches with your items
+          </Text>
+        </View>
+      );
+    }
+
+    return null;
+  };
 
   return (
       <View className="flex-1 bg-black">
-        <FlatList
-          inverted
-          data={[]}
-          keyExtractor={(_, index) => `placeholder-${index}`}
-          renderItem={() => null}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" colors={['#ffffff']} />
           }
-          ListHeaderComponent={() => (
-            <ProfileIdentity
-              user={profile}
-              loading={false}
-              isOwnProfile={true}
-              onEditProfile={() => router.push('/(tabs)/profile/edit-profile')}
-              onAvatarPress={() => {
-                console.log('Avatar pressed');
-              }}
-              onFollowersPress={() => router.push(`/user/${profile.id}/followers`)}
-              onFollowingPress={() => router.push(`/user/${profile.id}/following`)}
-            />
-          )}
-          ListFooterComponent={() => (
-            <View>
-              <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={true} />
-              <View className="min-h-screen">
-                {memoriesLoading ? (
-                  <View className="py-20">
-                    <ActivityIndicator size="large" color="#ffffff" />
-                  </View>
-                ) : gridMemories.length > 0 ? (
-                  <ProfileContentGrid
-                    posts={gridMemories}
-                    onPostPress={postId => router.push(`/post/${postId}`)}
-                    columns={3}
-                  />
-                ) : (
-                  <EmptyProfileContent isOwnProfile={true} activeTab={activeTab} />
-                )}
-              </View>
-            </View>
-          )}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ flexGrow: 1 }}
-          onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) {
+          onScroll={({ nativeEvent }) => {
+            // Implement infinite scroll for memories
+            const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+            const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+
+            if (isCloseToBottom && hasNextPage && !isFetchingNextPage && activeTab === 'memories') {
               fetchNextPage();
             }
           }}
-          onEndReachedThreshold={0.5}
-        />
+          scrollEventThrottle={400}
+        >
+          {/* Profile Identity */}
+          <ProfileIdentity
+            user={profile}
+            loading={false}
+            isOwnProfile={true}
+            onEditProfile={() => router.push('/(tabs)/profile/edit-profile')}
+            onAvatarPress={() => {
+              console.log('Avatar pressed');
+            }}
+            onFollowersPress={() => router.push(`/user/${profile.id}/followers` as any)}
+            onFollowingPress={() => router.push(`/user/${profile.id}/following` as any)}
+          />
+
+          {/* Tab Bar */}
+          <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={true} />
+
+          {/* Tab Content */}
+          <View className="min-[60%]:">{renderTabContent()}</View>
+
+          {/* Loading More Indicator */}
+          {isFetchingNextPage && (
+            <View className="py-4">
+              <ActivityIndicator size="small" color="#ffffff" />
+            </View>
+          )}
+        </ScrollView>
       </View>
   );
 }
