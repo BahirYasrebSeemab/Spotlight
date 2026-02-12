@@ -1,17 +1,28 @@
-import { View, FlatList, ActivityIndicator, RefreshControl, Text, Pressable, Dimensions } from 'react-native';
+import {
+  View,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl,
+  Text,
+  Pressable,
+  Image,
+  Dimensions,
+  Animated,
+} from 'react-native';
 import { useAppSelector } from '@/src/shared/hooks/redux';
 import { useNavigation, useRouter } from 'expo-router';
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useState, useRef } from 'react';
 import { Settings } from 'lucide-react-native';
 import { ProfileIdentity } from '@/src/features/user/components/ProfileIdentity';
 import { ProfileTabBar } from '@/src/features/user/components/ProfileTabBar';
-import { ProfileContentGrid } from '@/src/features/user/components/ProfileContentGrid';
 import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
 import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
-import { useUserMemories } from '@/src/features/memories/hooks/useUserMemories';
-import { Spotlight } from '@/src/shared/components/Spotlight';
+import { useUserMemories } from '@/src/features/user/hooks/useUserMemories';
 
-const { height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+const ITEM_SIZE = (width - 4) / 3;
+const IDENTITY_HEIGHT = 320;
+const IDENTITY_PEEK = IDENTITY_HEIGHT * 0.1;
 
 export default function ProfileScreen() {
   const authUser = useAppSelector(state => state.auth.user);
@@ -19,6 +30,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'memories' | 'matches'>('memories');
   const [refreshing, setRefreshing] = useState(false);
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useUserProfile(authUser?.id);
 
@@ -30,8 +42,6 @@ export default function ProfileScreen() {
     hasNextPage,
     isFetchingNextPage,
   } = useUserMemories(authUser?.id);
-
-  console.log(memoriesData);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -56,172 +66,176 @@ export default function ProfileScreen() {
 
   if (profileLoading || !profile) {
     return (
-      <Spotlight intensity={0.2}>
-        <View className="flex-1 items-center justify-center bg-black">
-          <ActivityIndicator size="large" color="#ffffff" />
-        </View>
-      </Spotlight>
+      <View className="flex-1 items-center justify-center bg-black">
+        <ActivityIndicator size="large" color="#ffffff" />
+      </View>
     );
   }
 
-  // Flatten memories
   const memories = memoriesData?.pages.flatMap(page => page) ?? [];
 
-  const gridMemories = memories.map((memory: any) => ({
-    id: memory.id,
-    imageUrl: memory.thumbnailUrl || memory.mediaUrl || '',
-    type: memory.mediaType === 'video' ? ('video' as const) : ('photo' as const),
-  }));
+  // Identity slides away when scrolling down
+  const identityTranslateY = scrollY.interpolate({
+    inputRange: [0, IDENTITY_HEIGHT - IDENTITY_PEEK],
+    outputRange: [0, -(IDENTITY_HEIGHT - IDENTITY_PEEK)],
+    extrapolate: 'clamp',
+  });
 
-  // Tab content rendered ABOVE identity
-  const renderTabContent = () => {
-    if (activeTab === 'memories') {
-      if (memoriesLoading) {
-        return (
-          <View className="py-20">
-            <ActivityIndicator size="large" color="#ffffff" />
-          </View>
-        );
-      }
-
-      if (gridMemories.length === 0) {
-        return (
-          <View style={{ minHeight: height * 0.5 }}>
-            <EmptyProfileContent isOwnProfile={true} activeTab="memories" />
-          </View>
-        );
-      }
-
-      return (
-        <ProfileContentGrid
-          posts={gridMemories}
-          onPostPress={memoryId => router.push(`/memory/${memoryId}` as any)}
-          columns={3}
-        />
-      );
-    }
-
-    if (activeTab === 'matches') {
-      return (
-        <View style={{ minHeight: height * 0.5 }} className="items-center justify-center px-8">
-          <Text className="text-2xl font-bold text-white mb-3 text-center">Matches Coming Soon</Text>
-          <Text className="text-gray-400 text-center leading-6">
-            Create outfit combinations and style matches with your items
-          </Text>
-        </View>
-      );
-    }
-
-    return null;
-  };
+  const identityOpacity = scrollY.interpolate({
+    inputRange: [0, (IDENTITY_HEIGHT - IDENTITY_PEEK) / 2],
+    outputRange: [1, 0.5],
+    extrapolate: 'clamp',
+  });
 
   return (
-      <View className="flex-1 bg-black">
-        <FlatList
-          data={gridMemories}
-          keyExtractor={item => item.id}
-          numColumns={3}
-          // Sticky tab bar at top index 0
-          stickyHeaderIndices={[0]}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" colors={['#ffffff']} />
-          }
-          // Tab bar sticks to top
-          ListHeaderComponent={() => (
-            <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={true} />
-          )}
-          // Memories grid - rendered between tabs and identity
-          renderItem={
-            activeTab === 'memories'
-              ? ({ item }) => (
-                  <Pressable
-                    onPress={() => router.push(`/memory/${item.id}` as any)}
-                    style={{
-                      flex: 1 / 3,
-                      aspectRatio: 1,
-                      margin: 1,
-                      backgroundColor: '#ffffff10',
-                    }}
-                  >
-                    <View style={{ flex: 1 }} className="bg-white/5">
-                      {item.imageUrl ? (
-                        <View style={{ flex: 1 }}>
-                          <Pressable onPress={() => router.push(`/memory/${item.id}` as any)}>
-                            <View
-                              style={{
-                                width: '100%',
-                                aspectRatio: 1,
-                              }}
-                            >
-                              <ProfileContentGrid
-                                posts={[item]}
-                                onPostPress={id => router.push(`/memory/${id}` as any)}
-                                columns={1}
-                              />
-                            </View>
-                          </Pressable>
-                        </View>
-                      ) : null}
-                    </View>
-                  </Pressable>
-                )
-              : () => null
-          }
-          // Identity at the bottom
-          ListFooterComponent={() => (
-            <View>
-              {/* Matches empty state */}
-              {activeTab === 'matches' && (
-                <View style={{ minHeight: height * 0.5 }} className="items-center justify-center px-8">
-                  <Text className="text-2xl font-bold text-white mb-3 text-center">Matches Coming Soon</Text>
-                  <Text className="text-gray-400 text-center leading-6">
-                    Create outfit combinations and style matches with your items
-                  </Text>
-                </View>
-              )}
+    <View className="flex-1 bg-black">
+      {/* IDENTITY - sticky at bottom, slides away on scroll */}
+      <Animated.View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: IDENTITY_HEIGHT,
+          zIndex: 10,
+          backgroundColor: '#000000',
+          transform: [{ translateY: identityTranslateY }],
+          opacity: identityOpacity,
+        }}
+      >
+        <ProfileIdentity
+          user={profile}
+          loading={false}
+          isOwnProfile={true}
+          onEditProfile={() => router.push('/(tabs)/profile/edit-profile')}
+          onAvatarPress={() => console.log('Avatar pressed')}
+          onFollowersPress={() => router.push(`/user/${profile.id}/followers` as any)}
+          onFollowingPress={() => router.push(`/user/${profile.id}/following` as any)}
+        />
+      </Animated.View>
 
-              {/* Empty memories */}
-              {activeTab === 'memories' && gridMemories.length === 0 && !memoriesLoading && (
-                <View style={{ minHeight: height * 0.5 }}>
-                  <EmptyProfileContent isOwnProfile={true} activeTab="memories" />
-                </View>
-              )}
-
-              {/* Loading more */}
-              {isFetchingNextPage && (
-                <View className="py-4">
-                  <ActivityIndicator size="small" color="#ffffff" />
-                </View>
-              )}
-
-              {/* Profile Identity at the bottom */}
-              <ProfileIdentity
-                user={profile}
-                loading={false}
-                isOwnProfile={true}
-                onEditProfile={() => router.push('/(tabs)/profile/edit-profile')}
-                onAvatarPress={() => console.log('Avatar pressed')}
-                onFollowersPress={() => router.push(`/user/${profile.id}/followers` as any)}
-                onFollowingPress={() => router.push(`/user/${profile.id}/following` as any)}
-              />
-            </View>
-          )}
-          ListEmptyComponent={() =>
-            memoriesLoading ? (
-              <View className="py-20">
-                <ActivityIndicator size="large" color="#ffffff" />
-              </View>
-            ) : null
-          }
-          onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage && activeTab === 'memories') {
+      {/* MAIN FLATLIST - grid only, no nested lists */}
+      <Animated.FlatList
+        data={activeTab === 'memories' ? (memories as any[]) : []}
+        keyExtractor={(item: any) => item.id}
+        numColumns={3}
+        stickyHeaderIndices={[0]}
+        contentContainerStyle={{
+          paddingBottom: IDENTITY_HEIGHT,
+        }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" colors={['#ffffff']} />
+        }
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+          useNativeDriver: true,
+          listener: ({ nativeEvent }: any) => {
+            const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+            const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+            if (isCloseToBottom && hasNextPage && !isFetchingNextPage && activeTab === 'memories') {
               fetchNextPage();
             }
-          }}
-          onEndReachedThreshold={0.5}
-          showsVerticalScrollIndicator={false}
-          columnWrapperStyle={activeTab === 'memories' ? { gap: 2 } : undefined}
-        />
-      </View>
+          },
+        })}
+        scrollEventThrottle={16}
+        // Tab bar sticks at top
+        ListHeaderComponent={() => (
+          <View style={{ backgroundColor: '#000000' }}>
+            <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={true} />
+          </View>
+        )}
+        // Each grid item - pure Image, no nested lists
+        renderItem={({ item }: { item: any }) => (
+          <Pressable
+            onPress={() => router.push(`/memory/${item.id}` as any)}
+            style={{
+              width: ITEM_SIZE,
+              height: ITEM_SIZE,
+              margin: 1,
+            }}
+          >
+            <Image
+              source={{ uri: item.thumbnailUrl || item.mediaUrl || '' }}
+              style={{ width: ITEM_SIZE, height: ITEM_SIZE }}
+              resizeMode="cover"
+            />
+            {item.mediaType === 'video' && (
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 4,
+                  right: 4,
+                  backgroundColor: 'rgba(0,0,0,0.6)',
+                  borderRadius: 999,
+                  padding: 4,
+                }}
+              >
+                <Text style={{ color: '#fff', fontSize: 10 }}>▶</Text>
+              </View>
+            )}
+          </Pressable>
+        )}
+        columnWrapperStyle={{ gap: 2 }}
+        ListEmptyComponent={() => {
+          // Loading state
+          if (memoriesLoading) {
+            return (
+              <View style={{ paddingVertical: 80, alignItems: 'center' }}>
+                <ActivityIndicator size="large" color="#ffffff" />
+              </View>
+            );
+          }
+          // Matches tab
+          if (activeTab === 'matches') {
+            return (
+              <View
+                style={{
+                  minHeight: height * 0.35,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingHorizontal: 32,
+                }}
+              >
+                <Text
+                  style={{
+                    color: '#ffffff',
+                    fontSize: 22,
+                    fontWeight: 'bold',
+                    marginBottom: 12,
+                    textAlign: 'center',
+                  }}
+                >
+                  Matches Coming Soon
+                </Text>
+                <Text
+                  style={{
+                    color: '#6B7280',
+                    textAlign: 'center',
+                    lineHeight: 24,
+                  }}
+                >
+                  Create outfit combinations and style matches with your items
+                </Text>
+              </View>
+            );
+          }
+          // Empty memories
+          return <EmptyProfileContent isOwnProfile={true} activeTab="memories" />;
+        }}
+        ListFooterComponent={() =>
+          isFetchingNextPage ? (
+            <View style={{ paddingVertical: 16 }}>
+              <ActivityIndicator size="small" color="#ffffff" />
+            </View>
+          ) : null
+        }
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage && activeTab === 'memories') {
+            fetchNextPage();
+          }
+        }}
+        onEndReachedThreshold={0.5}
+        showsVerticalScrollIndicator={false}
+      />
+    </View>
   );
 }
