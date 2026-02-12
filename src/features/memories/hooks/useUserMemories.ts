@@ -4,11 +4,11 @@ import { getUserMemories } from '@/src/features/memories/services/memories.servi
 export function useUserMemories(userId: string | undefined, limit = 20) {
   return useInfiniteQuery({
     queryKey: ['user-memories', userId],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam }) => {
       if (!userId) throw new Error('User ID is required');
-      const { data, error } = await getUserMemories(userId, limit, pageParam);
+      const { data, error } = await getUserMemories(userId, limit, pageParam as number);
       if (error) throw new Error(error);
-      return data || [];
+      return data ?? [];
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
@@ -16,6 +16,6 @@ export function useUserMemories(userId: string | undefined, limit = 20) {
       return allPages.length * limit;
     },
     enabled: !!userId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 2 * 60 * 1000,
   });
 }
