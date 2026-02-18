@@ -131,7 +131,13 @@ const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 
 export async function createOwnership(payload: any) {
   try {
-    // Validation: Must have either prototypeId or communityProductId
+    console.log('📦 createOwnership called with:', payload);
+
+    // Validation
+    if (!payload.userId) {
+      throw new Error('User ID is required');
+    }
+
     if (!payload.prototypeId && !payload.communityProductId && !payload.createNewCommunityProduct) {
       throw new Error('Must provide either a prototype or community product, or create a new one');
     }
@@ -153,21 +159,35 @@ export async function createOwnership(payload: any) {
         .select()
         .single();
 
-      if (productError) throw productError;
+      if (productError) {
+        console.error('❌ Community product creation error:', productError);
+        throw productError;
+      }
       communityProductId = newProduct.id;
     }
 
-    // Create ownership
+    // Create ownership data
     const ownershipData: any = {
       ownerId: payload.userId,
-      originalImageUrl: payload.imageUri,
       condition: payload.condition,
       purchasePrice: payload.purchasePrice,
       purchaseDate: payload.purchaseDate,
       notes: payload.notes,
-      processingStatus: payload.processImage ? 'pending' : 'completed',
-      useOfficialImage: false,
+      useOfficialImage: payload.useOfficialImage ?? true,
+      processingStatus: 'completed',
+      status: payload.status || 'owned',
     };
+
+    // Handle image
+    if (!payload.useOfficialImage && payload.originalImageUrl) {
+      ownershipData.originalImageUrl = payload.originalImageUrl;
+      ownershipData.processingStatus = payload.processImage ? 'pending' : 'completed';
+    }
+
+    // Add selected variant
+    if (payload.selectedVariant) {
+      ownershipData.selectedVariant = payload.selectedVariant;
+    }
 
     // Set either prototypeId or communityProductId
     if (payload.prototypeId) {
@@ -176,16 +196,24 @@ export async function createOwnership(payload: any) {
       ownershipData.communityProductId = communityProductId;
     }
 
+    console.log('📝 Inserting ownership:', ownershipData);
+
     const { data: ownership, error: ownershipError } = await supabase
       .from('Ownership')
       .insert(ownershipData)
       .select()
       .single();
 
-    if (ownershipError) throw ownershipError;
+    if (ownershipError) {
+      console.error('❌ Ownership creation error:', ownershipError);
+      throw ownershipError;
+    }
+
+    console.log('✅ Ownership created:', ownership);
 
     return { data: ownership, error: null };
   } catch (err: any) {
+    console.error('💥 createOwnership error:', err);
     return { data: null, error: err.message || 'Failed to create ownership' };
   }
 }

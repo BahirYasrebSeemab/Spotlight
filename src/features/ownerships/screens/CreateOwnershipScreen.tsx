@@ -15,12 +15,14 @@ import { PrimaryButton } from '@/src/shared/components/PrimaryButton';
 import { useProductDetails } from '@/src/features/products/hooks/useProductDetails';
 import { useCreateOwnership } from '../hooks/useCreateOwnership';
 import { CreateOwnershipPayload } from '../types/ownership.types';
+import { useAppSelector } from '@/src/shared/hooks/redux';
 
 const CONDITIONS = ['new', 'like-new', 'good', 'fair', 'poor'] as const;
 
 export default function CreateOwnershipScreen() {
   const params = useLocalSearchParams<{ productId: string; type: 'PROTOTYPE' | 'COMMUNITY' }>();
   const router = useRouter();
+  const authUser = useAppSelector(state => state.auth.user);
 
   const { data: product, isLoading: loadingProduct } = useProductDetails(params.productId, params.type);
   const { mutate: createOwnership, isPending } = useCreateOwnership();
@@ -62,46 +64,47 @@ export default function CreateOwnershipScreen() {
     }
   };
 
-  const handleSubmit = () => {
-    if (!product) return;
+const handleSubmit = () => {
+  if (!product || !authUser) return;
 
-    const payload: CreateOwnershipPayload & { processImage?: boolean } = {
-      prototypeId: params.type === 'PROTOTYPE' ? params.productId : undefined,
-      communityProductId: params.type === 'COMMUNITY' ? params.productId : undefined,
-      useOfficialImage,
-      originalImageUrl: !useOfficialImage ? customImage || undefined : undefined,
-      condition: condition || undefined,
-      purchaseDate: purchaseDate || undefined,
-      purchasePrice: purchasePrice ? parseFloat(purchasePrice) : undefined,
-      selectedVariant:
-        selectedSize || selectedColor
-          ? {
-              size: selectedSize || undefined,
-              color: selectedColor || undefined,
-            }
-          : undefined,
-      notes: notes || undefined,
-      status: 'owned',
-      // ← ADDED: Include processImage when uploading custom image
-      processImage: !useOfficialImage ? processImage : undefined,
-    };
-
-    console.log('Submitting payload:', payload); // ← DEBUG LOG
-
-    createOwnership(payload, {
-      onSuccess: () => {
-        Alert.alert('Success!', 'Item added to your closet', [
-          {
-            text: 'OK',
-            onPress: () => router.back(),
-          },
-        ]);
-      },
-      onError: error => {
-        Alert.alert('Error', error.message);
-      },
-    });
+  const payload: CreateOwnershipPayload & { processImage?: boolean; userId?: string } = {
+    userId: authUser.id, // ← ADD THIS
+    prototypeId: params.type === 'PROTOTYPE' ? params.productId : undefined,
+    communityProductId: params.type === 'COMMUNITY' ? params.productId : undefined,
+    useOfficialImage,
+    originalImageUrl: !useOfficialImage ? customImage || undefined : undefined,
+    condition: condition || undefined,
+    purchaseDate: purchaseDate || undefined,
+    purchasePrice: purchasePrice ? parseFloat(purchasePrice) : undefined,
+    selectedVariant:
+      selectedSize || selectedColor
+        ? {
+            size: selectedSize || undefined,
+            color: selectedColor || undefined,
+          }
+        : undefined,
+    notes: notes || undefined,
+    status: 'owned',
+    processImage: !useOfficialImage ? processImage : undefined,
   };
+
+  console.log('Submitting payload:', payload);
+
+  createOwnership(payload, {
+    onSuccess: () => {
+      Alert.alert('Success!', 'Item added to your closet', [
+        {
+          text: 'OK',
+          onPress: () => router.back(),
+        },
+      ]);
+    },
+    onError: error => {
+      Alert.alert('Error', error.message);
+      console.error('Create ownership error:', error);
+    },
+  });
+};
 
   if (loadingProduct) {
     return (
