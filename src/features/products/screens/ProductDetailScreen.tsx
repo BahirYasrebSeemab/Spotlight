@@ -22,7 +22,7 @@ export default function ProductDetailScreen() {
 
     // Navigate to ownership creation
     router.push({
-      pathname: '/ownership/create',
+      pathname: '/ownership/',
       params: {
         productId: params.id,
         type: params.type,

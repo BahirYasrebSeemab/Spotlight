@@ -1,66 +1,62 @@
-// app/user/[id]/index.tsx - With Privacy Logic
-import { View, FlatList, ActivityIndicator, Text, RefreshControl, Pressable, Alert } from 'react-native';
+import {
+  View,
+  FlatList,
+  ActivityIndicator,
+  Text,
+  RefreshControl,
+  Pressable,
+  Alert,
+  Image,
+  Dimensions,
+  Animated,
+} from 'react-native';
 import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
-import { useState, useLayoutEffect } from 'react';
+import { useState, useLayoutEffect, useRef } from 'react';
 import { useAppSelector } from '@/src/shared/hooks/redux';
 import { ProfileIdentity } from '@/src/features/user/components/ProfileIdentity';
 import { ProfileTabBar } from '@/src/features/user/components/ProfileTabBar';
-import { ProfileContentGrid } from '@/src/features/user/components/ProfileContentGrid';
 import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
-import { Share, MoreVertical, Lock } from 'lucide-react-native';
-
-// Import ENHANCED hooks
+import { Share, MoreVertical, Lock, Play } from 'lucide-react-native';
 import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
-import { useUserMemories } from '@/src/features/user/hooks/useUserMemories';
+import { useUserMemories } from '@/src/features/memories/hooks/useUserMemories'; // ← CORRECT IMPORT
 import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
 import { useFollowUser } from '@/src/features/user/hooks/useFollowUser';
 import { useFollowRequests } from '@/src/features/user/hooks/useFollowRequests';
 import { useFollowRequestStatus } from '@/src/features/user/hooks/useFollowRequestStatus';
+
+const { width, height } = Dimensions.get('window');
+const ITEM_SIZE = (width - 4) / 3;
+const IDENTITY_HEIGHT = 380;
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const currentUser = useAppSelector(state => state.auth.user);
   const router = useRouter();
   const navigation = useNavigation();
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState<'memories' | 'matches'>('memories');
+  const [refreshing, setRefreshing] = useState(false);
+  const scrollY = useRef(new Animated.Value(0)).current;
 
-  // Fetch user profile
   const { data: user, isLoading: userLoading, refetch: refetchUser } = useUserProfile(id);
-
-  // Check follow status
   const { data: followStatus, refetch: refetchFollowStatus } = useFollowStatus(currentUser?.id, id);
-
-  // Check follow request status
   const { data: requestStatus, refetch: refetchRequestStatus } = useFollowRequestStatus(currentUser?.id, id);
 
   const isOwnProfile = currentUser?.id === id;
-
-  // Only fetch memories if: own profile OR account is public OR user is following
   const shouldFetchMemories = isOwnProfile || !user?.isPrivate || followStatus?.isFollowing;
 
-  // // Fetch user memories (conditionally enabled)
-  // const {
-  //   data: memoriesData,
-  //   isLoading: memoriesLoading,
-  //   fetchNextPage,
-  //   hasNextPage,
-  //   isFetchingNextPage,
-  //   refetch: refetchMemories,
-  // } = useUserMemories(id, { enabled: shouldFetchMemories });
+  // Use CORRECT hook with conditional enable
+  const {
+    data: memoriesData,
+    isLoading: memoriesLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch: refetchMemories,
+  } = useUserMemories(id, 20);
 
-  // Follow/unfollow mutation with optimistic updates
-  const { follow, unfollow, isLoading: followLoading, error: followError } = useFollowUser();
+  const { follow, unfollow, isLoading: followLoading } = useFollowUser();
+  const { send, cancel, isSending, isCanceling } = useFollowRequests();
 
-  // Follow request mutations with optimistic updates
-  const { send, cancel, isSending, isCanceling, error: requestError } = useFollowRequests();
-
-  // Refresh state
-  const [refreshing, setRefreshing] = useState(false);
-
-  // Flatten memories from infinite query
-  // const memories = memoriesData?.pages.flatMap(page => page) || [];
-
-  // Set header
   useLayoutEffect(() => {
     if (user?.username) {
       navigation.setOptions({
@@ -81,15 +77,12 @@ export default function UserProfileScreen() {
     }
   }, [user, isOwnProfile]);
 
-  // Pull to refresh handler
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      const refreshPromises = [refetchUser(), refetchFollowStatus(), refetchRequestStatus()];
-      // if (shouldFetchMemories) {
-      //   refreshPromises.push(refetchMemories());
-      // }
-      await Promise.all(refreshPromises);
+      const promises = [refetchUser(), refetchFollowStatus(), refetchRequestStatus()];
+      if (shouldFetchMemories) promises.push(refetchMemories());
+      await Promise.all(promises);
     } catch (error) {
       console.error('Error refreshing:', error);
     } finally {
@@ -97,35 +90,22 @@ export default function UserProfileScreen() {
     }
   };
 
-  // Handle follow/unfollow toggle
   const handleFollowToggle = () => {
     if (!currentUser) {
       Alert.alert('Sign in required', 'Please sign in to follow users');
       return;
     }
-
-    // If already following, unfollow
     if (followStatus?.isFollowing) {
       unfollow({ currentUserId: currentUser.id, targetUserId: id });
     } else {
-      // Follow or send request (handled by followUserSmart)
       follow({ currentUserId: currentUser.id, targetUserId: id });
     }
   };
 
-  // Handle cancel follow request
   const handleCancelRequest = () => {
     if (!currentUser) return;
     cancel({ requesterId: currentUser.id, requestedId: id });
   };
-
-  // Show error if mutations fail
-  if (followError) {
-    console.error('Follow error:', followError);
-  }
-  if (requestError) {
-    console.error('Follow request error:', requestError);
-  }
 
   const handleShare = () => {
     console.log('Share profile:', user?.username);
@@ -140,116 +120,166 @@ export default function UserProfileScreen() {
     ]);
   };
 
-  // Loading state
   if (userLoading) {
     return (
-        <View className="flex-1 items-center justify-center bg-black">
-          <ActivityIndicator size="large" color="#ffffff" />
-        </View>
+      <View className="flex-1 items-center justify-center bg-black">
+        <ActivityIndicator size="large" color="#ffffff" />
+      </View>
     );
   }
 
-  // Not found state
   if (!user) {
     return (
-        <View className="flex-1 items-center justify-center bg-black px-8">
-          <Text className="text-xl font-bold text-white mb-2">User not found</Text>
-          <Text className="text-gray-400 text-center">This user doesn't exist or has been removed</Text>
-        </View>
+      <View className="flex-1 items-center justify-center bg-black px-8">
+        <Text className="text-xl font-bold text-white mb-2">User not found</Text>
+        <Text className="text-gray-400 text-center">This user doesn't exist or has been removed</Text>
+      </View>
     );
   }
 
-  // Redirect if viewing own profile
   if (isOwnProfile) {
     router.replace('/(tabs)/profile');
     return null;
   }
 
-  // Check if private and not following - show private account message
-  const isPrivateAndNotFollowing = user.isPrivate && !followStatus?.isFollowing && !isOwnProfile;
+  const isPrivateAndNotFollowing = user.isPrivate && !followStatus?.isFollowing;
+  const memories = memoriesData?.pages.flatMap(page => page) ?? [];
 
-  // // Filter memories based on active tab
-  // const filteredMemories = memories.filter((memory: any) => {
-  //   if (activeTab === 'all') return true;
-  //   if (activeTab === 'photos') return post.mediaUrl && !post.mediaUrl.includes('.mp4');
-  //   if (activeTab === 'videos') return post.mediaUrl && post.mediaUrl.includes('.mp4');
-  //   return true;
-  // });
+  const identityTranslateY = scrollY.interpolate({
+    inputRange: [0, 300],
+    outputRange: [0, IDENTITY_HEIGHT],
+    extrapolate: 'clamp',
+  });
 
-  // // Map to grid format
-  // const gridMemories = filteredMemories.map((memory: any) => ({
-  //   id: memory.id,
-  //   imageUrl: memory.mediaUrl || '',
-  //   type: memory.mediaUrl?.includes('.mp4') ? ('video' as const) : ('photo' as const),
-  // }));
-
-  // Private account content view
-  const renderPrivateContent = () => (
-    <View className="flex-1 items-center justify-center py-20 px-8">
-      <View className="w-24 h-24 rounded-full bg-white/10 items-center justify-center mb-6">
-        <Lock size={40} color="#ffffff" strokeWidth={1.5} />
-      </View>
-      <Text className="text-2xl font-bold text-white mb-3 text-center">This Account is Private</Text>
-      <Text className="text-gray-400 text-center text-base leading-6">Follow this account to see their Memories</Text>
-    </View>
-  );
+  const identityOpacity = scrollY.interpolate({
+    inputRange: [0, 200],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
 
   return (
-      <View className="flex-1 bg-black">
-        <FlatList
-          inverted
-          data={[]}
-          keyExtractor={(_, index) => `placeholder-${index}`}
-          renderItem={() => null}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" colors={['#ffffff']} />
-          }
-          ListHeaderComponent={() => (
-            <ProfileIdentity
-              user={user}
-              loading={false}
-              isOwnProfile={false}
-              isFollowing={followStatus?.isFollowing}
-              followRequestStatus={requestStatus?.status || null}
-              onFollowToggle={handleFollowToggle}
-              onCancelRequest={handleCancelRequest}
-              onAvatarPress={() => router.push(`/user/${id}/avatar`)}
-              onFollowersPress={isPrivateAndNotFollowing ? undefined : () => router.push(`/user/${user.id}/followers`)}
-              onFollowingPress={isPrivateAndNotFollowing ? undefined : () => router.push(`/user/${user.id}/following`)}
-              followLoading={followLoading || isSending || isCanceling}
+    <View className="flex-1 bg-black">
+      <Animated.FlatList
+        data={activeTab === 'memories' && shouldFetchMemories ? (memories as any[]) : []}
+        keyExtractor={(item: any) => item.id}
+        numColumns={3}
+        stickyHeaderIndices={[0]}
+        contentContainerStyle={{ minHeight: height }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" colors={['#ffffff']} />
+        }
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+        scrollEventThrottle={16}
+        ListHeaderComponent={() => (
+          <View className="bg-black">
+            <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={false} />
+          </View>
+        )}
+        renderItem={({ item }: { item: any }) => (
+          <Pressable
+            onPress={() => router.push(`/memory/${item.id}` as any)}
+            className="bg-gray-900"
+            style={{ width: ITEM_SIZE, height: ITEM_SIZE, margin: 1 }}
+          >
+            <Image
+              source={{ uri: item.thumbnailUrl || item.mediaUrl || '' }}
+              style={{ width: ITEM_SIZE, height: ITEM_SIZE }}
+              resizeMode="cover"
             />
-          )}
-          ListFooterComponent={() => (
-            <View>
-              <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={false} />
-              <View className="min-h-screen">
-                {isPrivateAndNotFollowing ? (
-                  renderPrivateContent()
-                ) : (
-                  // ) : memoriesLoading ? (
-                  //   <View className="py-20">
-                  //     <ActivityIndicator size="large" color="#8B5CF6" />
-                  //   </View>
-                  // ) : gridMemories.length > 0 ? (
-                  //   <ProfileContentGrid
-                  //     memories={gridMemories}
-                  //     onPostPress={postId => router.push(`/post/${postId}`)}
-                  //     columns={3}
-                  //   />
-                  <EmptyProfileContent isOwnProfile={false} activeTab={activeTab} />
-                )}
+            {item.mediaType === 'video' && (
+              <View className="absolute inset-0 items-center justify-center">
+                <View className="bg-black/70 rounded-full w-8 h-8 items-center justify-center">
+                  <Play size={16} color="#ffffff" fill="#ffffff" />
+                </View>
               </View>
+            )}
+          </Pressable>
+        )}
+        columnWrapperStyle={{ gap: 2 }}
+        ListEmptyComponent={() => {
+          if (isPrivateAndNotFollowing) {
+            return (
+              <View className="items-center justify-center px-8" style={{ height: height - 200 }}>
+                <View className="w-24 h-24 rounded-full bg-white/10 items-center justify-center mb-6">
+                  <Lock size={40} color="#ffffff" strokeWidth={1.5} />
+                </View>
+                <Text className="text-2xl font-bold text-white mb-3 text-center">This Account is Private</Text>
+                <Text className="text-gray-400 text-center text-base leading-6">
+                  Follow this account to see their Memories
+                </Text>
+              </View>
+            );
+          }
+
+          if (memoriesLoading) {
+            return (
+              <View className="items-center justify-center" style={{ height: height - 200 }}>
+                <ActivityIndicator size="large" color="#ffffff" />
+                <Text className="text-gray-500 mt-3">Loading memories...</Text>
+              </View>
+            );
+          }
+
+          if (activeTab === 'matches') {
+            return (
+              <View className="items-center justify-center px-8" style={{ height: height - 200 }}>
+                <Text className="text-2xl font-bold text-white mb-3 text-center">Matches Coming Soon</Text>
+                <Text className="text-gray-400 text-center leading-6">
+                  Create outfit combinations and style matches
+                </Text>
+              </View>
+            );
+          }
+
+          return (
+            <View className="items-center justify-center" style={{ height: height - 200 }}>
+              <EmptyProfileContent isOwnProfile={false} activeTab="memories" />
             </View>
-          )}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ flexGrow: 1 }}
-          onEndReached={() => {
-            // if (hasNextPage && !isFetchingNextPage && !isPrivateAndNotFollowing) {
-            //   fetchNextPage();
-            // }
-          }}
-          onEndReachedThreshold={0.5}
+          );
+        }}
+        ListFooterComponent={() =>
+          isFetchingNextPage ? (
+            <View className="py-4">
+              <ActivityIndicator size="small" color="#ffffff" />
+            </View>
+          ) : null
+        }
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage && activeTab === 'memories' && shouldFetchMemories) {
+            fetchNextPage();
+          }
+        }}
+        onEndReachedThreshold={0.5}
+        showsVerticalScrollIndicator={false}
+      />
+
+      <Animated.View
+        pointerEvents="box-none"
+        className="absolute bottom-0 left-0 right-0 bg-black"
+        style={{
+          height: IDENTITY_HEIGHT,
+          transform: [{ translateY: identityTranslateY }],
+          opacity: identityOpacity,
+        }}
+      >
+        <ProfileIdentity
+          user={user}
+          loading={false}
+          isOwnProfile={false}
+          isFollowing={followStatus?.isFollowing}
+          followRequestStatus={requestStatus?.status || null}
+          onFollowToggle={handleFollowToggle}
+          onCancelRequest={handleCancelRequest}
+          onAvatarPress={() => router.push(`/user/${id}/avatar` as any)}
+          onFollowersPress={
+            isPrivateAndNotFollowing ? undefined : () => router.push(`/user/${user.id}/followers` as any)
+          }
+          onFollowingPress={
+            isPrivateAndNotFollowing ? undefined : () => router.push(`/user/${user.id}/following` as any)
+          }
+          followLoading={followLoading || isSending || isCanceling}
         />
-      </View>
+      </Animated.View>
+    </View>
   );
 }
