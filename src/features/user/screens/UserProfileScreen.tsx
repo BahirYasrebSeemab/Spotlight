@@ -18,7 +18,7 @@ import { ProfileTabBar } from '@/src/features/user/components/ProfileTabBar';
 import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
 import { Share, MoreVertical, Lock, Play } from 'lucide-react-native';
 import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
-import { useUserMemories } from '@/src/features/memories/hooks/useUserMemories'; // ← CORRECT IMPORT
+import { useUserMemories } from '@/src/features/memories/hooks/useUserMemories';
 import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
 import { useFollowUser } from '@/src/features/user/hooks/useFollowUser';
 import { useFollowRequests } from '@/src/features/user/hooks/useFollowRequests';
@@ -44,7 +44,12 @@ export default function UserProfileScreen() {
   const isOwnProfile = currentUser?.id === id;
   const shouldFetchMemories = isOwnProfile || !user?.isPrivate || followStatus?.isFollowing;
 
-  // Use CORRECT hook with conditional enable
+  // Debug logs
+  console.log('🔍 User ID:', id);
+  console.log('🔍 shouldFetchMemories:', shouldFetchMemories);
+  console.log('🔍 user?.isPrivate:', user?.isPrivate);
+  console.log('🔍 followStatus?.isFollowing:', followStatus?.isFollowing);
+
   const {
     data: memoriesData,
     isLoading: memoriesLoading,
@@ -52,10 +57,13 @@ export default function UserProfileScreen() {
     hasNextPage,
     isFetchingNextPage,
     refetch: refetchMemories,
-  } = useUserMemories(id, 20);
+  } = useUserMemories(id, 20, shouldFetchMemories); // ← Pass enabled flag
 
   const { follow, unfollow, isLoading: followLoading } = useFollowUser();
   const { send, cancel, isSending, isCanceling } = useFollowRequests();
+
+  const memories = memoriesData?.pages.flatMap(page => page) ?? [];
+  console.log('🔍 Flattened memories:', memories.length, 'items');
 
   useLayoutEffect(() => {
     if (user?.username) {
@@ -80,8 +88,8 @@ export default function UserProfileScreen() {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      const promises = [refetchUser(), refetchFollowStatus(), refetchRequestStatus()];
-      if (shouldFetchMemories) promises.push(refetchMemories());
+      const promises: Promise<any>[] = [refetchUser(), refetchFollowStatus(), refetchRequestStatus()];
+      if (shouldFetchMemories) promises.push(refetchMemories() as Promise<any>);
       await Promise.all(promises);
     } catch (error) {
       console.error('Error refreshing:', error);
@@ -143,7 +151,6 @@ export default function UserProfileScreen() {
   }
 
   const isPrivateAndNotFollowing = user.isPrivate && !followStatus?.isFollowing;
-  const memories = memoriesData?.pages.flatMap(page => page) ?? [];
 
   const identityTranslateY = scrollY.interpolate({
     inputRange: [0, 300],
@@ -164,7 +171,7 @@ export default function UserProfileScreen() {
         keyExtractor={(item: any) => item.id}
         numColumns={3}
         stickyHeaderIndices={[0]}
-        contentContainerStyle={{ minHeight: height }}
+        contentContainerStyle={{ paddingBottom: 20 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" colors={['#ffffff']} />
         }
@@ -199,7 +206,7 @@ export default function UserProfileScreen() {
         ListEmptyComponent={() => {
           if (isPrivateAndNotFollowing) {
             return (
-              <View className="items-center justify-center px-8" style={{ height: height - 200 }}>
+              <View className="items-center justify-center px-8" style={{ height: height - 300 }}>
                 <View className="w-24 h-24 rounded-full bg-white/10 items-center justify-center mb-6">
                   <Lock size={40} color="#ffffff" strokeWidth={1.5} />
                 </View>
@@ -213,7 +220,7 @@ export default function UserProfileScreen() {
 
           if (memoriesLoading) {
             return (
-              <View className="items-center justify-center" style={{ height: height - 200 }}>
+              <View className="items-center justify-center" style={{ height: height - 300 }}>
                 <ActivityIndicator size="large" color="#ffffff" />
                 <Text className="text-gray-500 mt-3">Loading memories...</Text>
               </View>
@@ -222,7 +229,7 @@ export default function UserProfileScreen() {
 
           if (activeTab === 'matches') {
             return (
-              <View className="items-center justify-center px-8" style={{ height: height - 200 }}>
+              <View className="items-center justify-center px-8" style={{ height: height - 300 }}>
                 <Text className="text-2xl font-bold text-white mb-3 text-center">Matches Coming Soon</Text>
                 <Text className="text-gray-400 text-center leading-6">
                   Create outfit combinations and style matches
@@ -232,7 +239,7 @@ export default function UserProfileScreen() {
           }
 
           return (
-            <View className="items-center justify-center" style={{ height: height - 200 }}>
+            <View className="items-center justify-center" style={{ height: height - 300 }}>
               <EmptyProfileContent isOwnProfile={false} activeTab="memories" />
             </View>
           );
