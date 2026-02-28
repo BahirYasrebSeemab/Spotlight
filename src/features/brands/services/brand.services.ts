@@ -239,7 +239,16 @@ export async function getBrandProducts(brandId: string, limit = 20, offset = 0) 
       .range(offset, offset + limit - 1);
 
     if (error) throw error;
-    return { data, error: null };
+
+    const mapped = (data || []).map(item => ({
+      ...item,
+      type: 'PROTOTYPE' as const,
+      verified: item.isVerified ?? false,
+      ownershipCount: 0,
+      brandName: item.brandName ?? '',
+    }));
+
+    return { data: mapped, error: null };
   } catch (err: any) {
     return { data: null, error: err.message || 'Failed to fetch brand products' };
   }
