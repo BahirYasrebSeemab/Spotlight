@@ -7,7 +7,6 @@ import { BrandTabBar } from '@/src/features/brands/components/BrandTabBar';
 import { BrandProductGrid } from '@/src/features/brands/components/BrandProductGrid';
 import { EmptyBrandContent } from '@/src/features/brands/components/EmptyBrandContent';
 import { Share, MoreVertical } from 'lucide-react-native';
-import { Spotlight } from '@/src/shared/components/Spotlight';
 
 // Hooks
 import { useBrandProfile } from '@/src/features/brands/hooks/useBrandProfile';
@@ -105,23 +104,19 @@ export default function BrandProfileScreen() {
   // Loading state
   if (brandLoading) {
     return (
-      <Spotlight intensity={0.2}>
         <View className="flex-1 items-center justify-center bg-black">
           <ActivityIndicator size="large" color="#ffffff" />
         </View>
-      </Spotlight>
     );
   }
 
   // Not found state
   if (!brand) {
     return (
-      <Spotlight intensity={0.2}>
         <View className="flex-1 items-center justify-center bg-black px-8">
           <Text className="text-xl font-bold text-white mb-2">Brand not found</Text>
           <Text className="text-gray-400 text-center">This brand doesn't exist or has been removed</Text>
         </View>
-      </Spotlight>
     );
   }
 
@@ -142,7 +137,6 @@ export default function BrandProfileScreen() {
         return (
           <BrandProductGrid
             products={products}
-            onProductPress={productId => router.push(`/product/${productId}` as any)}
             columns={3}
           />
         );
@@ -201,7 +195,6 @@ export default function BrandProfileScreen() {
   };
 
   return (
-    <Spotlight intensity={0.2}>
       <View className="flex-1 bg-black">
         <FlatList
           data={[]}
@@ -237,6 +230,5 @@ export default function BrandProfileScreen() {
           onEndReachedThreshold={0.5}
         />
       </View>
-    </Spotlight>
   );
 }
