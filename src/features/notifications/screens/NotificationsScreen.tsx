@@ -45,26 +45,25 @@ export default function NotificationsScreen() {
 
   return (
     <View className="flex-1 bg-white dark:bg-black">
-      <Text className="p-5 pb-1 text-2xl font-bold text-black dark:text-white mb-3">Notifications</Text>
       {/* Tab Switcher */}
       <View className="flex-row border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black">
         <TouchableOpacity
           onPress={() => setActiveTab('requests')}
           className={`flex-1 py-4 items-center border-b-2 ${
-            activeTab === 'requests' ? 'border-purple-600' : 'border-transparent'
+            activeTab === 'requests' ? 'border-white' : 'border-transparent'
           }`}
         >
           <View className="flex-row items-center">
             <Text
               className={`font-semibold text-base ${
-                activeTab === 'requests' ? 'text-purple-600' : 'text-gray-500 dark:text-gray-400'
+                activeTab === 'requests' ? 'text-white' : 'text-gray-500 dark:text-gray-400'
               }`}
             >
               Spot Requests
             </Text>
             {requests.length > 0 && (
-              <View className="ml-2 bg-purple-600 rounded-full w-5 h-5 items-center justify-center">
-                <Text className="text-white text-xs font-bold">{requests.length}</Text>
+              <View className="ml-2 bg-white rounded-full w-5 h-5 items-center justify-center">
+                <Text className="text-black text-xs font-bold">{requests.length}</Text>
               </View>
             )}
           </View>
