@@ -31,7 +31,7 @@ function ClosetIcon({ color, size }: { color: string; size: number }) {
 
 export default function TabLayout() {
   return (
-     
+    <SafeAreaView className="flex-1 bg-black">
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -57,6 +57,7 @@ export default function TabLayout() {
             tabBarIcon: ({ color, size }) => <ClosetIcon color={color} size={size} />,
           }}
         />
+
         <Tabs.Screen
           name="search"
           options={{
@@ -87,5 +88,6 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
+    </SafeAreaView>
   );
 }

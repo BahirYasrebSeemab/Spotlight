@@ -15,11 +15,9 @@ export default function RootLayout() {
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
         <SafeAreaProvider>
-          <SafeAreaView className="flex-1 bg-black">
             <Spotlight intensity={0.2}>
               <Slot />
             </Spotlight>
-          </SafeAreaView>
         </SafeAreaProvider>
       </QueryClientProvider>
     </Provider>
