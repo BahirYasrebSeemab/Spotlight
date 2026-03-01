@@ -6,9 +6,11 @@ export interface PrimaryButtonProps {
   onPress: () => void;
   disabled?: boolean;
   px?: string;
+  loading: boolean;
 }
 
 export const PrimaryButton = ({
+  loading,
   icon,
   px,
   title,
@@ -18,11 +20,11 @@ export const PrimaryButton = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      disabled={disabled}
-      className={`py-3 ${px} rounded-xl ${disabled ? 'bg-gray-400' : 'bg-blue-500'}`}
+      disabled={disabled || loading}
+      className={`py-3 ${px} rounded-xl ${disabled || loading ? 'bg-gray-400' : 'bg-blue-500'}`}
     >
       <Text className="text-white text-center font-semibold">
-        {disabled ? <ActivityIndicator size="small" color="#000000" /> : title}
+        {loading ? <ActivityIndicator size="small" color="#ffffff" /> : title}
       </Text>
     </TouchableOpacity>
   );

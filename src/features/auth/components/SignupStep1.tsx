@@ -48,7 +48,7 @@ export const SignupStep1 = ({ form, onChange, onNext, handleGoogleLogin, loading
         editable={!loading}
       />
 
-      <PrimaryButton title="Next" onPress={onNext} disabled={!isValid || loading} />
+      <PrimaryButton title="Next" onPress={onNext} disabled={!isValid || loading} loading={loading}  />
 
       <Divider />
 

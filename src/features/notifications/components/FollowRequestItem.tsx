@@ -62,7 +62,7 @@ export function FollowRequestItem({ item, onAccept, onReject }: FollowRequestIte
           {item.requester?.avatarUrl ? (
             <Image source={{ uri: item.requester.avatarUrl }} className="w-14 h-14 rounded-full" />
           ) : (
-            <View className="w-14 h-14 rounded-full bg-purple-500 items-center justify-center">
+            <View className="w-14 h-14 rounded-full bg-white items-center justify-center">
               <Text className="text-white text-xl font-bold">
                 {item.requester?.name?.[0] || item.requester?.username?.[0] || '?'}
               </Text>
@@ -86,15 +86,15 @@ export function FollowRequestItem({ item, onAccept, onReject }: FollowRequestIte
         <TouchableOpacity
           onPress={handleAccept}
           disabled={isProcessing}
-          className="flex-1 flex-row items-center justify-center bg-purple-600 py-2.5 rounded-lg"
+          className="flex-1 flex-row items-center justify-center bg-white py-2.5 rounded-lg"
           activeOpacity={0.8}
         >
           {isProcessing && action === 'accept' ? (
-            <ActivityIndicator size="small" color="white" />
+            <ActivityIndicator size="small" color="black" />
           ) : (
             <>
-              <Check size={18} color="white" strokeWidth={2.5} />
-              <Text className="text-white font-semibold ml-2">Accept</Text>
+              <Check size={18} color="black" strokeWidth={2.5} />
+              <Text className="text-black font-semibold ml-2">Accept</Text>
             </>
           )}
         </TouchableOpacity>

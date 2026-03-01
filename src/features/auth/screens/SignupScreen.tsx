@@ -28,7 +28,7 @@ export default function SignupScreen() {
             onChange={updateField}
             onNext={nextStep}
             handleGoogleLogin={handleGoogleLogin}
-            loading={oAuthLoading}
+            loading={loading}
           />
         )}
 
