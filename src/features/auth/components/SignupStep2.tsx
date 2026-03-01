@@ -81,7 +81,7 @@ export const SignupStep2 = ({ form, onChange, onNext, onBack, error, loading }: 
               <Text className="text-white font-semibold ml-2">Creating Account...</Text>
             </View>
           ) : (
-            <PrimaryButton px="px-0" title="Create Account" onPress={onNext} disabled={!isValid || loading} />
+            <PrimaryButton loading={loading} px="px-0" title="Create Account" onPress={onNext} disabled={!isValid || loading} />
           )}
         </View>
       </View>
