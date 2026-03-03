@@ -18,16 +18,12 @@ export default function SplashScreen() {
 
   useEffect(() => {
     const initialize = async () => {
-      console.log('🚀 Splash: Initializing...');
-
       try {
         // Check for deep link first (password reset)
         const initialUrl = await Linking.getInitialURL();
-        console.log('🔗 Initial URL:', initialUrl);
 
         // Handle password reset link from cold start
         if (initialUrl && initialUrl.includes('type=recovery')) {
-          console.log('🔑 Password reset link detected on cold start');
 
           let tokenHash = null;
           const queryMatch = initialUrl.match(/[?&]token_hash=([^&#]+)/);
@@ -49,7 +45,6 @@ export default function SplashScreen() {
               });
 
               if (!error && data?.session) {
-                console.log('✅ Password reset session created');
                 dispatch(setPasswordResetSession(true));
                 router.replace('/(auth)/reset-password');
                 return; // Exit early
@@ -62,7 +57,6 @@ export default function SplashScreen() {
 
         // Handle OAuth callback from cold start
         if (initialUrl && initialUrl.includes('access_token') && initialUrl.includes('refresh_token')) {
-          console.log('🔐 OAuth callback detected on cold start');
 
           try {
             const hashIndex = initialUrl.indexOf('#');
@@ -78,7 +72,6 @@ export default function SplashScreen() {
                 });
 
                 if (!sessionError && sessionData?.session) {
-                  console.log('✅ OAuth session created');
                   const user = sessionData.session.user;
 
                   // Set user in Redux
@@ -114,7 +107,6 @@ export default function SplashScreen() {
         const { data } = await supabase.auth.getSession();
 
         if (data.session) {
-          console.log('✅ Valid session found - loading user');
           const user = data.session.user;
 
           // Set user in Redux
@@ -133,10 +125,8 @@ export default function SplashScreen() {
             },
           });
 
-          console.log('✅ User profile prefetched');
           router.replace('/(tabs)');
         } else {
-          console.log('❌ No session found');
           dispatch(clearCurrentUser());
           await AsyncStorage.removeItem('authState');
           router.replace('/(auth)');

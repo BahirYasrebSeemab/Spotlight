@@ -44,12 +44,6 @@ export default function UserProfileScreen() {
   const isOwnProfile = currentUser?.id === id;
   const shouldFetchMemories = isOwnProfile || !user?.isPrivate || followStatus?.isFollowing;
 
-  // Debug logs
-  console.log('🔍 User ID:', id);
-  console.log('🔍 shouldFetchMemories:', shouldFetchMemories);
-  console.log('🔍 user?.isPrivate:', user?.isPrivate);
-  console.log('🔍 followStatus?.isFollowing:', followStatus?.isFollowing);
-
   const {
     data: memoriesData,
     isLoading: memoriesLoading,
@@ -63,7 +57,6 @@ export default function UserProfileScreen() {
   const { send, cancel, isSending, isCanceling } = useFollowRequests();
 
   const memories = memoriesData?.pages.flatMap(page => page) ?? [];
-  console.log('🔍 Flattened memories:', memories.length, 'items');
 
   useLayoutEffect(() => {
     if (user?.username) {

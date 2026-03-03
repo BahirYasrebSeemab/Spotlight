@@ -42,7 +42,6 @@ export function useSignup() {
       return user;
     },
     onSuccess: async user => {
-      console.log('✅ Signup successful:', user.id);
 
       // Set auth user in Redux
       dispatch(setCurrentUser(user));

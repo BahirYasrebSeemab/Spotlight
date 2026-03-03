@@ -6,7 +6,6 @@ export function useSearchProducts(query: string) {
   return useQuery({
     queryKey: ['search-products', query],
     queryFn: async () => {
-      console.log('searching'); // THIS IS WHERE THE LOG COMES FROM
       const { data, error } = await searchProducts(query);
       if (error) throw new Error(error);
       return data || [];

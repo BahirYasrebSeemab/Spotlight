@@ -20,14 +20,12 @@ interface BrandProductGridProps {
 export function BrandProductGrid({ products, columns = 3 }: BrandProductGridProps) {
   const itemWidth = (width - (columns + 1) * 2) / columns; // 2px gap
   const router = useRouter();
-  console.log('GRID RECEIVED:', JSON.stringify(products[0]));
   return (
     <View className="flex-row flex-wrap" style={{ gap: 2 }}>
       {products.map(product => (
         <Pressable
           key={product.id}
           onPress={() => {
-            console.log('product.id:', product.id, 'product.type:', product.type);
             router.push(`/product/${product.id}?type=${product.type}`);
           }}
           style={{ width: itemWidth, height: itemWidth }}

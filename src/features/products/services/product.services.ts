@@ -3,28 +3,22 @@ import { supabase } from '@/src/lib/supabase';
 import type { Product, ProductDetail } from '../types/product.types';
 
 export async function searchProducts(query: string, limit = 20) {
-  console.log('🔍 searchProducts called with query:', query);
   
   if (!query || query.length < 2) {
-    console.log('❌ Query too short, returning empty');
     return { data: [], error: null };
   }
 
   try {
-    console.log('📡 Calling Supabase RPC...');
     const { data, error } = await supabase.rpc('search_products', {
       search_query: query,
       limit_count: limit,
     });
-
-    console.log('📦 Supabase response:', { data, error });
 
     if (error) {
       console.error('❌ Supabase error:', error);
       throw error;
     }
     
-    console.log('✅ Returning data:', data);
     return { data: data as Product[], error: null };
   } catch (err: any) {
     console.error('💥 Exception caught:', err);
@@ -77,7 +71,6 @@ export async function getProductById(productId: string, type: 'PROTOTYPE' | 'COM
         variants: data.variants,
         isActive: data.isActive,
       };
-      console.log('Prototype Product Detail:', productDetail);
 
       return { data: productDetail, error: null };
     } else {
@@ -121,7 +114,6 @@ export async function getProductById(productId: string, type: 'PROTOTYPE' | 'COM
         createdBy: data.createdBy,
       };
 
-      console.log('Community Product Detail:', productDetail);
       return { data: productDetail, error: null };
     }
   } catch (err: any) {

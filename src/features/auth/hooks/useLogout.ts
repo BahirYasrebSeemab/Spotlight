@@ -19,8 +19,6 @@ export function useLogout() {
       if (error) throw error;
     },
     onSuccess: async () => {
-      console.log('✅ Logout successful');
-
       // Clear AsyncStorage
       await AsyncStorage.removeItem('authState');
 

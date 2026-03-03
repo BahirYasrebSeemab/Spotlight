@@ -22,9 +22,7 @@ export default function NotificationsScreen() {
 
   const handleAccept = async (requestId: string) => {
     try {
-      console.log('🔵 Accepting request:', requestId);
       const result = await acceptAsync(requestId);
-      console.log('✅ Accept result:', result);
       Alert.alert('Success', 'Follow request accepted!');
     } catch (error: any) {
       console.error('❌ Error accepting request:', error);
@@ -34,9 +32,7 @@ export default function NotificationsScreen() {
 
   const handleReject = async (requestId: string) => {
     try {
-      console.log('🔴 Rejecting request:', requestId);
       await rejectAsync(requestId);
-      console.log('✅ Request rejected');
     } catch (error: any) {
       console.error('❌ Error rejecting request:', error);
       Alert.alert('Error', 'Failed to decline request. Please try again.');

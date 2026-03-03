@@ -131,7 +131,6 @@ const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 
 export async function createOwnership(payload: any) {
   try {
-    console.log('📦 createOwnership called with:', payload);
 
     // Validation
     if (!payload.userId) {
@@ -196,7 +195,6 @@ export async function createOwnership(payload: any) {
       ownershipData.communityProductId = communityProductId;
     }
 
-    console.log('📝 Inserting ownership:', ownershipData);
 
     const { data: ownership, error: ownershipError } = await supabase
       .from('Ownership')
@@ -208,8 +206,6 @@ export async function createOwnership(payload: any) {
       console.error('❌ Ownership creation error:', ownershipError);
       throw ownershipError;
     }
-
-    console.log('✅ Ownership created:', ownership);
 
     return { data: ownership, error: null };
   } catch (err: any) {

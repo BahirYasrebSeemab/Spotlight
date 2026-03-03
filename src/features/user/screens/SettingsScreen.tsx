@@ -30,7 +30,6 @@ export default function SettingsScreen() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   const handleDeleteConfirm = () => {
-    console.log('💀 User confirmed account deletion');
     setDeleteModalVisible(false);
     // call your hook / service to delete the account here
   };

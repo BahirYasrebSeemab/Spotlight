@@ -31,8 +31,6 @@ export function useLogin() {
       return user;
     },
     onSuccess: async user => {
-      console.log('✅ Login successful:', user.id);
-
       // Set auth user in Redux
       dispatch(setCurrentUser(user));
 

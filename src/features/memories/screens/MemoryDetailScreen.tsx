@@ -51,7 +51,6 @@ export default function MemoryDetailScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: () => {
-          console.log('Delete memory - TODO');
           // TODO: Implement delete mutation
           router.back();
         },

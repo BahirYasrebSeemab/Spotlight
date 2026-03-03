@@ -63,7 +63,6 @@ WebBrowser.maybeCompleteAuthSession();
 const redirectTo = AuthSession.makeRedirectUri({
   scheme: 'spotlight',
 });
-console.log(redirectTo)
 
 export async function signInWithGoogle() {
   try {
@@ -78,7 +77,6 @@ export async function signInWithGoogle() {
 
     // Start OAuth flow in a web browser
     const result = await WebBrowser.openAuthSessionAsync(data?.url, redirectTo);
-    console.log('OAuth Result:', result);
 
     if (result.type === 'success') {
       // The user successfully authenticated
