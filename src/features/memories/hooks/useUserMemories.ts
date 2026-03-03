@@ -6,9 +6,7 @@ export function useUserMemories(userId: string | undefined, limit = 20, enabled 
     queryKey: ['user-memories', userId],
     queryFn: async ({ pageParam }) => {
       if (!userId) throw new Error('User ID is required');
-      console.log('🎯 Fetching memories for userId:', userId, 'offset:', pageParam);
       const { data, error } = await getUserMemories(userId, limit, pageParam as number);
-      console.log('📦 Fetched memories:', data?.length || 0, 'items');
       if (error) throw new Error(error);
       return data ?? [];
     },

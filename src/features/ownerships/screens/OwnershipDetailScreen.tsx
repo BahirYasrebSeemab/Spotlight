@@ -6,7 +6,7 @@ import { useAppSelector } from '@/src/shared/hooks/redux';
 import { useOwnershipDetails } from '@/src/features/ownerships/hooks/useOwnershipDetails';
 import { useDeleteOwnership } from '@/src/features/ownerships/hooks/useDeleteOwnership';
 import {
-  CheckCircle,
+  BadgeCheckIcon,
   Package,
   Calendar,
   DollarSign,
@@ -135,7 +135,7 @@ export default function OwnershipDetailScreen() {
 
           {ownership.isAuthenticated && (
             <View className="absolute top-16 right-4 bg-black/80 rounded-full px-3 py-2 flex-row items-center gap-2">
-              <CheckCircle size={16} color="#3B82F6" fill="#3B82F6" />
+              <BadgeCheckIcon size={20} color="#000" fill="#fff" />
               <Text className="text-white text-xs font-semibold">Authenticated</Text>
             </View>
           )}
@@ -153,7 +153,7 @@ export default function OwnershipDetailScreen() {
                     <Image source={{ uri: brand.logoUrl }} className="w-6 h-6 rounded-full bg-white/10" />
                   )}
                   <Text className={`text-lg ${brand ? 'text-blue-400' : 'text-gray-400'}`}>{brandName}</Text>
-                  {brand?.verified && <CheckCircle size={16} color="#10B981" fill="#10B981" />}
+                  {brand?.verified && <BadgeCheckIcon size={20} color="#000" fill="#fff" />}
                 </View>
               </Pressable>
             )}
