@@ -5,8 +5,8 @@ import { useRouter } from 'expo-router';
 import { useAppSelector } from '@/src/shared/hooks/redux';
 import { useUserBrandStatus } from '@/src/features/brands/hooks/useUserBrandStatus';
 import BlurConfirmModal from '@/src/shared/components/Modal';
-import { Spotlight } from '@/src/shared/components/Spotlight';
 import { ChevronRight } from 'lucide-react-native';
+import { useDeactivateAccount } from '@/src/features/user/hooks/useDeactivateAccount';
 
 function Row({ label, danger, onPress }: { label: string; danger?: boolean; onPress: () => void }) {
   return (
@@ -29,10 +29,15 @@ export default function SettingsScreen() {
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
+  const { mutate: deactivate, isPending: isDeactivating } = useDeactivateAccount();
+
   const handleDeleteConfirm = () => {
     setDeleteModalVisible(false);
-    // call your hook / service to delete the account here
+    if (currentUser?.id) {
+      deactivate(currentUser.id);
+    }
   };
+
 
   return (
     <View className="flex-1 bg-black p-6">

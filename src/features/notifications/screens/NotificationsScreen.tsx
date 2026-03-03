@@ -95,7 +95,7 @@ export default function NotificationsScreen() {
           ListEmptyComponent={() => (
             <View className="flex-1 items-center justify-center py-20 px-8">
               {isLoading ? (
-                <ActivityIndicator size="large" color="#8B5CF6" />
+                <ActivityIndicator size="large" color="#ffffff" />
               ) : (
                 <>
                   <View className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-900 items-center justify-center mb-4">

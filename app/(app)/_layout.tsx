@@ -169,7 +169,27 @@ export default function AppLayout() {
         await AsyncStorage.setItem('authState', JSON.stringify({ user: currentSession.user }));
 
         if (event === 'SIGNED_IN') {
-          // Prefetch user profile on sign in
+          // Check if account is deactivated
+          const { data: userData } = await supabase
+            .from('User')
+            .select('isActive')
+            .eq('id', currentSession.user.id)
+            .single();
+
+          if (userData?.isActive === false) {
+            // Sign them out immediately
+            await supabase.auth.signOut();
+            dispatch(clearCurrentUser());
+            await AsyncStorage.removeItem('authState');
+
+            // Navigate to auth and pass deactivated flag via router params
+            router.replace({
+              pathname: '/(auth)',
+              params: { deactivated: 'true', userId: currentSession.user.id },
+            });
+            return;
+          }
+
           queryClient.prefetchQuery({
             queryKey: ['user-profile', currentSession.user.id],
             queryFn: async () => {

@@ -223,3 +223,25 @@ export async function toggleAccountPrivacy(userId: string, isPrivate: boolean) {
     return { success: false, error: err.message || 'Failed to update privacy' };
   }
 }
+
+export async function deactivateAccount(userId: string) {
+  try {
+    const { error } = await supabase.from('User').update({ isActive: false }).eq('id', userId);
+
+    if (error) throw error;
+    return { success: true, error: null };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to deactivate account' };
+  }
+}
+
+export async function reactivateAccount(userId: string) {
+  try {
+    const { error } = await supabase.from('User').update({ isActive: true }).eq('id', userId);
+
+    if (error) throw error;
+    return { success: true, error: null };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to reactivate account' };
+  }
+}
