@@ -170,8 +170,6 @@ export async function getMemoryById(memoryId: string, currentUserId?: string) {
  */
 export async function getUserMemories(userId: string, limit = 20, offset = 0) {
   try {
-    console.log('🔍 Fetching memories for userId:', userId);
-
     const { data, error } = await supabase
       .from('Memory')
       .select(
@@ -189,13 +187,9 @@ export async function getUserMemories(userId: string, limit = 20, offset = 0) {
       .order('createdAt', { ascending: false })
       .range(offset, offset + limit - 1);
 
-    console.log('📦 Memories raw data:', data);
-    console.log('❌ Memories error:', error);
-
     if (error) throw error;
     return { data: data as Memory[], error: null };
   } catch (err: any) {
-    console.log('💥 Memories catch error:', err);
     return { data: null, error: err.message || 'Failed to fetch memories' };
   }
 }

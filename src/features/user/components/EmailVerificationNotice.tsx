@@ -19,6 +19,7 @@ export default function EmailVerificationNotice({ email }: Props) {
         title={loading ? 'Resending...' : 'Resend Verification Email'}
         onPress={() => resend(email)}
         disabled={loading}
+        loading={loading}
         px='px-6'
       />
     </View>

@@ -143,8 +143,6 @@ export async function createItemOwnership(
     // Add the image file if it exists
     if (payload.imageUri) {
       try {
-        console.log('Processing image from URI:', payload.imageUri);
-
         // Fetch the image from the URI
         const imageResponse = await fetch(payload.imageUri);
         if (!imageResponse.ok) {
@@ -152,7 +150,6 @@ export async function createItemOwnership(
         }
 
         const blob = await imageResponse.blob();
-        console.log('Image blob size:', blob.size, 'type:', blob.type);
 
         if (blob.size === 0) {
           throw new Error('Image file is empty');
@@ -176,7 +173,6 @@ export async function createItemOwnership(
           name: `photo.${fileExtension}`,
         });
 
-        console.log('Image added to FormData with name:', `photo.${fileExtension}`, 'type:', blob.type);
       } catch (imageError: string | any) {
         console.error('Error processing image:', imageError);
         throw new Error(`Failed to process image file: ${imageError.message}`);
@@ -191,9 +187,6 @@ export async function createItemOwnership(
     } = await supabase.auth.getSession();
     if (!session) throw new Error('No active session');
 
-    console.log('Sending request to edge function with FormData...');
-    console.log('Has image:', !!payload.imageUri);
-
     // Use fetch directly - better FormData support in React Native
     const response = await fetch(`${SUPABASE_URL}/functions/v1/create-item-ownership`, {
       method: 'POST',
@@ -204,8 +197,6 @@ export async function createItemOwnership(
       body: formData,
     });
 
-    console.log('Response status:', response.status);
-
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Edge function error response:', errorText);
@@ -213,7 +204,6 @@ export async function createItemOwnership(
     }
 
     const data = await response.json();
-    console.log('Response data:', data);
 
     if (!data || !data.success) {
       throw new Error(data?.error || 'Failed to create ownership');

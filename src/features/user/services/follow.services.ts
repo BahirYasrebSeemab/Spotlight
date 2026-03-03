@@ -132,8 +132,6 @@ export async function getUserFollowing(userId: string, limit = 20, offset = 0) {
 // Unfollow user - AUTOMATICALLY CLEANS UP FOLLOW REQUESTS
 export async function unfollowUser(currentUserId: string, targetUserId: string) {
   try {
-    console.log('🔴 Unfollowing:', { currentUserId, targetUserId });
-
     // Delete the follow relationship
     // Trigger will automatically:
     // 1. Update counts
@@ -149,7 +147,6 @@ export async function unfollowUser(currentUserId: string, targetUserId: string) 
       throw error;
     }
 
-    console.log('✅ Unfollowed successfully (FollowRequest cleaned up by trigger)');
     return { success: true, error: null };
   } catch (err: any) {
     console.error('❌ Unfollow failed:', err);

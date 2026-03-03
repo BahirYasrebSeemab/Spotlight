@@ -32,7 +32,6 @@ export function useResetPassword() {
       if (error) throw error;
     },
     onSuccess: async () => {
-      console.log('✅ Password updated successfully!');
       setSuccess(true);
 
       // Clear the password reset flag
@@ -49,7 +48,6 @@ export function useResetPassword() {
       queryClient.clear();
 
       // Navigate immediately
-      console.log('➡️ Navigating to auth...');
       router.replace('/(auth)');
     },
     onError: (error: any) => {

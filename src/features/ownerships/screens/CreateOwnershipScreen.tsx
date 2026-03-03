@@ -88,8 +88,6 @@ const handleSubmit = () => {
     processImage: !useOfficialImage ? processImage : undefined,
   };
 
-  console.log('Submitting payload:', payload);
-
   createOwnership(payload, {
     onSuccess: () => {
       Alert.alert('Success!', 'Item added to your closet', [

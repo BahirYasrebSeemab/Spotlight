@@ -4,6 +4,7 @@ import { useLayoutEffect } from 'react';
 import { Spotlight } from '@/src/shared/components/Spotlight';
 import { useAppSelector } from '@/src/shared/hooks/redux';
 import { useOwnershipDetails } from '@/src/features/ownerships/hooks/useOwnershipDetails';
+import { useDeleteOwnership } from '@/src/features/ownerships/hooks/useDeleteOwnership';
 import {
   CheckCircle,
   Package,
@@ -11,7 +12,6 @@ import {
   DollarSign,
   Hash,
   FileText,
-  Edit,
   Trash2,
   MoreVertical,
   ShieldCheck,
@@ -26,10 +26,10 @@ export default function OwnershipDetailScreen() {
   const currentUser = useAppSelector(state => state.auth.user);
 
   const { data: ownership, isLoading, error } = useOwnershipDetails(id);
+  const { mutate: deleteOwnership, isPending: isDeleting } = useDeleteOwnership();
 
   const isOwner = currentUser?.id === ownership?.ownerId;
 
-  // Set header
   useLayoutEffect(() => {
     if (ownership) {
       const product = ownership.prototype || ownership.communityProduct;
@@ -37,28 +37,13 @@ export default function OwnershipDetailScreen() {
         title: product?.name || 'Item Details',
         headerRight: () =>
           isOwner ? (
-            <Pressable onPress={handleMore} className="p-2">
+            <Pressable onPress={handleDelete} className="p-2">
               <MoreVertical size={22} color="white" />
             </Pressable>
           ) : null,
       });
     }
   }, [ownership, isOwner]);
-
-  const handleMore = () => {
-    Alert.alert('Options', '', [
-      {
-        text: 'Edit Item',
-        onPress: () => console.log('Edit - TODO'),
-      },
-      {
-        text: 'Delete Item',
-        onPress: handleDelete,
-        style: 'destructive',
-      },
-      { text: 'Cancel', style: 'cancel' },
-    ]);
-  };
 
   const handleDelete = () => {
     Alert.alert('Delete Item?', 'This action cannot be undone.', [
@@ -67,9 +52,9 @@ export default function OwnershipDetailScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: () => {
-          console.log('Delete ownership - TODO');
-          // TODO: Implement delete mutation
-          router.back();
+          deleteOwnership(id, {
+            onSuccess: () => router.back(),
+          });
         },
       },
     ]);
@@ -87,7 +72,6 @@ export default function OwnershipDetailScreen() {
     }
   };
 
-  // Loading state
   if (isLoading) {
     return (
       <Spotlight intensity={0.2}>
@@ -98,7 +82,6 @@ export default function OwnershipDetailScreen() {
     );
   }
 
-  // Error state
   if (error || !ownership) {
     return (
       <Spotlight intensity={0.2}>
@@ -114,7 +97,6 @@ export default function OwnershipDetailScreen() {
   const brand = ownership.prototype?.brand;
   const brandName = brand?.name || ownership.communityProduct?.brandName;
 
-  // Choose best image
   const imageUrl =
     ownership.processedImageUrl ||
     ownership.originalImageUrl ||
@@ -137,7 +119,6 @@ export default function OwnershipDetailScreen() {
             </View>
           )}
 
-          {/* Processing Overlay */}
           {isProcessing && (
             <View className="absolute inset-0 bg-black/70 items-center justify-center">
               <ActivityIndicator size="large" color="#ffffff" />
@@ -145,7 +126,6 @@ export default function OwnershipDetailScreen() {
             </View>
           )}
 
-          {/* Verification Badge */}
           {ownership.verified && (
             <View className="absolute top-4 right-4 bg-black/80 rounded-full px-3 py-2 flex-row items-center gap-2">
               <ShieldCheck size={16} color="#10B981" fill="#10B981" />
@@ -153,7 +133,6 @@ export default function OwnershipDetailScreen() {
             </View>
           )}
 
-          {/* Authentication Badge */}
           {ownership.isAuthenticated && (
             <View className="absolute top-16 right-4 bg-black/80 rounded-full px-3 py-2 flex-row items-center gap-2">
               <CheckCircle size={16} color="#3B82F6" fill="#3B82F6" />
@@ -167,7 +146,6 @@ export default function OwnershipDetailScreen() {
           <View className="mb-6">
             <Text className="text-3xl font-bold text-white mb-2">{product?.name}</Text>
 
-            {/* Brand */}
             {brandName && (
               <Pressable onPress={handleBrandPress} disabled={!brand}>
                 <View className="flex-row items-center gap-2 mb-3">
@@ -180,7 +158,6 @@ export default function OwnershipDetailScreen() {
               </Pressable>
             )}
 
-            {/* Category */}
             {product?.category && (
               <View className="bg-white/10 self-start px-3 py-1.5 rounded-full">
                 <Text className="text-white text-sm">{product.category}</Text>
@@ -200,7 +177,6 @@ export default function OwnershipDetailScreen() {
           <View className="mb-6">
             <Text className="text-white font-bold text-lg mb-4">Ownership Details</Text>
 
-            {/* Owner */}
             <Pressable onPress={handleOwnerPress} disabled={isOwner} className="mb-4">
               <View className="flex-row items-center gap-3">
                 <Image source={{ uri: ownership.owner.avatarUrl }} className="w-12 h-12 rounded-full bg-white/10" />
@@ -213,7 +189,6 @@ export default function OwnershipDetailScreen() {
               </View>
             </Pressable>
 
-            {/* Condition */}
             {ownership.condition && (
               <View className="flex-row items-start gap-3 mb-4">
                 <View className="w-10 h-10 rounded-full bg-white/5 items-center justify-center">
@@ -226,7 +201,6 @@ export default function OwnershipDetailScreen() {
               </View>
             )}
 
-            {/* Purchase Date */}
             {ownership.purchaseDate && (
               <View className="flex-row items-start gap-3 mb-4">
                 <View className="w-10 h-10 rounded-full bg-white/5 items-center justify-center">
@@ -239,7 +213,6 @@ export default function OwnershipDetailScreen() {
               </View>
             )}
 
-            {/* Purchase Price */}
             {ownership.purchasePrice && (
               <View className="flex-row items-start gap-3 mb-4">
                 <View className="w-10 h-10 rounded-full bg-white/5 items-center justify-center">
@@ -252,7 +225,6 @@ export default function OwnershipDetailScreen() {
               </View>
             )}
 
-            {/* Serial Number */}
             {ownership.serialNumber && (
               <View className="flex-row items-start gap-3 mb-4">
                 <View className="w-10 h-10 rounded-full bg-white/5 items-center justify-center">
@@ -265,7 +237,6 @@ export default function OwnershipDetailScreen() {
               </View>
             )}
 
-            {/* Notes */}
             {ownership.notes && (
               <View className="flex-row items-start gap-3 mb-4">
                 <View className="w-10 h-10 rounded-full bg-white/5 items-center justify-center">
@@ -279,7 +250,7 @@ export default function OwnershipDetailScreen() {
             )}
           </View>
 
-          {/* Product Details (if prototype) */}
+          {/* Product Details */}
           {ownership.prototype && (
             <View className="mb-6">
               <Text className="text-white font-bold text-lg mb-4">Product Details</Text>
@@ -307,23 +278,22 @@ export default function OwnershipDetailScreen() {
             </View>
           )}
 
-          {/* Action Buttons (if owner) */}
+          {/* Delete Button */}
           {isOwner && (
-            <View className="flex-row gap-3 mb-8">
+            <View className="mb-8">
               <Pressable
-                className="flex-1 bg-white/10 border border-white/20 rounded-xl py-4 flex-row items-center justify-center gap-2"
-                onPress={() => console.log('Edit - TODO')}
-              >
-                <Edit size={20} color="#ffffff" />
-                <Text className="text-white font-semibold">Edit</Text>
-              </Pressable>
-
-              <Pressable
-                className="flex-1 bg-red-500/20 border border-red-500 rounded-xl py-4 flex-row items-center justify-center gap-2"
+                className="bg-red-500/20 border border-red-500 rounded-xl py-4 flex-row items-center justify-center gap-2"
                 onPress={handleDelete}
+                disabled={isDeleting}
               >
-                <Trash2 size={20} color="#EF4444" />
-                <Text className="text-red-500 font-semibold">Delete</Text>
+                {isDeleting ? (
+                  <ActivityIndicator size="small" color="#EF4444" />
+                ) : (
+                  <>
+                    <Trash2 size={20} color="#EF4444" />
+                    <Text className="text-red-500 font-semibold">Delete</Text>
+                  </>
+                )}
               </Pressable>
             </View>
           )}

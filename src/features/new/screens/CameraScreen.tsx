@@ -33,7 +33,6 @@ export default function CameraScreen() {
       if (mediaLibraryPermission?.status !== 'granted') {
         const { status } = await requestMediaLibraryPermission();
         if (status !== 'granted') {
-          console.log('Media library permission not granted');
           return;
         }
       }

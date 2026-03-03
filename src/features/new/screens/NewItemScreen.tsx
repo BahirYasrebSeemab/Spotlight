@@ -36,7 +36,7 @@ export default function NewItemScreen() {
   const { data: productMatches, isLoading: searchingProducts } = useSearchProducts({
     name: form.name,
     brandName: form.brandName,
-    upc: form.upc,
+    upc: form.upc
   });
 
   // Show matches when user has filled name and brand

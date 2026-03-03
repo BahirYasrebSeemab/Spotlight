@@ -14,7 +14,6 @@ export function useOAuth() {
       const { data, error } = await signInWithGoogle();
       if (error) throw new Error(error);
 
-      console.log('🚀 OAuth flow initiated');
       return data;
     },
     onError: (error: any) => {

@@ -63,7 +63,6 @@ export async function cancelFollowRequest(requesterId: string, requestedId: stri
 // Accept a follow request - LOGS EVERYTHING
 export async function acceptFollowRequest(requestId: string) {
   try {
-    console.log('📥 [SERVICE] Starting acceptFollowRequest for:', requestId);
 
     // Update status to 'accepted'
     const { data, error } = await supabase
@@ -72,8 +71,6 @@ export async function acceptFollowRequest(requestId: string) {
       .eq('id', requestId)
       .select()
       .single();
-
-    console.log('📦 [SERVICE] Update result:', { data, error });
 
     if (error) {
       console.error('❌ [SERVICE] Update error:', error);
@@ -84,8 +81,6 @@ export async function acceptFollowRequest(requestId: string) {
       console.error('❌ [SERVICE] No data returned after update');
       throw new Error('Follow request not found');
     }
-
-    console.log('✅ [SERVICE] Status updated to accepted:', data);
 
     // Give the trigger time to run (if it exists)
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -98,18 +93,6 @@ export async function acceptFollowRequest(requestId: string) {
       .eq('followingId', data.requestedId)
       .single();
 
-    console.log('🔍 [SERVICE] Follower relationship check:', { followerCheck, checkError });
-
-    if (checkError && checkError.code !== 'PGRST116') {
-      console.error('❌ [SERVICE] Error checking follower:', checkError);
-    }
-
-    if (!followerCheck) {
-      console.warn('⚠️ [SERVICE] No follower relationship found - trigger might not exist');
-    } else {
-      console.log('✅ [SERVICE] Follower relationship exists:', followerCheck);
-    }
-
     return { success: true, error: null, data };
   } catch (err: any) {
     console.error('❌ [SERVICE] acceptFollowRequest failed:', err);
@@ -120,7 +103,6 @@ export async function acceptFollowRequest(requestId: string) {
 // Reject a follow request - JUST DELETE
 export async function rejectFollowRequest(requestId: string) {
   try {
-    console.log('🔴 [SERVICE] Rejecting/deleting request:', requestId);
 
     const { error } = await supabase.from('FollowRequest').delete().eq('id', requestId);
 
@@ -129,7 +111,6 @@ export async function rejectFollowRequest(requestId: string) {
       throw error;
     }
 
-    console.log('✅ [SERVICE] Request deleted successfully');
     return { success: true, error: null };
   } catch (err: any) {
     console.error('❌ [SERVICE] rejectFollowRequest failed:', err);

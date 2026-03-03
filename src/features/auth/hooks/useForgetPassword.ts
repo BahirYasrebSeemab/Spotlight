@@ -20,7 +20,6 @@ export function useForgotPassword() {
       if (error) throw error;
     },
     onSuccess: () => {
-      console.log('✅ Password reset email sent');
       setSuccess(true);
       setLocalError(null);
     },
