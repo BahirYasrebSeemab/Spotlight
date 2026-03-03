@@ -10,6 +10,7 @@ datasource db {
 }
 
 model User {
+  isActive                 Boolean             @default(true)
   username                 String              @unique
   email                    String              @unique
   avatarUrl                String              @default("https://djmiacrhlrehonnuflhi.supabase.co/storage/v1/object/public/static/general/default.jpg")

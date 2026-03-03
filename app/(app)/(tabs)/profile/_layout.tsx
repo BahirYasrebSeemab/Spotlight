@@ -19,7 +19,7 @@ export default function ProfileLayout() {
   if (isLoading || !profile) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-black">
-        <ActivityIndicator size="large" color="#8B5CF6" />
+        <ActivityIndicator size="large" color="#ffffff" />
       </View>
     );
   }
