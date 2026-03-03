@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, Pressable, ActivityIndicator } from 'react-native';
-import { Globe, Instagram, CheckCircle } from 'lucide-react-native';
+import { Globe, Instagram, BadgeCheckIcon } from 'lucide-react-native';
 import type { BrandProfile } from '../types/brand.types';
 
 interface BrandIdentityProps {
@@ -55,7 +55,7 @@ export function BrandIdentity({
             />
             {brand.verified && (
               <View className="absolute -bottom-1 -right-1 bg-black rounded-full p-0.5">
-                <CheckCircle size={20} color="#10B981" fill="#10B981" />
+                <BadgeCheckIcon size={20} color="#000" fill="#fff" />
               </View>
             )}
           </View>
