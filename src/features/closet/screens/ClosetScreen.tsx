@@ -8,7 +8,7 @@ import { OwnershipWithProduct } from '@/src/features/closet/types/closet.types';
 import { Package, ShoppingBag, CheckCircle, Plus } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 48) / 2; // 2 columns with 16px padding on sides + 16px gap
+const CARD_WIDTH = (width - 48) / 2; // 2 columns with 16px padding on sides + 16pxgap
 
 export default function ClosetScreen() {
   const router = useRouter();
