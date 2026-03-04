@@ -5,7 +5,7 @@ import { Spotlight } from '@/src/shared/components/Spotlight';
 import { useAppSelector } from '@/src/shared/hooks/redux';
 import { useUserOwnerships, useClosetStats } from '@/src/features/closet/hooks/useCloset';
 import { OwnershipWithProduct } from '@/src/features/closet/types/closet.types';
-import { Package, ShoppingBag, CheckCircle } from 'lucide-react-native';
+import { Package, ShoppingBag, CheckCircle, Plus } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2; // 2 columns with 16px padding on sides + 16px gap
@@ -16,6 +16,7 @@ export default function ClosetScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const { data: ownerships, isLoading, error, refetch } = useUserOwnerships(authUser?.id);
+  console.log('Closet ownerships:', ownerships);
   const stats = useClosetStats(authUser?.id);
 
   const onRefresh = async () => {
@@ -126,19 +127,24 @@ export default function ClosetScreen() {
     <Spotlight intensity={0.2}>
       <View className="flex-1 bg-black">
         {/* Header */}
-        <View className="pt-16 pb-6 px-4 border-b border-white/10">
-          <Text className="text-white text-3xl font-bold mb-2">My Closet</Text>
-          <View className="flex-row items-center gap-4">
-            <Text className="text-gray-400 text-sm">
-              {stats.totalItems} {stats.totalItems === 1 ? 'item' : 'items'}
-            </Text>
-            {stats.verifiedItems > 0 && (
-              <View className="flex-row items-center gap-1">
-                <CheckCircle size={14} color="#10B981" fill="#10B981" />
-                <Text className="text-green-400 text-sm">{stats.verifiedItems} verified</Text>
-              </View>
-            )}
+        <View className="flex-row items-center justify-between pt-16 pb-6 px-4 border-b border-white/10">
+          <View>
+            <Text className="text-white text-3xl font-bold mb-2">My Closet</Text>
+            <View className="flex-row items-center gap-4">
+              <Text className="text-gray-400 text-sm">
+                {stats.totalItems} {stats.totalItems === 1 ? 'item' : 'items'}
+              </Text>
+              {stats.verifiedItems > 0 && (
+                <View className="flex-row items-center gap-1">
+                  <CheckCircle size={14} color="#10B981" fill="#10B981" />
+                  <Text className="text-green-400 text-sm">{stats.verifiedItems} verified</Text>
+                </View>
+              )}
+            </View>
           </View>
+          <Pressable onPress={() => router.push('/(tabs)/new/community-product')} className="p-2">
+            <Plus size={25} color={'white'} />
+          </Pressable>
         </View>
 
         {/* Grid */}
