@@ -156,7 +156,7 @@ export default function ProductDetailScreen() {
 
         {/* Fixed Bottom Button */}
         <View className="absolute bottom-0 left-0 right-0 bg-black/95 border-t border-white/10 px-5 py-4">
-          <PrimaryButton onPress={handleAddToCloset} title="Add to Closet" icon={<Plus size={20} color="#000000" />} />
+          <PrimaryButton loading={isLoading} onPress={handleAddToCloset} title="Add to Closet" icon={<Plus size={20} color="#000000" />} />
         </View>
       </View>
     </Spotlight>
