@@ -106,3 +106,14 @@ export interface ProductSearchResult {
   product: Prototype | CommunityProduct;
   similarity?: number;
 }
+
+export interface CreateCommunityProductPayload {
+  name: string;
+  brandName: string;
+  description?: string;
+  category?: string;
+  upc?: string;
+  condition?: string;
+  imageUri?: string;
+  processImage?: boolean;
+}
