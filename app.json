@@ -4,12 +4,12 @@
     "slug": "spotlight",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/placeholder-icon.png",
+    "icon": "./assets/images/placeholder-spotlight.png",
     "scheme": "spotlight",
     "newArchEnabled": true,
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/placeholder-splash.png",
+      "image": "./assets/images/placeholder-spotlight.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff",
       "hide": true
@@ -21,7 +21,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/placeholder-icon.png",
+        "foregroundImage": "./assets/images/placeholder-spotlight.png",
         "backgroundColor": "#000"
       },
       "edgeToEdgeEnabled": true,
