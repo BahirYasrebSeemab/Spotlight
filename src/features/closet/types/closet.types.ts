@@ -43,6 +43,7 @@ export interface Ownership {
   notes?: string;
   originalImageUrl?: string;
   processedImageUrl?: string;
+  thumbnailImageUrl?: string;
   thumbnailUrl?: string;
   processingStatus: 'pending' | 'processing' | 'completed' | 'failed';
   purchasePrice?: number;
