@@ -16,7 +16,6 @@ export default function ClosetScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const { data: ownerships, isLoading, error, refetch } = useUserOwnerships(authUser?.id);
-  console.log('Closet ownerships:', ownerships);
   const stats = useClosetStats(authUser?.id);
 
   const onRefresh = async () => {
@@ -30,10 +29,14 @@ export default function ClosetScreen() {
     const brandName = item.prototype ? item.prototype.brand.name : item.communityProduct?.brandName;
     const productName = product?.name || 'Unnamed Item';
 
-    // Choose best available image
-    const imageUrl = item.thumbnailUrl || item.processedImageUrl || item.originalImageUrl;
-    const isProcessing = item.processingStatus === 'pending' || item.processingStatus === 'processing';
+    // Fix: correct field priority — thumbnailImageUrl is what the edge function saves
+    // Fall back to product's own image when useOfficialImage is true or no custom image exists
+const imageUrl =
+  [item.thumbnailImageUrl, item.processedImageUrl, product?.thumbnailUrl, product?.imageUrl].find(
+    url => !!url && url.length > 0,
+  ) ?? null;
 
+    const isProcessing = item.processingStatus === 'pending' || item.processingStatus === 'processing';
     return (
       <Pressable
         style={{ width: CARD_WIDTH }}
