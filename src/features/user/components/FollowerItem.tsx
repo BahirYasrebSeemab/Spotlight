@@ -45,8 +45,8 @@ export function FollowerItem({ item }: FollowerItemProps) {
         {item.avatarUrl ? (
           <Image source={{ uri: item.avatarUrl }} className="w-12 h-12 rounded-full mr-3" />
         ) : (
-          <View className="w-12 h-12 rounded-full bg-purple-500 items-center justify-center mr-3">
-            <Text className="text-white text-lg font-bold">{item.name?.[0] || item.username?.[0] || '?'}</Text>
+          <View className="w-12 h-12 rounded-full bg-white items-center justify-center mr-3">
+            <Text className="text-black text-lg font-bold">{item.name?.[0] || item.username?.[0] || '?'}</Text>
           </View>
         )}
         <View className="flex-1">
@@ -69,16 +69,16 @@ export function FollowerItem({ item }: FollowerItemProps) {
           onPress={handleFollowToggle}
           disabled={followActionLoading}
           className={`px-4 py-2 rounded-full min-w-[90px] items-center ${
-            followStatus?.isFollowing ? 'bg-gray-200 dark:bg-gray-800' : 'bg-purple-600'
+            followStatus?.isFollowing ? 'bg-gray-200 dark:bg-gray-800' : 'bg-white'
           }`}
           activeOpacity={0.8}
         >
           {followActionLoading ? (
-            <ActivityIndicator size="small" color={followStatus?.isFollowing ? '#000' : '#FFF'} />
+            <ActivityIndicator size="small" color={followStatus?.isFollowing ? '#FFF' : '#000'} />
           ) : (
             <Text
               className={`font-semibold text-sm ${
-                followStatus?.isFollowing ? 'text-black dark:text-white' : 'text-white'
+                followStatus?.isFollowing ? 'text-black dark:text-white' : 'text-black'
               }`}
             >
               {followStatus?.isFollowing ? 'Spotting' : 'Spot'}

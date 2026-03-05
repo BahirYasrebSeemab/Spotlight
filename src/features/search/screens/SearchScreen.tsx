@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { Search, X, CheckCircle, Package } from 'lucide-react-native';
+import { Search } from 'lucide-react-native';
 import { useDebounce } from '@/src/shared/hooks/useDebounce';
 import { useSearchUsers } from '@/src/features/search/hooks/useSearchUsers';
 import { useSearchProducts } from '@/src/features/products/hooks/useSearchProducts';
@@ -22,6 +22,9 @@ import { Spotlight } from '@/src/shared/components/Spotlight';
 import { InputField } from '@/src/shared/components/InputField';
 import type { Product, ProductCategory } from '@/src/features/products/types/product.types';
 import type { Brand } from '@/src/features/brands/types/brand.types';
+import { BrandCard } from '@/src/features/brands/components/BrandCard';
+import { ProductCard } from '@/src/features/products/components/ProductCard'
+import { UserCard } from '@/src/features/user/components/UserCard';
 
 type Tab = 'people' | 'products' | 'brands';
 
@@ -63,115 +66,6 @@ export default function SearchScreen() {
   const handleBrandPress = (brand: Brand) => {
     router.push(`/brand/${brand.id}`);
   };
-
-  // Product Card
-  const ProductCard = ({ product }: { product: Product }) => {
-    const isVerified = product.type === 'PROTOTYPE';
-
-    return (
-      <TouchableOpacity
-        onPress={() => handleProductPress(product)}
-        className="flex-row items-center p-4 border-b border-gray-800"
-        activeOpacity={0.7}
-      >
-        <View className="relative">
-          <Image
-            source={{
-              uri: product.thumbnailUrl || product.imageUrl || 'https://via.placeholder.com/60',
-            }}
-            className="w-16 h-16 rounded-lg bg-gray-900"
-          />
-          <View className="absolute -top-1 -right-1">
-            {isVerified ? (
-              <CheckCircle size={16} color="#FFF" fill="#FFF" />
-            ) : (
-              <View className="bg-gray-600 rounded-full p-0.5">
-                <Package size={12} color="white" />
-              </View>
-            )}
-          </View>
-        </View>
-
-        <View className="flex-1 ml-3">
-          <Text className="text-base font-semibold text-white" numberOfLines={1}>
-            {product.name}
-          </Text>
-          <Text className="text-sm text-gray-400" numberOfLines={1}>
-            {product.brandName}
-          </Text>
-
-          <View className="flex-row items-center mt-1">
-            {product.category && <Text className="text-xs text-gray-500">{product.category}</Text>}
-            {product.retailPrice && <Text className="text-xs text-gray-500 ml-2">${product.retailPrice}</Text>}
-          </View>
-
-          {product.ownershipCount > 0 && (
-            <Text className="text-xs text-gray-500 mt-1">
-              {product.ownershipCount} owner{product.ownershipCount !== 1 ? 's' : ''}
-            </Text>
-          )}
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  // Brand Card
-  const BrandCard = ({ brand }: { brand: Brand }) => {
-    return (
-      <TouchableOpacity
-        onPress={() => handleBrandPress(brand)}
-        className="flex-row items-center p-4 border-b border-gray-800"
-        activeOpacity={0.7}
-      >
-        <View className="relative">
-          <Image
-            source={{
-              uri:
-                brand.logoUrl ||
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(brand.name)}&size=56&background=1f1f1f&color=fff`,
-            }}
-            className="w-14 h-14 rounded-full bg-gray-900"
-          />
-          {brand.verified && (
-            <View className="absolute -bottom-1 -right-1">
-              <CheckCircle size={14} color="#FFF" fill="#FFF" />
-            </View>
-          )}
-        </View>
-
-        <View className="flex-1 ml-3">
-          <Text className="text-base font-semibold text-white">{brand.name}</Text>
-          {brand.description && (
-            <Text className="text-sm text-gray-400 mt-1" numberOfLines={2}>
-              {brand.description}
-            </Text>
-          )}
-          <Text className="text-xs text-gray-500 uppercase mt-1">{brand.type}</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  // User Card
-  const renderUser = ({ item }: any) => (
-    <TouchableOpacity
-      onPress={() => handleUserPress(item.id)}
-      className="flex-row items-center p-4 border-b border-gray-800"
-      activeOpacity={0.7}
-    >
-      <Image source={{ uri: item.avatarUrl }} className="w-14 h-14 rounded-full mr-3" />
-      <View className="flex-1">
-        <Text className="text-base font-semibold text-white">{item.name || item.username}</Text>
-        <Text className="text-sm text-gray-400">@{item.username}</Text>
-        {item.bio && (
-          <Text className="text-sm text-gray-400 mt-1" numberOfLines={1}>
-            {item.bio}
-          </Text>
-        )}
-        {item.followersCount > 0 && <Text className="text-xs text-gray-500 mt-1">{item.followersCount} spotters</Text>}
-      </View>
-    </TouchableOpacity>
-  );
 
   const renderEmpty = () => {
     const isLoading =
@@ -237,11 +131,11 @@ export default function SearchScreen() {
   const renderItem = ({ item }: { item: SearchResult }) => {
     switch (item.type) {
       case 'people':
-        return renderUser({ item: item.data });
+        return <UserCard user={item.data}/>;
       case 'products':
-        return <ProductCard product={item.data} />;
+        return <ProductCard product={item.data} onPress={handleProductPress} />;
       case 'brands':
-        return <BrandCard brand={item.data} />;
+        return <BrandCard brand={item.data} onPress={handleBrandPress}/>;
       default:
         return null;
     }

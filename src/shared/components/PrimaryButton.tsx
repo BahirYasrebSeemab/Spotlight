@@ -21,10 +21,10 @@ export const PrimaryButton = ({
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled || loading}
-      className={`py-3 ${px} rounded-xl ${disabled || loading ? 'bg-gray-400' : 'bg-blue-500'}`}
+      className={`py-3 ${px} rounded-xl ${disabled || loading ? 'bg-gray-400' : 'bg-white'}`}
     >
       <Text className="text-white text-center font-semibold">
-        {loading ? <ActivityIndicator size="small" color="#ffffff" /> : title}
+        {loading ? <ActivityIndicator size="small" color="#000000" /> : title}
       </Text>
     </TouchableOpacity>
   );
