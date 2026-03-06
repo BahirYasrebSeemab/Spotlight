@@ -40,7 +40,6 @@ export const SignupStep1 = ({ form, onChange, onNext, handleGoogleLogin, loading
 
       <InputField
         label="Email"
-        placeholder="john@example.com"
         keyboardType="email-address"
         autoCapitalize="none"
         value={form.email}

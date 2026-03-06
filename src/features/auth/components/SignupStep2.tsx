@@ -75,14 +75,13 @@ export const SignupStep2 = ({ form, onChange, onNext, onBack, error, loading }: 
         </TouchableOpacity>
 
         <View className="flex-1">
-          {loading ? (
-            <View className="bg-blue-500 dark:bg-blue-600 py-3 rounded-xl flex-row justify-center items-center">
-              <ActivityIndicator color="white" />
-              <Text className="text-white font-semibold ml-2">Creating Account...</Text>
-            </View>
-          ) : (
-            <PrimaryButton loading={loading} px="px-0" title="Create Account" onPress={onNext} disabled={!isValid || loading} />
-          )}
+          <PrimaryButton
+            loading={loading}
+            px="px-0"
+            title="Create Account"
+            onPress={onNext}
+            disabled={!isValid || loading}
+          />
         </View>
       </View>
     </View>
