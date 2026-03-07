@@ -4,6 +4,7 @@ import { Tabs } from 'expo-router';
 import { Search, PlusSquare, Heart, User } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Svg, Path } from 'react-native-svg';
+import { EmailVerifiedGuard } from '@/src/shared/components/EmailVerifiedGaurd';
 
 // Custom Closet Icon Component
 function ClosetIcon({ color, size }: { color: string; size: number }) {
@@ -32,62 +33,64 @@ function ClosetIcon({ color, size }: { color: string; size: number }) {
 export default function TabLayout() {
   return (
     <SafeAreaView className="flex-1 bg-black">
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: '#FFFFFF', // White for active
-          tabBarInactiveTintColor: '#666666', // Gray for inactive
-          tabBarStyle: {
-            backgroundColor: '#000',
-            borderTopColor: '#333333',
-            height: 60,
-            paddingBottom: 4,
-            paddingTop: 4,
-          },
-          tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: '600',
-          },
-        }}
-      >
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: 'Closet',
-            tabBarIcon: ({ color, size }) => <ClosetIcon color={color} size={size} />,
-          }}
-        />
-
-        <Tabs.Screen
-          name="search"
-          options={{
-            title: 'Search',
-            tabBarIcon: ({ color, size }) => <Search size={size} color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="new"
-          options={{
-            title: 'Add',
-            tabBarIcon: ({ color, size }) => <PlusSquare size={size} color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="notifications"
-          options={{
-            title: 'Activity',
-            tabBarIcon: ({ color, size }) => <Heart size={size} color={color} />,
+      <EmailVerifiedGuard>
+        <Tabs
+          screenOptions={{
             headerShown: false,
+            tabBarActiveTintColor: '#FFFFFF', // White for active
+            tabBarInactiveTintColor: '#666666', // Gray for inactive
+            tabBarStyle: {
+              backgroundColor: '#000',
+              borderTopColor: '#333333',
+              height: 60,
+              paddingBottom: 4,
+              paddingTop: 4,
+            },
+            tabBarLabelStyle: {
+              fontSize: 12,
+              fontWeight: '600',
+            },
           }}
-        />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            title: 'Profile',
-            tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
-          }}
-        />
-      </Tabs>
+        >
+          <Tabs.Screen
+            name="index"
+            options={{
+              title: 'Closet',
+              tabBarIcon: ({ color, size }) => <ClosetIcon color={color} size={size} />,
+            }}
+          />
+
+          <Tabs.Screen
+            name="search"
+            options={{
+              title: 'Search',
+              tabBarIcon: ({ color, size }) => <Search size={size} color={color} />,
+            }}
+          />
+          <Tabs.Screen
+            name="new"
+            options={{
+              title: 'Add',
+              tabBarIcon: ({ color, size }) => <PlusSquare size={size} color={color} />,
+            }}
+          />
+          <Tabs.Screen
+            name="notifications"
+            options={{
+              title: 'Activity',
+              tabBarIcon: ({ color, size }) => <Heart size={size} color={color} />,
+              headerShown: false,
+            }}
+          />
+          <Tabs.Screen
+            name="profile"
+            options={{
+              title: 'Profile',
+              tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
+            }}
+          />
+        </Tabs>
+      </EmailVerifiedGuard>
     </SafeAreaView>
   );
 }
