@@ -7,7 +7,7 @@ import { useMemoryDetails } from '../hooks/useMemoryDetails';
 import { useDeleteMemory } from '../hooks/useDeleteMemory';
 import { LikeButton } from '../components/LikeButton';
 import { CommentsList } from '@/src/features/memories/components/CommentsList';
-import { MoreVertical, Tag } from 'lucide-react-native';
+import { MoreVertical, Tag, ArrowLeft } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -30,7 +30,7 @@ export default function MemoryDetailScreen() {
         style: 'destructive',
         onPress: () => {
           deleteMemory(id, {
-            onSuccess: () => router.back(),
+            onSuccess: () => router.push('/profile'),
           });
         },
       },
@@ -40,6 +40,11 @@ export default function MemoryDetailScreen() {
   useLayoutEffect(() => {
     navigation.setOptions({
       title: 'Memory',
+      headerLeft: () => (
+        <Pressable onPress={() => router.back()} style={{ paddingRight: 24 }}>
+          <ArrowLeft size={22} color="white" />
+        </Pressable>
+      ),
       headerRight: () =>
         isOwner ? (
           <Pressable onPress={handleDelete} className="p-2">
@@ -47,7 +52,7 @@ export default function MemoryDetailScreen() {
           </Pressable>
         ) : null,
     });
-  }, [isOwner, handleDelete]);
+  }, [isOwner, handleDelete, router]);
 
   if (isLoading) {
     return (
@@ -132,10 +137,7 @@ export default function MemoryDetailScreen() {
               <Text className="text-gray-400 font-semibold">Tagged Items</Text>
             </View>
 
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              className="flex-row flex-wrap gap-2 w-full">
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row flex-wrap gap-2 w-full">
               {memory.items.map(item => {
                 const product = item.ownership.prototype || item.ownership.communityProduct;
                 const brand = item.ownership.prototype?.brand;

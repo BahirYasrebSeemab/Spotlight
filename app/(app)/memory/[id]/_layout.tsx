@@ -7,6 +7,7 @@ export default function MemoryLayout() {
         headerStyle: { backgroundColor: '#000000' },
         headerTintColor: '#ffffff',
         headerShadowVisible: false,
+        
       }}
     />
   );

@@ -9,6 +9,7 @@ import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
 import { useUserFollowers } from '@/src/features/user/hooks/useUserFollowers';
 import { FollowerItem } from '@/src/features/user/components/FollowerItem';
 import { Lock } from 'lucide-react-native';
+import { useLayoutEffect } from 'react';
 
 export default function FollowersScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
