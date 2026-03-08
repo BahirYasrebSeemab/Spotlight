@@ -1,9 +1,13 @@
 // app/user/[id]/_layout.tsx - Individual user layout
 import { Stack } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { Pressable } from 'react-native';
+import { ArrowLeft } from 'lucide-react-native';
 
 export default function UserProfileLayout() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
 
   return (
     <Stack>
@@ -39,6 +43,11 @@ export default function UserProfileLayout() {
           headerStyle: {
             backgroundColor: '#000',
           },
+          headerLeft: () => (
+            <Pressable onPress={() => router.back()} style={{ paddingRight: 24 }}>
+              <ArrowLeft size={22} color="white" />
+            </Pressable>
+          ),
           headerTintColor: '#fff',
         }}
       />
@@ -50,6 +59,11 @@ export default function UserProfileLayout() {
           headerStyle: {
             backgroundColor: '#000',
           },
+          headerLeft: () => (
+            <Pressable onPress={() => router.back()} style={{ paddingRight: 24 }}>
+              <ArrowLeft size={22} color="white" />
+            </Pressable>
+          ),
           headerTintColor: '#fff',
         }}
       />
