@@ -28,9 +28,13 @@ export interface MemoryItem {
   ownershipId: string;
   ownership: {
     id: string;
+    processedImageUrl: string;
+    thumbnailImageUrl: string;
     prototype?: {
       id: string;
       name: string;
+      imageUrl: string;
+      thumbnailUrl: string;
       brand: {
         id: string;
         name: string;
@@ -40,6 +44,8 @@ export interface MemoryItem {
       id: string;
       name: string;
       brandName: string;
+      imageUrl: string;
+      thumbnailUrl: string;
     };
   };
 }
