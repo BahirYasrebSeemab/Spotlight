@@ -119,7 +119,7 @@ export async function getMemoryById(memoryId: string, currentUserId?: string) {
             ownership:ownershipId (
               id,
               processedImageUrl,
-              thumbnailImageUrl
+              thumbnailImageUrl,
               prototype:prototypeId (
                 id,
                 name,
@@ -133,7 +133,9 @@ export async function getMemoryById(memoryId: string, currentUserId?: string) {
               communityProduct:communityProductId (
                 id,
                 name,
-                brandName
+                brandName,
+                imageUrl,
+                thumbnailUrl
               )
             )
           )

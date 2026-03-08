@@ -132,7 +132,10 @@ export default function MemoryDetailScreen() {
               <Text className="text-gray-400 font-semibold">Tagged Items</Text>
             </View>
 
-            <View className="flex-row flex-wrap gap-2">
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              className="flex-row flex-wrap gap-2 w-full">
               {memory.items.map(item => {
                 const product = item.ownership.prototype || item.ownership.communityProduct;
                 const brand = item.ownership.prototype?.brand;
@@ -142,15 +145,34 @@ export default function MemoryDetailScreen() {
                   <Pressable
                     key={item.id}
                     onPress={() => router.push(`/ownership/${item.ownershipId}` as any)}
-                    className="bg-white/10 rounded-lg px-3 py-2 border border-white/20"
+                    className="bg-white/10 rounded-lg object-cover pb-2 border border-white/20 flex justify-center ml-2"
                   >
-                    <Image source={{uri: null}}/>
-                    <Text className="text-white text-sm font-medium">{product?.name}</Text>
-                    <Text className="text-gray-400 text-xs">{brandName}</Text>
+                    <Image
+                      source={{
+                        uri:
+                          item.ownership.thumbnailImageUrl ||
+                          item.ownership.processedImageUrl ||
+                          item.ownership.prototype?.thumbnailUrl ||
+                          item.ownership.prototype?.imageUrl ||
+                          item.ownership.communityProduct?.thumbnailUrl ||
+                          item.ownership.communityProduct?.imageUrl,
+                      }}
+                      className="w-full h-20 rounded-t-lg"
+                    />
+                    <View className="px-2 mt-1">
+                      <Text className="text-xs font-semibold text-white" numberOfLines={1}>
+                        {product?.name || 'Unknown Product'}
+                      </Text>
+                      {brandName && (
+                        <Text className="text-xs text-gray-400" numberOfLines={1}>
+                          {brandName}
+                        </Text>
+                      )}
+                    </View>
                   </Pressable>
                 );
               })}
-            </View>
+            </ScrollView>
           </View>
         )}
 
