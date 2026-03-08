@@ -144,6 +144,7 @@ export default function MemoryDetailScreen() {
                     onPress={() => router.push(`/ownership/${item.ownershipId}` as any)}
                     className="bg-white/10 rounded-lg px-3 py-2 border border-white/20"
                   >
+                    <Image source={{uri: null}}/>
                     <Text className="text-white text-sm font-medium">{product?.name}</Text>
                     <Text className="text-gray-400 text-xs">{brandName}</Text>
                   </Pressable>
