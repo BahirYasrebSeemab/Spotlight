@@ -258,31 +258,22 @@ export async function getBrandProducts(brandId: string, limit = 20, offset = 0) 
 // NEW FUNCTIONS - Brand Follow System
 // ============================================
 
-/**
- * Follow a brand
- */
 export async function followBrand(userId: string, brandId: string) {
   try {
-    const { error } = await supabase.from('BrandFollower').insert({
-      userId,
-      brandId,
-    });
-
+    const { error } = await supabase.from('BrandFollower').insert({ userId, brandId });
     if (error) throw error;
+    await supabase.rpc('increment_brand_followers', { brand_id: brandId });
     return { success: true, error: null };
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to follow brand' };
   }
 }
 
-/**
- * Unfollow a brand
- */
 export async function unfollowBrand(userId: string, brandId: string) {
   try {
     const { error } = await supabase.from('BrandFollower').delete().eq('userId', userId).eq('brandId', brandId);
-
     if (error) throw error;
+    await supabase.rpc('decrement_brand_followers', { brand_id: brandId });
     return { success: true, error: null };
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to unfollow brand' };
