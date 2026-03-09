@@ -10,7 +10,7 @@ import { useFonts } from 'expo-font';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useColorScheme } from 'nativewind';
-import { useAppDispatch } from '@/src/shared/hooks/redux';
+import { useAppDispatch, useAppSelector } from '@/src/shared/hooks/redux';
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -26,10 +26,32 @@ export default function AppLayout() {
   const isNavigatingToReset = useRef(false);
   const isHandlingOAuth = useRef(false);
 
+  // ← ADDED
+  const user = useAppSelector(state => state.auth.user);
+
+  // ← ADDED: Redirect unverified users
+  useEffect(() => {
+    if (user && !user.email_confirmed_at) {
+      router.replace(`/(auth)/verify-email?email=${user.email ?? ''}`);
+    }
+  }, [user]);
+
+  // ← ADDED: Check onboarding
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      if (!user) return;
+      if (!user.email_confirmed_at) return;
+      const completed = await AsyncStorage.getItem(`onboarding_completed_${user.id}`);
+      if (!completed) {
+        router.replace('/onboarding');
+      }
+    };
+    checkOnboarding();
+  }, [user]);
+
   // Handle deep links when app is ALREADY running (not cold start)
   useEffect(() => {
     const handleDeepLink = async (url: string) => {
-      // Handle OAuth callback - check for tokens in the URL
       if (url.includes('access_token') && url.includes('refresh_token')) {
         isHandlingOAuth.current = true;
 
@@ -67,13 +89,9 @@ export default function AppLayout() {
 
           const user = sessionData.session.user;
 
-          // Set user in Redux (auth state only)
           dispatch(setCurrentUser(user));
-
-          // Save to AsyncStorage
           await AsyncStorage.setItem('authState', JSON.stringify({ user }));
 
-          // Prefetch user profile using React Query
           try {
             await queryClient.prefetchQuery({
               queryKey: ['user-profile', user.id],
@@ -83,14 +101,11 @@ export default function AppLayout() {
                 return data;
               },
             });
-
-            // Update lastLoginAt
             await supabase.from('User').update({ lastLoginAt: new Date().toISOString() }).eq('id', user.id);
           } catch (err) {
             console.error('❌ Failed to prefetch profile:', err);
           }
 
-          // Navigate to tabs
           setTimeout(() => {
             router.replace('/(tabs)');
             isHandlingOAuth.current = false;
@@ -104,7 +119,6 @@ export default function AppLayout() {
         return;
       }
 
-      // Handle password recovery
       if (url.includes('type=recovery')) {
         let tokenHash = null;
         const queryMatch = url.match(/[?&]token_hash=([^&#]+)/);
@@ -127,7 +141,6 @@ export default function AppLayout() {
 
             if (!error && data?.session) {
               dispatch(setPasswordResetSession(true));
-
               isNavigatingToReset.current = true;
               setTimeout(() => {
                 router.push('/(auth)/reset-password');
@@ -153,9 +166,7 @@ export default function AppLayout() {
   // Listen to auth state changes (runtime only)
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      if (isHandlingOAuth.current) {
-        return;
-      }
+      if (isHandlingOAuth.current) return;
 
       if (event === 'PASSWORD_RECOVERY') {
         dispatch(setPasswordResetSession(true));
@@ -164,11 +175,15 @@ export default function AppLayout() {
 
       if (currentSession) {
         dispatch(setCurrentUser(currentSession.user));
-
-        // Save to AsyncStorage
         await AsyncStorage.setItem('authState', JSON.stringify({ user: currentSession.user }));
 
         if (event === 'SIGNED_IN') {
+          // ← ADDED: Check email verification first
+          if (!currentSession.user.email_confirmed_at) {
+            router.replace(`/(auth)/verify-email?email=${currentSession.user.email ?? ''}`);
+            return;
+          }
+
           // Check if account is deactivated
           const { data: userData } = await supabase
             .from('User')
@@ -177,12 +192,9 @@ export default function AppLayout() {
             .single();
 
           if (userData?.isActive === false) {
-            // Sign them out immediately
             await supabase.auth.signOut();
             dispatch(clearCurrentUser());
             await AsyncStorage.removeItem('authState');
-
-            // Navigate to auth and pass deactivated flag via router params
             router.replace({
               pathname: '/(auth)',
               params: { deactivated: 'true', userId: currentSession.user.id },
@@ -203,7 +215,6 @@ export default function AppLayout() {
       } else {
         dispatch(clearCurrentUser());
         await AsyncStorage.removeItem('authState');
-        // Clear all React Query cache on logout
         queryClient.clear();
       }
     });
@@ -226,6 +237,7 @@ export default function AppLayout() {
         <Stack.Screen name="splash" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(auth)" />
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );
