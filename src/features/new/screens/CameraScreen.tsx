@@ -105,53 +105,32 @@ export default function CameraScreen() {
   const handleNext = async () => {
     if (!capturedImage) return;
 
-    if (activeMode === 'own') {
-      // Ownership flow - compress and navigate to item form
-      try {
-        setIsCompressing(true);
+    try {
+      setIsCompressing(true);
 
-        const compressedImage = await CompressorImage.compress(capturedImage, {
-          compressionMethod: 'auto',
-          maxWidth: 1920,
-          maxHeight: 1920,
-          quality: 0.8,
-        });
+      const compressedImage = await CompressorImage.compress(capturedImage, {
+        compressionMethod: 'auto',
+        maxWidth: 1920,
+        maxHeight: 1920,
+        quality: 0.8,
+      });
 
+      if (activeMode === 'own') {
         router.push({
-          pathname: '/(app)/(tabs)/new/item-form',
+          pathname: '/(app)/(tabs)/new/community-product',
           params: { imageUri: compressedImage },
         });
-      } catch (error) {
-        console.error('Error compressing image:', error);
-        Alert.alert('Error', 'Failed to process image');
-      } finally {
-        setIsCompressing(false);
-      }
-    } else if (activeMode === 'photo') {
-      // Photo memory flow - Navigate to memory form
-      try {
-        setIsCompressing(true);
-
-        const compressedImage = await CompressorImage.compress(capturedImage, {
-          compressionMethod: 'auto',
-          maxWidth: 1920,
-          maxHeight: 1920,
-          quality: 0.8,
-        });
-
+      } else if (activeMode === 'photo') {
         router.push({
           pathname: '/(app)/(tabs)/new/memory-form',
           params: { imageUri: compressedImage },
         });
-      } catch (error) {
-        console.error('Error compressing image:', error);
-        Alert.alert('Error', 'Failed to process image');
-      } finally {
-        setIsCompressing(false);
       }
-    } else if (activeMode === 'video') {
-      // Video memory flow - Coming soon
-      Alert.alert('Coming Soon', 'Video memories will be available soon!');
+    } catch (error) {
+      console.error('Error compressing image:', error);
+      Alert.alert('Error', 'Failed to process image');
+    } finally {
+      setIsCompressing(false);
     }
   };
 
@@ -250,17 +229,7 @@ export default function CameraScreen() {
                 activeOpacity={0.7}
               >
                 <Text className={`font-semibold text-sm ${activeMode === 'photo' ? 'text-black' : 'text-white'}`}>
-                  Photo
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => setActiveMode('video')}
-                className={`px-5 py-2 rounded-full ${activeMode === 'video' ? 'bg-white' : 'bg-transparent'}`}
-                activeOpacity={0.7}
-              >
-                <Text className={`font-semibold text-sm ${activeMode === 'video' ? 'text-black' : 'text-white'}`}>
-                  Video
+                  Memory
                 </Text>
               </TouchableOpacity>
             </View>

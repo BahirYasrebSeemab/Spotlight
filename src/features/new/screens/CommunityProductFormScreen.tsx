@@ -18,6 +18,7 @@ import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import { Image as CompressorImage } from 'react-native-compressor';
+import { useLocalSearchParams } from 'expo-router';
 
 import { InputField } from '@/src/shared/components/InputField';
 import { Spotlight } from '@/src/shared/components/Spotlight';
@@ -27,14 +28,17 @@ export default function CommunityProductFormScreen() {
   const router = useRouter();
 
   // Camera state
+  const { imageUri } = useLocalSearchParams<{ imageUri?: string }>();
   const [showCamera, setShowCamera] = useState(false);
   const [facing, setFacing] = useState<CameraType>('back');
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(imageUri ?? null);
   const [lastGalleryPhoto, setLastGalleryPhoto] = useState<string | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [mediaPermission, requestMediaPermission] = MediaLibrary.usePermissions();
   const cameraRef = useRef<CameraView>(null);
+
+  // ← pre-fill from camera if passed
 
   // Form state
   const [name, setName] = useState('');
