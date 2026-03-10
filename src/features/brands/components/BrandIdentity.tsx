@@ -1,7 +1,7 @@
-import React from 'react';
 import { View, Text, Image, Pressable, ActivityIndicator } from 'react-native';
 import { Globe, Instagram, BadgeCheckIcon } from 'lucide-react-native';
 import type { BrandProfile } from '../types/brand.types';
+import { useState, useEffect } from 'react';
 
 interface BrandIdentityProps {
   brand: BrandProfile;
@@ -34,6 +34,11 @@ export function BrandIdentity({
         return 'bg-gray-500';
     }
   };
+  const [localFollowing, setLocalFollowing] = useState(isFollowing);
+
+  useEffect(() => {
+    setLocalFollowing(isFollowing);
+  }, [isFollowing]);
 
   const formatCount = (count: number) => {
     if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -105,15 +110,19 @@ export function BrandIdentity({
 
       {/* Follow Button */}
       <Pressable
-        onPress={onFollowToggle}
+        onPress={() => {
+          if (followLoading) return;
+          setLocalFollowing(prev => !prev);
+          onFollowToggle();
+        }}
         disabled={followLoading}
-        className={`py-2.5 rounded-lg ${isFollowing ? 'bg-white/10' : 'bg-white'}`}
+        className={`py-2.5 rounded-lg ${localFollowing ? 'bg-white/10' : 'bg-white'}`}
       >
         {followLoading ? (
-          <ActivityIndicator size="small" color={isFollowing ? '#ffffff' : '#000000'} />
+          <ActivityIndicator size="small" color={localFollowing ? '#ffffff' : '#000000'} />
         ) : (
-          <Text className={`text-center font-semibold ${isFollowing ? 'text-white' : 'text-black'}`}>
-            {isFollowing ? 'Following' : 'Follow'}
+          <Text className={`text-center font-semibold ${localFollowing ? 'text-white' : 'text-black'}`}>
+            {localFollowing ? 'Following' : 'Follow'}
           </Text>
         )}
       </Pressable>
