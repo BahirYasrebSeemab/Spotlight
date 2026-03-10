@@ -48,7 +48,7 @@ model User {
   @@index([email])
   @@index([username])
 }
-
+  
 model Follower {
   createdAt   DateTime @default(now())
   id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
