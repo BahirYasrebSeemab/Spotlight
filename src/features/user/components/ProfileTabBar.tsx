@@ -10,7 +10,7 @@ interface ProfileTabBarProps {
 export function ProfileTabBar({ activeTab, onTabChange, isOwnProfile }: ProfileTabBarProps) {
   const tabs = [
     { id: 'memories' as const, label: 'Memories', icon: Camera },
-    { id: 'matches' as const, label: 'Matches', icon: Layers },
+    // { id: 'matches' as const, label: 'Matches', icon: Layers },
   ];
 
   return (
