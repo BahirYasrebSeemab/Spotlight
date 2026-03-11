@@ -53,7 +53,7 @@ export default function TabLayout() {
           }}
         >
           <Tabs.Screen
-            name="index"
+            name="closet"
             options={{
               title: 'Closet',
               tabBarIcon: ({ color, size }) => <ClosetIcon color={color} size={size} />,

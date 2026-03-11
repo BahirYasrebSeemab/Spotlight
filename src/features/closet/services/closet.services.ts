@@ -255,3 +255,199 @@ export async function getOwnershipsByCategory(
     return { data: null, error: err.message || 'Failed to fetch ownerships' };
   }
 }
+
+export async function getExploreContent(userId: string) {
+  try {
+    // Get users that current user follows
+    const { data: following, error: followError } = await supabase
+      .from('Follower')
+      .select('followingId')
+      .eq('followerId', userId);
+
+    if (followError) throw followError;
+
+    const followingIds = following?.map((f: any) => f.followingId) ?? [];
+
+    // ── COMMUNITY TAB ──────────────────────────────────────────────────────
+
+    // Memories from ALL public users (80%)
+    const { data: communityMemories, error: cmError } = await supabase
+      .from('Memory')
+      .select(
+        `
+        id,
+        mediaUrl,
+        thumbnailUrl,
+        mediaType,
+        caption,
+        likesCount,
+        createdAt,
+        user:userId (
+          id,
+          username,
+          avatarUrl,
+          isPrivate
+        )
+      `,
+      )
+      .order('createdAt', { ascending: false })
+      .limit(60);
+
+    if (cmError) throw cmError;
+
+    // Community products from public users (20%)
+    const { data: communityProducts, error: cpError } = await supabase
+      .from('CommunityProduct')
+      .select(
+        `
+        id,
+        name,
+        brandName,
+        imageUrl,
+        thumbnailUrl,
+        ownershipCount,
+        createdAt,
+        creator:createdBy (
+          id,
+          username,
+          avatarUrl,
+          isPrivate
+        )
+      `,
+      )
+      .eq('status', 'ACTIVE')
+      .order('createdAt', { ascending: false })
+      .limit(15);
+
+    if (cpError) throw cpError;
+
+    const filteredMemories = (communityMemories ?? [])
+      .filter((m: any) => {
+        const u = Array.isArray(m.user) ? m.user[0] : m.user;
+        return !u?.isPrivate;
+      })
+      .map((m: any) => ({ ...m, _type: 'MEMORY' as const }));
+
+    const filteredProducts = (communityProducts ?? [])
+      .filter((p: any) => {
+        const c = Array.isArray(p.creator) ? p.creator[0] : p.creator;
+        return !c?.isPrivate;
+      })
+      .map((p: any) => ({ ...p, _type: 'COMMUNITY' as const }));
+
+    // Interleave: every 5th slot is a product, rest memories
+    const community: any[] = [];
+    let mIdx = 0;
+    let pIdx = 0;
+    const total = filteredMemories.length + filteredProducts.length;
+
+    for (let i = 0; i < total; i++) {
+      if ((i + 1) % 5 === 0 && pIdx < filteredProducts.length) {
+        community.push(filteredProducts[pIdx++]);
+      } else if (mIdx < filteredMemories.length) {
+        community.push(filteredMemories[mIdx++]);
+      } else if (pIdx < filteredProducts.length) {
+        community.push(filteredProducts[pIdx++]);
+      }
+    }
+
+    // ── FOLLOWING TAB ──────────────────────────────────────────────────────
+
+    if (followingIds.length === 0) {
+      return {
+        data: { community, following: [] },
+        error: null,
+      };
+    }
+
+    const { data: memories, error: mError } = await supabase
+      .from('Memory')
+      .select(
+        `
+        id,
+        mediaUrl,
+        thumbnailUrl,
+        mediaType,
+        caption,
+        likesCount,
+        createdAt,
+        user:userId (
+          id,
+          username,
+          avatarUrl,
+          isPrivate
+        )
+      `,
+      )
+      .in('userId', followingIds)
+      .order('createdAt', { ascending: false })
+      .limit(30);
+
+    if (mError) throw mError;
+
+    const { data: ownerships, error: oError } = await supabase
+      .from('Ownership')
+      .select(
+        `
+        id,
+        thumbnailImageUrl,
+        processedImageUrl,
+        thumbnailUrl,
+        createdAt,
+        ownerId,
+        prototype:prototypeId (
+          id,
+          name,
+          imageUrl,
+          thumbnailUrl,
+          brand:brandId (
+            name
+          )
+        ),
+        communityProduct:communityProductId (
+          id,
+          name,
+          brandName,
+          imageUrl,
+          thumbnailUrl
+        ),
+        owner:ownerId (
+          id,
+          username,
+          avatarUrl,
+          isPrivate
+        )
+      `,
+      )
+      .in('ownerId', followingIds)
+      .order('createdAt', { ascending: false })
+      .limit(30);
+
+    if (oError) throw oError;
+
+    const memoriesMapped = (memories ?? [])
+      .filter((m: any) => {
+        const u = Array.isArray(m.user) ? m.user[0] : m.user;
+        return !u?.isPrivate;
+      })
+      .map((m: any) => ({ ...m, _type: 'MEMORY' as const }));
+
+    const ownershipsMapped = (ownerships ?? [])
+      .filter((o: any) => {
+        const u = Array.isArray(o.owner) ? o.owner[0] : o.owner;
+        return !u?.isPrivate;
+      })
+      .map((o: any) => ({ ...o, _type: 'OWNERSHIP' as const }));
+
+    const followingFeed = [...memoriesMapped, ...ownershipsMapped].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+
+    return {
+      data: { community, following: followingFeed },
+      error: null,
+    };
+  } catch (err: any) {
+    return { data: null, error: err.message || 'Failed to fetch explore content' };
+  }
+}
