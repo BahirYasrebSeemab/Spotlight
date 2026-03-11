@@ -31,10 +31,10 @@ export default function ClosetScreen() {
 
     // Fix: correct field priority — thumbnailImageUrl is what the edge function saves
     // Fall back to product's own image when useOfficialImage is true or no custom image exists
-const imageUrl =
-  [item.thumbnailImageUrl, item.processedImageUrl, product?.thumbnailUrl, product?.imageUrl].find(
-    url => !!url && url.length > 0,
-  ) ?? null;
+    const imageUrl =
+      [item.thumbnailImageUrl, item.processedImageUrl, product?.thumbnailUrl, product?.imageUrl].find(
+        url => !!url && url.length > 0,
+      ) ?? null;
 
     const isProcessing = item.processingStatus === 'pending' || item.processingStatus === 'processing';
     return (
@@ -130,6 +130,7 @@ const imageUrl =
     <Spotlight intensity={0.2}>
       <View className="flex-1 bg-black">
         {/* Header */}
+        // Replace the header View in ClosetScreen
         <View className="flex-row items-center justify-between pt-16 pb-6 px-4 border-b border-white/10">
           <View>
             <Text className="text-white text-3xl font-bold mb-2">My Closet</Text>
@@ -145,11 +146,18 @@ const imageUrl =
               )}
             </View>
           </View>
-          <Pressable onPress={() => router.push('/(tabs)/new/community-product')} className="p-2">
-            <Plus size={25} color={'white'} />
-          </Pressable>
+          <View className="flex-row items-center gap-2">
+            <Pressable
+              onPress={() => router.push('/(tabs)/closet/explore' as any)}
+              className="px-4 py-2 rounded-xl bg-white/10 border border-white/10"
+            >
+              <Text className="text-white font-semibold text-sm">Explore</Text>
+            </Pressable>
+            <Pressable onPress={() => router.push('/(tabs)/new/community-product')} className="p-2">
+              <Plus size={25} color="white" />
+            </Pressable>
+          </View>
         </View>
-
         {/* Grid */}
         <FlatList
           data={ownerships}
