@@ -102,12 +102,12 @@ export default function EditProfileScreen() {
           <TouchableOpacity
             onPress={handleSave}
             disabled={loading}
-            className={`w-full py-3 rounded-xl mt-6 ${loading ? 'bg-gray-400' : 'bg-blue-500 dark:bg-blue-600'}`}
+            className={`w-full py-3 rounded-xl mt-6 ${loading ? 'bg-gray-400' : 'bg-white dark:bg-white'}`}
           >
             {loading ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text className="text-white text-center font-semibold text-base">Save Changes</Text>
+              <Text className="text-black text-center font-semibold text-base">Save Changes</Text>
             )}
           </TouchableOpacity>
         </View>

@@ -52,12 +52,12 @@ export default function ChangePasswordScreen() {
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={loading}
-            className={`w-full py-3 rounded-xl ${loading ? 'bg-gray-400' : 'bg-blue-500 dark:bg-blue-600'}`}
+            className={`w-full py-3 rounded-xl ${loading ? 'bg-gray-400' : 'bg-white dark:bg-white'}`}
           >
             {loading ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text className="text-white text-center font-semibold text-base">Update Password</Text>
+              <Text className="text-black text-center font-semibold text-base">Update Password</Text>
             )}
           </TouchableOpacity>
         </>

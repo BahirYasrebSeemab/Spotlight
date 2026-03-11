@@ -65,20 +65,20 @@ export default function NotificationsScreen() {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() => setActiveTab('activity')}
           className={`flex-1 py-4 items-center border-b-2 ${
-            activeTab === 'activity' ? 'border-purple-600' : 'border-transparent'
+            activeTab === 'activity' ? 'border-white' : 'border-transparent'
           }`}
-        >
-          <Text
+        > */}
+        {/* <Text
             className={`font-semibold text-base ${
-              activeTab === 'activity' ? 'text-purple-600' : 'text-gray-500 dark:text-gray-400'
+              activeTab === 'activity' ? 'text-white' : 'text-gray-500 dark:text-gray-400'
             }`}
           >
             Activity
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity>*/}
       </View>
 
       {/* Content */}
