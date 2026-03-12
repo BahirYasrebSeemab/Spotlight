@@ -12,7 +12,7 @@
       "image": "./assets/images/placeholder-spotlight.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff",
-      "hide": true
+      "hide": false
     },
     "ios": {
       "supportsTablet": true,
