@@ -5,11 +5,9 @@ import { Link, useRouter } from 'expo-router';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-import { Divider } from '@/src/shared/components/Divider';
+import { Button, Divider, Input } from '@/src/shared/ui';
 import { useLogin, useOAuth } from '@/src/features/auth/hooks';
-import { InputField } from '@/src/shared/components/InputField';
 import { GoogleButton } from '@/src/shared/components/GoogleButton';
-import { PrimaryButton } from '@/src/shared/components/PrimaryButton';
 
 export default function LoginScreen() {
   const { email, handleLogin, loading, localError, password, setEmail, setPassword } = useLogin();
@@ -28,7 +26,7 @@ export default function LoginScreen() {
           <Text className="text-3xl font-extrabold text-center text-foreground mb-10">Spotlight</Text>
 
           {/* Email Input */}
-          <InputField
+          <Input
             label="Email"
             placeholderTextColor="#888"
             keyboardType="email-address"
@@ -39,7 +37,7 @@ export default function LoginScreen() {
           />
 
           {/* Password Input */}
-          <InputField
+          <Input
             password
             label="Password"
             placeholderTextColor="#888"
@@ -58,9 +56,13 @@ export default function LoginScreen() {
           {oAuthError && <Text className="text-destructive-foreground text-center mb-2">{oAuthError}</Text>}
 
           {/* Login Button */}
-          <View className="mb-4">
-            <PrimaryButton title="Log in" loading={loading} disabled={loading || oAuthLoading} onPress={handleLogin} />
-          </View>
+          <Button
+            title="Log in"
+            loading={loading}
+            disabled={loading || oAuthLoading}
+            onPress={handleLogin}
+            className="mb-4"
+          />
 
           <Divider />
 

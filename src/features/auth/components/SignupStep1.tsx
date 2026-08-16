@@ -3,12 +3,10 @@
 // ========================================
 import { View } from 'react-native';
 
-import { Divider } from '@/src/shared/components/Divider';
+import { Button, Divider, Input } from '@/src/shared/ui';
 import { GoogleButton } from '@/src/shared/components/GoogleButton';
 
 import { SignupForm } from '../../../shared/types/form.types';
-import { InputField } from '../../../shared/components/InputField';
-import { PrimaryButton } from '../../../shared/components/PrimaryButton';
 
 interface SignupStep1Props {
   form: SignupForm;
@@ -23,7 +21,7 @@ export const SignupStep1 = ({ form, handleGoogleLogin, loading, onChange, onNext
 
   return (
     <View>
-      <InputField
+      <Input
         label="Full Name"
         placeholder="John Doe"
         value={form.fullName}
@@ -31,7 +29,7 @@ export const SignupStep1 = ({ form, handleGoogleLogin, loading, onChange, onNext
         editable={!loading}
       />
 
-      <InputField
+      <Input
         label="Age"
         placeholder="18"
         keyboardType="number-pad"
@@ -40,7 +38,7 @@ export const SignupStep1 = ({ form, handleGoogleLogin, loading, onChange, onNext
         editable={!loading}
       />
 
-      <InputField
+      <Input
         label="Email"
         keyboardType="email-address"
         autoCapitalize="none"
@@ -49,7 +47,7 @@ export const SignupStep1 = ({ form, handleGoogleLogin, loading, onChange, onNext
         editable={!loading}
       />
 
-      <PrimaryButton title="Next" onPress={onNext} disabled={!isValid || loading} loading={loading} />
+      <Button title="Next" onPress={onNext} disabled={!isValid || loading} loading={loading} />
 
       <Divider />
 

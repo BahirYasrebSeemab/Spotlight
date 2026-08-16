@@ -1,7 +1,8 @@
 // src/features/brands/components/BrandCard.tsx
 import React from 'react';
-import { BadgeCheckIcon } from 'lucide-react-native';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
+
+import { VerifiedBadge } from '@/src/shared/ui';
 
 import type { Brand } from '../types/brand.types';
 
@@ -25,13 +26,7 @@ export function BrandCard({ brand, onPress }: BrandCardProps) {
           }}
           className="w-14 h-14 rounded-full bg-muted"
         />
-        {brand.verified && (
-          <View className="absolute -bottom-1 -right-1">
-            <View className="bg-black rounded-full p-0.1">
-              <BadgeCheckIcon size={18} color="black" fill="white" />
-            </View>
-          </View>
-        )}
+        {brand.verified && <VerifiedBadge className="absolute -bottom-1 -right-1" />}
       </View>
 
       {/* Brand Info */}

@@ -5,9 +5,9 @@ import { useRouter } from 'expo-router';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
+import { Button, Input } from '@/src/shared/ui';
 import { AuthHeader } from '@/src/features/auth/components';
 import { useForgotPassword } from '@/src/features/auth/hooks';
-import { InputField } from '@/src/shared/components/InputField';
 
 export default function ForgetPasswordScreen() {
   const { email, handleReset, loading, localError, setEmail, success } = useForgotPassword();
@@ -18,7 +18,7 @@ export default function ForgetPasswordScreen() {
       <View className="flex-1 justify-center px-8 py-12">
         <AuthHeader title="Reset Password" subtitle="Enter your email and we'll send you a reset link" />
 
-        <InputField
+        <Input
           label="Email"
           value={email}
           onChangeText={setEmail}
@@ -38,17 +38,13 @@ export default function ForgetPasswordScreen() {
         {localError && <Text className="text-destructive-foreground text-center mb-2">{localError}</Text>}
 
         {/* Send Reset Link Button */}
-        <TouchableOpacity
+        <Button
+          title={success ? 'Email Sent' : 'Send Reset Link'}
+          loading={loading}
           disabled={loading || success}
           onPress={handleReset}
-          className={`w-full py-3 rounded-xl mt-4 ${loading || success ? 'bg-gray-600' : 'bg-white'}`}
-        >
-          <Text
-            className={`text-center text-base font-semibold ${loading || success ? 'text-gray-300' : 'text-black'}`}
-          >
-            {loading ? 'Sending...' : success ? 'Email Sent' : 'Send Reset Link'}
-          </Text>
-        </TouchableOpacity>
+          className="mt-4"
+        />
 
         {/* Back to Login */}
         <TouchableOpacity onPress={() => router.back()} className="mt-6">

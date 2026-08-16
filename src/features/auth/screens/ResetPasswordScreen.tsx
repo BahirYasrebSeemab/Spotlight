@@ -1,12 +1,12 @@
 // ========================================
 // app/(auth)/reset-password.tsx - Updated Reset Password Screen
 // ========================================
+import { Text, View } from 'react-native';
 import { CheckCircle } from 'lucide-react-native';
-import { Text, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
+import { Button, Input } from '@/src/shared/ui';
 import { AuthHeader } from '@/src/features/auth/components';
-import { InputField } from '@/src/shared/components/InputField';
 import { useResetPassword } from '@/src/features/auth/hooks/useResetPassword';
 
 export default function ResetPasswordScreen() {
@@ -21,14 +21,8 @@ export default function ResetPasswordScreen() {
 
       {!success ? (
         <>
-          <InputField
-            password={true}
-            label="New Password"
-            value={password}
-            onChangeText={setPassword}
-            editable={!loading}
-          />
-          <InputField
+          <Input password={true} label="New Password" value={password} onChangeText={setPassword} editable={!loading} />
+          <Input
             password={true}
             label="Confirm Password"
             value={confirm}
@@ -37,18 +31,10 @@ export default function ResetPasswordScreen() {
           />
 
           {/* Error Message */}
-          {localError && <Text className="text-center mb-4 text-white">{localError}</Text>}
+          {localError && <Text className="text-center mb-4 text-destructive-foreground">{localError}</Text>}
 
           {/* Update Button */}
-          <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={loading}
-            className={`w-full py-3 rounded-xl ${loading ? 'bg-gray-600' : 'bg-white'}`}
-          >
-            <Text className={`text-center font-semibold text-base ${loading ? 'text-gray-300' : 'text-black'}`}>
-              {loading ? 'Updating...' : 'Update Password'}
-            </Text>
-          </TouchableOpacity>
+          <Button title="Update Password" loading={loading} disabled={loading} onPress={handleSubmit} />
         </>
       ) : (
         <View className="items-center py-12">

@@ -5,8 +5,8 @@ import { useRouter } from 'expo-router';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { View, Text, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
 
+import { Button, Input } from '@/src/shared/ui';
 import { useAppSelector } from '@/src/shared/hooks/redux';
-import { InputField } from '@/src/shared/components/InputField';
 import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
 import { useEditProfile } from '@/src/features/user/hooks/useEditUser';
 
@@ -70,10 +70,10 @@ export default function EditProfileScreen() {
 
         <View className="w-full max-w-md">
           {/* Name */}
-          <InputField label="Full Name" value={name} onChangeText={setName} editable={!loading} />
+          <Input label="Full Name" value={name} onChangeText={setName} editable={!loading} />
 
           {/* Username */}
-          <InputField
+          <Input
             label="Username"
             autoCapitalize="none"
             value={username}
@@ -82,7 +82,7 @@ export default function EditProfileScreen() {
           />
 
           {/* Bio */}
-          <InputField
+          <Input
             label="Bio"
             multiline
             value={bio}
@@ -99,17 +99,7 @@ export default function EditProfileScreen() {
           )}
 
           {/* Save button */}
-          <TouchableOpacity
-            onPress={handleSave}
-            disabled={loading}
-            className={`w-full py-3 rounded-xl mt-6 ${loading ? 'bg-gray-400' : 'bg-primary'}`}
-          >
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text className="text-black text-center font-semibold text-base">Save Changes</Text>
-            )}
-          </TouchableOpacity>
+          <Button title="Save Changes" loading={loading} disabled={loading} onPress={handleSave} className="mt-6" />
         </View>
       </View>
     </KeyboardAwareScrollView>

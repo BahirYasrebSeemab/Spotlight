@@ -2,11 +2,11 @@
 // app/(tabs)/profile/change-password.tsx - FIXED Change Password
 // ========================================
 import { useRouter } from 'expo-router';
+import { Text, View } from 'react-native';
 import { CheckCircle } from 'lucide-react-native';
-import { Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-import { InputField } from '@/src/shared/components/InputField';
+import { Button, Input } from '@/src/shared/ui';
 import { useResetPassword } from '@/src/features/auth/hooks/useResetPassword';
 
 export default function ChangePasswordScreen() {
@@ -27,7 +27,7 @@ export default function ChangePasswordScreen() {
 
       {!success ? (
         <>
-          <InputField
+          <Input
             password={true}
             label="New Password"
             placeholder="••••••••"
@@ -35,7 +35,7 @@ export default function ChangePasswordScreen() {
             onChangeText={setPassword}
             editable={!loading}
           />
-          <InputField
+          <Input
             password={true}
             label="Confirm Password"
             placeholder="••••••••"
@@ -50,17 +50,7 @@ export default function ChangePasswordScreen() {
             </View>
           )}
 
-          <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={loading}
-            className={`w-full py-3 rounded-xl ${loading ? 'bg-gray-400' : 'bg-primary'}`}
-          >
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text className="text-black text-center font-semibold text-base">Update Password</Text>
-            )}
-          </TouchableOpacity>
+          <Button title="Update Password" loading={loading} disabled={loading} onPress={handleSubmit} />
         </>
       ) : (
         <View className="items-center py-12">

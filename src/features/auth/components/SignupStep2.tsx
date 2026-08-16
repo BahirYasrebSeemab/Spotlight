@@ -1,12 +1,12 @@
 // ========================================
 // src/features/auth/components/SignupStep2.tsx - Updated
 // ========================================
+import { View, Text } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
-import { View, TouchableOpacity, Text } from 'react-native';
+
+import { Button, Input } from '@/src/shared/ui';
 
 import { SignupForm } from '../../../shared/types/form.types';
-import { InputField } from '../../../shared/components/InputField';
-import { PrimaryButton } from '../../../shared/components/PrimaryButton';
 
 interface SignupStep2Props {
   form: SignupForm;
@@ -25,7 +25,7 @@ export const SignupStep2 = ({ error, form, loading, onBack, onChange, onNext }: 
 
   return (
     <View>
-      <InputField
+      <Input
         label="Username"
         placeholder="johndoe"
         autoCapitalize="none"
@@ -34,7 +34,7 @@ export const SignupStep2 = ({ error, form, loading, onBack, onChange, onNext }: 
         editable={!loading}
       />
 
-      <InputField
+      <Input
         password={true}
         label="Password"
         placeholder="••••••••"
@@ -43,7 +43,7 @@ export const SignupStep2 = ({ error, form, loading, onBack, onChange, onNext }: 
         editable={!loading}
       />
 
-      <InputField
+      <Input
         password={true}
         label="Confirm Password"
         placeholder="••••••••"
@@ -66,23 +66,17 @@ export const SignupStep2 = ({ error, form, loading, onBack, onChange, onNext }: 
 
       {/* Buttons */}
       <View className="flex-row justify-between items-center mt-4 gap-3">
-        <TouchableOpacity
+        <Button
+          variant="outline"
+          title="Back"
           onPress={onBack}
           disabled={loading}
-          className="flex-row items-center gap-2 px-4 py-3 border border-border rounded-xl"
-        >
-          <ChevronLeft size={20} color="#6B7280" />
-          <Text className="text-muted-foreground font-medium">Back</Text>
-        </TouchableOpacity>
+          fullWidth={false}
+          icon={<ChevronLeft size={20} color="#6B7280" />}
+        />
 
         <View className="flex-1">
-          <PrimaryButton
-            loading={loading}
-            px="px-0"
-            title="Create Account"
-            onPress={onNext}
-            disabled={!isValid || loading}
-          />
+          <Button loading={loading} title="Create Account" onPress={onNext} disabled={!isValid || loading} />
         </View>
       </View>
     </View>

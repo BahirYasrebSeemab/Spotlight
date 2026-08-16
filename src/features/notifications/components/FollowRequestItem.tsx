@@ -4,7 +4,9 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Check, X } from 'lucide-react-native';
-import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+
+import { Avatar } from '@/src/shared/ui';
 
 interface FollowRequestItemProps {
   onAccept: (requestId: string) => Promise<void>;
@@ -59,15 +61,7 @@ export function FollowRequestItem({ item, onAccept, onReject }: FollowRequestIte
           className="mr-3"
           disabled={isProcessing}
         >
-          {item.requester?.avatarUrl ? (
-            <Image source={{ uri: item.requester.avatarUrl }} className="w-14 h-14 rounded-full" />
-          ) : (
-            <View className="w-14 h-14 rounded-full bg-white items-center justify-center">
-              <Text className="text-black text-xl font-bold">
-                {item.requester?.name?.[0] || item.requester?.username?.[0] || '?'}
-              </Text>
-            </View>
-          )}
+          <Avatar uri={item.requester?.avatarUrl} label={item.requester?.name || item.requester?.username} size={56} />
         </TouchableOpacity>
 
         <View className="flex-1">

@@ -1,7 +1,9 @@
 // src/features/products/components/ProductCard.tsx
 import React from 'react';
-import { BadgeCheckIcon, Package } from 'lucide-react-native';
+import { Package } from 'lucide-react-native';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
+
+import { VerifiedBadge } from '@/src/shared/ui';
 
 import type { Product } from '../types/product.types';
 
@@ -30,9 +32,7 @@ export function ProductCard({ onPress, product }: ProductCardProps) {
         {/* Type Badge */}
         <View className="absolute -top-1 -right-1">
           {isVerified ? (
-            <View className="bg-black rounded-full p-0.1">
-              <BadgeCheckIcon size={18} color="black" fill="white" />
-            </View>
+            <VerifiedBadge />
           ) : (
             <View className="bg-gray-500 rounded-full p-1">
               <Package size={10} color="white" />

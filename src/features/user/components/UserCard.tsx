@@ -1,6 +1,8 @@
 // src/features/search/components/UserCard.tsx
 import { useRouter } from 'expo-router';
-import { TouchableOpacity, View, Image, Text } from 'react-native';
+import { TouchableOpacity, View, Text } from 'react-native';
+
+import { Avatar } from '@/src/shared/ui';
 
 interface UserCardProps {
   user: {
@@ -22,9 +24,7 @@ export function UserCard({ user }: UserCardProps) {
       className="flex-row items-center p-4 border-b border-white/5"
       activeOpacity={0.7}
     >
-      <View className="relative">
-        <Image source={{ uri: user.avatarUrl }} className="w-14 h-14 rounded-full bg-white/10" />
-      </View>
+      <Avatar uri={user.avatarUrl} label={user.name || user.username} size={56} />
       <View className="flex-1 ml-3">
         <Text className="text-base font-semibold text-white">{user.name || user.username}</Text>
         <Text className="text-sm text-gray-400">@{user.username}</Text>
