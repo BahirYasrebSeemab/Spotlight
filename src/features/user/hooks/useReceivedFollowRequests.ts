@@ -2,6 +2,7 @@
 // src/features/user/hooks/useReceivedFollowRequests.ts
 // ========================================
 import { useInfiniteQuery } from '@tanstack/react-query';
+
 import { getReceivedFollowRequests } from '@/src/features/user/services/followRequest.services';
 
 export function useReceivedFollowRequests(userId: string | undefined, limit = 20) {

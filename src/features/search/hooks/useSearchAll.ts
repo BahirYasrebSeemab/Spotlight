@@ -1,32 +1,33 @@
 // src/features/search/hooks/useSearchAll.ts
 import { useQuery } from '@tanstack/react-query';
-import { searchAll, SearchResult } from '@/src/features/search/services/searchServices';
+
+import { searchAll } from '@/src/features/search/services/searchServices';
 
 export function useSearchAll(query: string) {
   return useQuery({
-    queryKey: ['search-all', query],
+    enabled: query.length >= 2,
     queryFn: async () => {
       const { data, error } = await searchAll(query);
       if (error) throw new Error(error);
       return data || [];
     },
-    enabled: query.length >= 2,
-    staleTime: 30 * 1000,
-    refetchOnWindowFocus: false,
+    queryKey: ['search-all', query],
     refetchOnMount: false,
+    refetchOnWindowFocus: false,
     retry: 1,
+    staleTime: 30 * 1000,
   });
 }
 
 // Helper hook to filter results by type
 export function useSearchAllFiltered(query: string, filterType?: 'USER' | 'PROTOTYPE' | 'COMMUNITY' | 'BRAND') {
-  const { data, isLoading, error } = useSearchAll(query);
+  const { data, error, isLoading } = useSearchAll(query);
 
   const filteredData = filterType ? data?.filter(result => result.type === filterType) : data;
 
   return {
     data: filteredData,
-    isLoading,
     error,
+    isLoading,
   };
 }

@@ -1,8 +1,9 @@
-import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { MailCheck } from 'lucide-react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
+
 import { useAppSelector } from '@/src/shared/hooks/redux';
 import { selectCurrentUser } from '@/src/features/auth/slices/authSlice';
-import { MailCheck } from 'lucide-react-native';
 
 export function EmailVerifiedGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();

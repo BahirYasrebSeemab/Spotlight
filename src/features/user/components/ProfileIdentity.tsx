@@ -1,6 +1,7 @@
 // src/features/user/components/ProfileIdentity.tsx
-import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Edit3, UserPlus, UserCheck, Clock } from 'lucide-react-native';
+import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+
 import { ProfileStats } from './ProfileStats';
 
 interface ProfileIdentityProps {
@@ -8,29 +9,29 @@ interface ProfileIdentityProps {
   loading: boolean;
   isOwnProfile: boolean;
   isFollowing?: boolean;
-  followRequestStatus?: 'pending' | 'accepted' | 'rejected' | null;
+  followLoading?: boolean;
   onEditProfile?: () => void;
+  onAvatarPress?: () => void;
   onFollowToggle?: () => void;
   onCancelRequest?: () => void;
-  onAvatarPress?: () => void;
   onFollowersPress?: () => void;
   onFollowingPress?: () => void;
-  followLoading?: boolean;
+  followRequestStatus?: 'pending' | 'accepted' | 'rejected' | null;
 }
 
 export function ProfileIdentity({
-  user,
-  loading,
-  isOwnProfile,
-  isFollowing,
+  followLoading = false,
   followRequestStatus,
-  onEditProfile,
-  onFollowToggle,
-  onCancelRequest,
+  isFollowing,
+  isOwnProfile,
+  loading,
   onAvatarPress,
+  onCancelRequest,
+  onEditProfile,
   onFollowersPress,
   onFollowingPress,
-  followLoading = false,
+  onFollowToggle,
+  user,
 }: ProfileIdentityProps) {
   // Determine if stats should be disabled (private account and not following)
   const isPrivateAndNotFollowing = user?.isPrivate && !isOwnProfile && !isFollowing;

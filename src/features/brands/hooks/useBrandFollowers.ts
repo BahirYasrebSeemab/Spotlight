@@ -1,4 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
+
 import { getBrandFollowers } from '../services/brand.services';
 
 export function useBrandFollowers(brandId: string | undefined, limit = 20) {

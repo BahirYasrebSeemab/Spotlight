@@ -1,5 +1,6 @@
-import { Stack } from "expo-router";
-import { useAppSelector } from "@/src/shared/hooks/redux";
+import { Stack } from 'expo-router';
+
+import { useAppSelector } from '@/src/shared/hooks/redux';
 
 export default function AuthLayout() {
   const isPasswordResetSession = useAppSelector(state => state.auth.isPasswordResetSession);

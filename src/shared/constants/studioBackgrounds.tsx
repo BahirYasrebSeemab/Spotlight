@@ -6,12 +6,12 @@
 export interface BackgroundTemplate {
   id: string;
   name: string;
+  preview: string; // Preview color/image for UI
   description: string;
   type: 'gradient' | 'solid' | 'image';
-  preview: string; // Preview color/image for UI
   // For gradients
-  colors?: string[];
   angle?: number;
+  colors?: string[];
   // For images
   imageUrl?: string;
   // For Cloudinary
@@ -20,63 +20,63 @@ export interface BackgroundTemplate {
 
 export const STUDIO_BACKGROUNDS: BackgroundTemplate[] = [
   {
-    id: 'minimal',
-    name: 'Minimal White',
-    description: 'Clean white gradient - Perfect for everyday items',
-    type: 'gradient',
-    preview: '#FAFAFA',
-    colors: ['#FFFFFF', '#F5F5F5'],
     angle: 135,
     cloudinaryTransform: 'e_background_removal/b_rgb:FAFAFA',
+    colors: ['#FFFFFF', '#F5F5F5'],
+    description: 'Clean white gradient - Perfect for everyday items',
+    id: 'minimal',
+    name: 'Minimal White',
+    preview: '#FAFAFA',
+    type: 'gradient',
   },
   {
-    id: 'dramatic',
-    name: 'Dramatic Black',
-    description: 'Bold black backdrop - Great for premium items',
-    type: 'gradient',
-    preview: '#1A1A1A',
-    colors: ['#1A1A1A', '#000000'],
     angle: 180,
     cloudinaryTransform: 'e_background_removal/b_rgb:1A1A1A',
+    colors: ['#1A1A1A', '#000000'],
+    description: 'Bold black backdrop - Great for premium items',
+    id: 'dramatic',
+    name: 'Dramatic Black',
+    preview: '#1A1A1A',
+    type: 'gradient',
   },
   {
-    id: 'warm',
-    name: 'Warm Beige',
-    description: 'Soft warm tones - Cozy, inviting feel',
-    type: 'gradient',
-    preview: '#FFF5F0',
-    colors: ['#FFF5F0', '#FFE8DC'],
     angle: 135,
     cloudinaryTransform: 'e_background_removal/b_rgb:FFF5F0',
+    colors: ['#FFF5F0', '#FFE8DC'],
+    description: 'Soft warm tones - Cozy, inviting feel',
+    id: 'warm',
+    name: 'Warm Beige',
+    preview: '#FFF5F0',
+    type: 'gradient',
   },
   {
-    id: 'cool',
-    name: 'Cool Blue',
-    description: 'Fresh blue gradient - Modern, clean aesthetic',
-    type: 'gradient',
-    preview: '#F0F9FF',
-    colors: ['#F0F9FF', '#E0F2FE'],
     angle: 135,
     cloudinaryTransform: 'e_background_removal/b_rgb:F0F9FF',
+    colors: ['#F0F9FF', '#E0F2FE'],
+    description: 'Fresh blue gradient - Modern, clean aesthetic',
+    id: 'cool',
+    name: 'Cool Blue',
+    preview: '#F0F9FF',
+    type: 'gradient',
   },
   {
-    id: 'neutral',
-    name: 'Neutral Gray',
-    description: 'Professional gray - Versatile for any product',
-    type: 'gradient',
-    preview: '#F3F4F6',
-    colors: ['#F9FAFB', '#E5E7EB'],
     angle: 135,
     cloudinaryTransform: 'e_background_removal/b_rgb:F3F4F6',
+    colors: ['#F9FAFB', '#E5E7EB'],
+    description: 'Professional gray - Versatile for any product',
+    id: 'neutral',
+    name: 'Neutral Gray',
+    preview: '#F3F4F6',
+    type: 'gradient',
   },
   {
+    cloudinaryTransform: 'e_background_removal/b_white',
+    colors: ['#FFFFFF'],
+    description: 'Pure white - Classic e-commerce look',
     id: 'studio',
     name: 'Studio White',
-    description: 'Pure white - Classic e-commerce look',
-    type: 'solid',
     preview: '#FFFFFF',
-    colors: ['#FFFFFF'],
-    cloudinaryTransform: 'e_background_removal/b_white',
+    type: 'solid',
   },
 ];
 

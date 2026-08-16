@@ -2,19 +2,25 @@
 // src/features/new/components/BrandSearchInput.tsx
 // Brand search/autocomplete input
 // ========================================
-import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { useState } from 'react';
-import { useSearchBrands } from '../hooks/useSearchBrands';
+import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+
 import { Brand } from '../types/item.types';
+import { useSearchBrands } from '../hooks/useSearchBrands';
 
 interface BrandSearchInputProps {
   value: string;
+  placeholder?: string;
   onChangeText: (text: string) => void;
   onBrandSelect?: (brand: Brand) => void;
-  placeholder?: string;
 }
 
-export function BrandSearchInput({ value, onChangeText, onBrandSelect, placeholder = 'Brand name' }: BrandSearchInputProps) {
+export function BrandSearchInput({
+  onBrandSelect,
+  onChangeText,
+  placeholder = 'Brand name',
+  value,
+}: BrandSearchInputProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const { data: brands, isLoading } = useSearchBrands(value);
 
@@ -28,7 +34,7 @@ export function BrandSearchInput({ value, onChangeText, onBrandSelect, placehold
     <View className="relative mb-5">
       <TextInput
         value={value}
-        onChangeText={(text) => {
+        onChangeText={text => {
           onChangeText(text);
           setShowSuggestions(text.length > 0);
         }}
@@ -49,7 +55,7 @@ export function BrandSearchInput({ value, onChangeText, onBrandSelect, placehold
           ) : (
             <FlatList
               data={brands}
-              keyExtractor={(item) => item.id}
+              keyExtractor={item => item.id}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   onPress={() => handleSelectBrand(item)}
@@ -63,9 +69,7 @@ export function BrandSearchInput({ value, onChangeText, onBrandSelect, placehold
                       </View>
                     )}
                   </View>
-                  {item.type && (
-                    <Text className="text-gray-400 text-xs mt-1">{item.type}</Text>
-                  )}
+                  {item.type && <Text className="text-gray-400 text-xs mt-1">{item.type}</Text>}
                 </TouchableOpacity>
               )}
               keyboardShouldPersistTaps="handled"

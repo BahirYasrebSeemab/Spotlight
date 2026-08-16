@@ -1,28 +1,17 @@
-import {
-  View,
-  FlatList,
-  ActivityIndicator,
-  RefreshControl,
-  Text,
-  Pressable,
-  Image,
-  Dimensions,
-  Animated,
-} from 'react-native';
-import { useAppSelector } from '@/src/shared/hooks/redux';
+import { Settings, Play } from 'lucide-react-native';
 import { useNavigation, useRouter } from 'expo-router';
 import { useLayoutEffect, useState, useRef } from 'react';
-import { Settings, Play } from 'lucide-react-native';
-import { ProfileIdentity } from '@/src/features/user/components/ProfileIdentity';
-import { ProfileTabBar } from '@/src/features/user/components/ProfileTabBar';
-import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
-import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
-import { useUserMemories } from '@/src/features/memories/hooks/useUserMemories';
+import { View, ActivityIndicator, RefreshControl, Text, Pressable, Image, Dimensions, Animated } from 'react-native';
 
-const { width, height } = Dimensions.get('window');
+import { useAppSelector } from '@/src/shared/hooks/redux';
+import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
+import { ProfileTabBar } from '@/src/features/user/components/ProfileTabBar';
+import { useUserMemories } from '@/src/features/memories/hooks/useUserMemories';
+import { ProfileIdentity } from '@/src/features/user/components/ProfileIdentity';
+import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
+
+const { height, width } = Dimensions.get('window');
 const ITEM_SIZE = (width - 4) / 3;
-const IDENTITY_HEIGHT = 380;
-const IDENTITY_PEEK = 40;
 
 export default function ProfileScreen() {
   const authUser = useAppSelector(state => state.auth.user);
@@ -36,11 +25,11 @@ export default function ProfileScreen() {
 
   const {
     data: memoriesData,
-    isLoading: memoriesLoading,
-    refetch: refetchMemories,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isLoading: memoriesLoading,
+    refetch: refetchMemories,
   } = useUserMemories(authUser?.id);
 
   useLayoutEffect(() => {
@@ -51,7 +40,7 @@ export default function ProfileScreen() {
         </Pressable>
       ),
     });
-  }, [router]);
+  }, [router, navigation]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -73,19 +62,6 @@ export default function ProfileScreen() {
   }
 
   const memories = memoriesData?.pages.flatMap(page => page) ?? [];
-
-  // Identity slides DOWN (out of view) when scrolling
-  const identityTranslateY = scrollY.interpolate({
-    inputRange: [0, IDENTITY_HEIGHT - IDENTITY_PEEK],
-    outputRange: [0, IDENTITY_HEIGHT - IDENTITY_PEEK], // Slides DOWN (positive = down)
-    extrapolate: 'clamp',
-  });
-
-  const identityOpacity = scrollY.interpolate({
-    inputRange: [0, IDENTITY_HEIGHT - IDENTITY_PEEK],
-    outputRange: [1, 0],
-    extrapolate: 'clamp',
-  });
 
   return (
     <View className="flex-1 bg-black">
@@ -115,34 +91,34 @@ export default function ProfileScreen() {
           <Pressable
             onPress={() => router.push(`/memory/${item.id}` as any)}
             style={{
-              width: ITEM_SIZE,
+              backgroundColor: '#1a1a1a',
               height: ITEM_SIZE,
               margin: 1,
-              backgroundColor: '#1a1a1a',
+              width: ITEM_SIZE,
             }}
           >
             <Image
               source={{ uri: item.thumbnailUrl || item.mediaUrl || '' }}
-              style={{ width: ITEM_SIZE, height: ITEM_SIZE }}
+              style={{ height: ITEM_SIZE, width: ITEM_SIZE }}
               resizeMode="cover"
             />
             {item.mediaType === 'video' && (
               <View
                 style={{
-                  position: 'absolute',
-                  inset: 0,
                   alignItems: 'center',
+                  inset: 0,
                   justifyContent: 'center',
+                  position: 'absolute',
                 }}
               >
                 <View
                   style={{
+                    alignItems: 'center',
                     backgroundColor: 'rgba(0,0,0,0.7)',
                     borderRadius: 999,
-                    width: 32,
                     height: 32,
-                    alignItems: 'center',
                     justifyContent: 'center',
+                    width: 32,
                   }}
                 >
                   <Play size={16} color="#ffffff" fill="#ffffff" />
@@ -157,8 +133,8 @@ export default function ProfileScreen() {
             return (
               <View
                 style={{
-                  height: height - 200,
                   alignItems: 'center',
+                  height: height - 200,
                   justifyContent: 'center',
                 }}
               >
@@ -172,8 +148,8 @@ export default function ProfileScreen() {
             return (
               <View
                 style={{
-                  height: height - 200,
                   alignItems: 'center',
+                  height: height - 200,
                   justifyContent: 'center',
                   paddingHorizontal: 32,
                 }}
@@ -192,8 +168,8 @@ export default function ProfileScreen() {
                 <Text
                   style={{
                     color: '#6B7280',
-                    textAlign: 'center',
                     lineHeight: 24,
+                    textAlign: 'center',
                   }}
                 >
                   Create outfit combinations and style matches
@@ -205,8 +181,8 @@ export default function ProfileScreen() {
           return (
             <View
               style={{
-                height: height - 200,
                 alignItems: 'center',
+                height: height - 200,
                 justifyContent: 'center',
               }}
             >
@@ -230,16 +206,15 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
       />
 
-
-        <ProfileIdentity
-          user={profile}
-          loading={false}
-          isOwnProfile={true}
-          onEditProfile={() => router.push('/(tabs)/profile/edit-profile')}
-          onAvatarPress={() => console.log('Avatar pressed')}
-          onFollowersPress={() => router.push(`/user/${profile.id}/followers` as any)}
-          onFollowingPress={() => router.push(`/user/${profile.id}/following` as any)}
-        />
+      <ProfileIdentity
+        user={profile}
+        loading={false}
+        isOwnProfile={true}
+        onEditProfile={() => router.push('/(tabs)/profile/edit-profile')}
+        onAvatarPress={() => console.log('Avatar pressed')}
+        onFollowersPress={() => router.push(`/user/${profile.id}/followers` as any)}
+        onFollowingPress={() => router.push(`/user/${profile.id}/following` as any)}
+      />
     </View>
   );
 }

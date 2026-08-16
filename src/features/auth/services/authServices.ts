@@ -1,40 +1,41 @@
-import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
+import * as AuthSession from 'expo-auth-session';
+
 import { supabase } from '@/src/lib/supabase';
 
 interface SignupPayload {
   email: string;
+  avatar?: string;
   password: string;
   fullName: string;
   username: string;
-  avatar?: string;
   dob?: string | null;
 }
 
 export async function signupWithEmail(payload: SignupPayload) {
-  const { email, password, fullName, username, avatar, dob } = payload;
+  const { avatar, dob, email, fullName, password, username } = payload;
 
   const { data, error } = await supabase.auth.signUp({
     email,
-    password,
     options: {
-      data: { fullName, username, avatar, dob },
+      data: { avatar, dob, fullName, username },
     },
+    password,
   });
 
-  return { user: data.user, error };
+  return { error, user: data.user };
 }
 
 export async function resendVerificationEmail(email: string) {
   try {
     const { error } = await supabase.auth.resend({
-      type: 'signup',
       email,
+      type: 'signup',
     });
     if (error) throw error;
     return { success: true };
   } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to resend verification email' };
+    return { error: err.message || 'Failed to resend verification email', success: false };
   }
 }
 
@@ -44,7 +45,7 @@ export async function loginWithEmail(email: string, password: string) {
     password,
   });
 
-  return { user: data.user, error };
+  return { error, user: data.user };
 }
 
 // authServices.ts
@@ -67,10 +68,10 @@ const redirectTo = AuthSession.makeRedirectUri({
 export async function signInWithGoogle() {
   try {
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
       options: {
         redirectTo,
       },
+      provider: 'google',
     });
 
     if (error) throw error;

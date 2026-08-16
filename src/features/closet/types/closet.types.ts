@@ -3,73 +3,73 @@
 export interface Brand {
   id: string;
   name: string;
-  description?: string;
   logoUrl?: string;
   verified: boolean;
+  description?: string;
   type: 'INTERNATIONAL' | 'LOCAL' | 'TAILORED';
 }
 
 export interface Prototype {
   id: string;
   name: string;
-  description?: string;
-  category?: string;
   sku?: string;
   upc?: string;
-  retailPrice?: number;
-  imageUrl?: string;
-  thumbnailUrl?: string;
   brand: Brand;
+  category?: string;
+  imageUrl?: string;
+  description?: string;
+  retailPrice?: number;
+  thumbnailUrl?: string;
 }
 
 export interface CommunityProduct {
   id: string;
   name: string;
   brandName: string;
-  description?: string;
   category?: string;
   imageUrl?: string;
+  description?: string;
   thumbnailUrl?: string;
 }
 
 export interface Ownership {
   id: string;
-  ownerId: string;
-  prototypeId?: string;
-  communityProductId?: string;
   status: string;
-  verified: boolean;
-  condition?: string;
   notes?: string;
+  ownerId: string;
+  verified: boolean;
+  createdAt: string;
+  updatedAt: string;
+  condition?: string;
+  prototypeId?: string;
+  thumbnailUrl?: string;
+  purchaseDate?: string;
+  serialNumber?: string;
+  transferable: boolean;
+  purchasePrice?: number;
+  isAuthenticated: boolean;
   originalImageUrl?: string;
   processedImageUrl?: string;
   thumbnailImageUrl?: string;
-  thumbnailUrl?: string;
+  communityProductId?: string;
   processingStatus: 'pending' | 'processing' | 'completed' | 'failed';
-  purchasePrice?: number;
-  purchaseDate?: string;
-  serialNumber?: string;
-  isAuthenticated: boolean;
-  transferable: boolean;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface OwnershipWithProduct extends Ownership {
-  communityProduct?: CommunityProduct;
   prototype?: Prototype;
+  communityProduct?: CommunityProduct;
 }
 
 export interface ClosetFilters {
-  category?: string;
   brand?: string;
-  verified?: boolean;
   status?: string;
+  category?: string;
+  verified?: boolean;
 }
 
 export interface ClosetStats {
   totalItems: number;
   verifiedItems: number;
-  categories: Record<string, number>;
   brands: Record<string, number>;
+  categories: Record<string, number>;
 }

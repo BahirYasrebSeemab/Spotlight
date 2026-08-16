@@ -2,22 +2,23 @@
 // src/features/user/services/user.services.ts - UPDATED
 // ========================================
 import { supabase } from '@/src/lib/supabase';
+
 import { sendFollowRequest } from './followRequest.services';
 
 // Check if current user follows target user
 export async function checkFollowStatus(currentUserId: string, targetUserId: string) {
   try {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('Follower')
       .select('id')
       .eq('followerId', currentUserId)
       .eq('followingId', targetUserId)
       .single();
 
-    return { isFollowing: !!data, error: null };
-  } catch (err: any) {
+    return { error: null, isFollowing: !!data };
+  } catch {
     // Not following if no record found
-    return { isFollowing: false, error: null };
+    return { error: null, isFollowing: false };
   }
 }
 
@@ -147,10 +148,10 @@ export async function unfollowUser(currentUserId: string, targetUserId: string) 
       throw error;
     }
 
-    return { success: true, error: null };
+    return { error: null, success: true };
   } catch (err: any) {
     console.error('❌ Unfollow failed:', err);
-    return { success: false, error: err.message || 'Failed to unfollow user' };
+    return { error: err.message || 'Failed to unfollow user', success: false };
   }
 }
 
@@ -161,7 +162,7 @@ export async function isUserPrivate(userId: string): Promise<boolean> {
 
     if (error) throw error;
     return data?.isPrivate || false;
-  } catch (err) {
+  } catch {
     return false;
   }
 }
@@ -175,7 +176,7 @@ export async function followUserSmart(currentUserId: string, targetUserId: strin
     if (isPrivate) {
       // Send follow request instead
       const result = await sendFollowRequest(currentUserId, targetUserId);
-      return { success: true, result: result.data, error: result.error };
+      return { error: result.error, result: result.data, success: true };
     } else {
       // Direct follow for public accounts
       const { error } = await supabase.from('Follower').insert({
@@ -184,9 +185,9 @@ export async function followUserSmart(currentUserId: string, targetUserId: strin
       });
 
       if (error) throw error;
-      return { success: true, error: null };
+      return { error: null, success: true };
     }
   } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to follow user' };
+    return { error: err.message || 'Failed to follow user', success: false };
   }
 }

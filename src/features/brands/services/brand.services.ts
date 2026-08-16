@@ -1,6 +1,6 @@
-import { supabase } from '@/src/lib/supabase';
-import * as FileSystem from 'expo-file-system';
 import { Buffer } from 'buffer';
+import * as FileSystem from 'expo-file-system';
+
 import type {
   Brand,
   BrandProfile,
@@ -8,6 +8,8 @@ import type {
   BrandApplication,
   UserBrandStatus,
 } from '@/src/features/brands/types/brand.types';
+
+import { supabase } from '@/src/lib/supabase';
 
 // ============================================
 // EXISTING FUNCTIONS (keep these)
@@ -101,17 +103,17 @@ export async function submitBrandApplication(userId: string, application: BrandA
     const { data: brand, error: brandError } = await supabase
       .from('Brand')
       .insert({
-        name: application.brandName,
-        type: application.brandType,
-        description: application.description,
-        logoUrl,
-        website: application.website,
-        instagram: application.instagram,
-        contactEmail: application.contactEmail,
         applicationReason: application.applicationReason,
         applicationStatus: 'pending',
         appliedAt: new Date().toISOString(),
+        contactEmail: application.contactEmail,
+        description: application.description,
+        instagram: application.instagram,
+        logoUrl,
+        name: application.brandName,
+        type: application.brandType,
         verified: false,
+        website: application.website,
       })
       .select()
       .single();
@@ -120,9 +122,9 @@ export async function submitBrandApplication(userId: string, application: BrandA
 
     // Create brand admin record (user becomes owner)
     const { error: adminError } = await supabase.from('BrandAdmin').insert({
-      userId,
       brandId: brand.id,
       role: 'owner',
+      userId,
     });
 
     if (adminError) throw adminError;
@@ -154,8 +156,8 @@ export async function getUserBrand(userId: string) {
       if (error.code === 'PGRST116') {
         return {
           data: {
-            hasBrand: false,
             brand: null,
+            hasBrand: false,
             isAdmin: false,
             role: null,
           } as UserBrandStatus,
@@ -167,8 +169,8 @@ export async function getUserBrand(userId: string) {
 
     return {
       data: {
-        hasBrand: true,
         brand: brandAdmin.brand as unknown as Brand,
+        hasBrand: true,
         isAdmin: true,
         role: brandAdmin.role as 'owner' | 'admin' | 'manager',
       } as UserBrandStatus,
@@ -215,8 +217,8 @@ export async function getBrandProfile(brandId: string, currentUserId?: string) {
     return {
       data: {
         ...brand,
-        productsCount: productsCount || 0,
         isFollowing,
+        productsCount: productsCount || 0,
       } as BrandProfile,
       error: null,
     };
@@ -242,10 +244,10 @@ export async function getBrandProducts(brandId: string, limit = 20, offset = 0) 
 
     const mapped = (data || []).map(item => ({
       ...item,
+      brandName: item.brandName ?? '',
+      ownershipCount: 0,
       type: 'PROTOTYPE' as const,
       verified: item.isVerified ?? false,
-      ownershipCount: 0,
-      brandName: item.brandName ?? '',
     }));
 
     return { data: mapped, error: null };
@@ -260,12 +262,12 @@ export async function getBrandProducts(brandId: string, limit = 20, offset = 0) 
 
 export async function followBrand(userId: string, brandId: string) {
   try {
-    const { error } = await supabase.from('BrandFollower').insert({ userId, brandId });
+    const { error } = await supabase.from('BrandFollower').insert({ brandId, userId });
     if (error) throw error;
     await supabase.rpc('increment_brand_followers', { brand_id: brandId });
-    return { success: true, error: null };
+    return { error: null, success: true };
   } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to follow brand' };
+    return { error: err.message || 'Failed to follow brand', success: false };
   }
 }
 
@@ -274,9 +276,9 @@ export async function unfollowBrand(userId: string, brandId: string) {
     const { error } = await supabase.from('BrandFollower').delete().eq('userId', userId).eq('brandId', brandId);
     if (error) throw error;
     await supabase.rpc('decrement_brand_followers', { brand_id: brandId });
-    return { success: true, error: null };
+    return { error: null, success: true };
   } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to unfollow brand' };
+    return { error: err.message || 'Failed to unfollow brand', success: false };
   }
 }
 
@@ -332,7 +334,7 @@ export async function getBrandFollowers(brandId: string, limit = 20, offset = 0)
       .range(offset, offset + limit - 1);
 
     if (error) throw error;
-    
+
     // Transform the data to match BrandFollower type
     const transformedData = data?.map(follower => ({
       ...follower,

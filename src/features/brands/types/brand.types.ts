@@ -1,33 +1,33 @@
 export interface Brand {
   id: string;
   name: string;
-  description: string | null;
-  logoUrl: string | null;
   verified: boolean;
-  type: 'INTERNATIONAL' | 'LOCAL' | 'TAILORED';
   createdAt: string;
   updatedAt: string;
-  
+  logoUrl: string | null;
+  description: string | null;
+  type: 'INTERNATIONAL' | 'LOCAL' | 'TAILORED';
+
   // Application fields
-  applicationStatus: 'pending' | 'approved' | 'rejected';
+  website: string | null;
   appliedAt: string | null;
+  instagram: string | null;
   approvedAt: string | null;
   approvedBy: string | null;
-  rejectionReason: string | null;
-  website: string | null;
-  instagram: string | null;
   contactEmail: string | null;
+  rejectionReason: string | null;
   applicationReason: string | null;
-  
+  applicationStatus: 'pending' | 'approved' | 'rejected';
+
   // Follow system
   followersCount: number;
-  
+
   // Transfer quota
   transferQuota: number;
   transfersUsed: number;
   contractTier: string | null;
-  contractStartDate: string | null;
   contractEndDate: string | null;
+  contractStartDate: string | null;
 }
 
 export interface BrandProfile extends Brand {
@@ -49,19 +49,19 @@ export interface BrandFollower {
 }
 
 export interface BrandApplication {
-  brandName: string;
-  brandType: 'INTERNATIONAL' | 'LOCAL' | 'TAILORED';
-  description: string;
   logoUri?: string;
   website?: string;
-  instagram?: string | undefined;
+  brandName: string;
+  description: string;
   contactEmail: string;
   applicationReason: string;
+  instagram?: string | undefined;
+  brandType: 'INTERNATIONAL' | 'LOCAL' | 'TAILORED';
 }
 
 export interface UserBrandStatus {
+  isAdmin: boolean;
   hasBrand: boolean;
   brand: Brand | null;
-  isAdmin: boolean;
   role: 'owner' | 'admin' | 'manager' | null;
 }

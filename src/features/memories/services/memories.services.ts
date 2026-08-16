@@ -1,12 +1,14 @@
-import { supabase } from '@/src/lib/supabase';
-import * as FileSystem from 'expo-file-system';
 import { Buffer } from 'buffer';
+import * as FileSystem from 'expo-file-system';
+
 import type {
   Memory,
   Comment,
   CreateMemoryInput,
   CreateCommentInput,
 } from '@/src/features/memories/types/memories.types';
+
+import { supabase } from '@/src/lib/supabase';
 
 interface MemoryItemInsert {
   memoryId: string;
@@ -64,14 +66,14 @@ export async function createMemory(input: CreateMemoryInput) {
     const { data: memory, error: memoryError } = await supabase
       .from('Memory')
       .insert({
-        userId: input.userId,
-        mediaUrl,
-        mediaType: input.mediaType,
-        thumbnailUrl,
         caption: input.caption,
-        title: input.title,
         location: input.location,
+        mediaType: input.mediaType,
+        mediaUrl,
         takenAt: new Date().toISOString(),
+        thumbnailUrl,
+        title: input.title,
+        userId: input.userId,
       })
       .select()
       .single();
@@ -208,9 +210,9 @@ export async function deleteMemory(memoryId: string, userId: string) {
     const { error } = await supabase.from('Memory').delete().eq('id', memoryId).eq('userId', userId);
 
     if (error) throw error;
-    return { success: true, error: null };
+    return { error: null, success: true };
   } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to delete memory' };
+    return { error: err.message || 'Failed to delete memory', success: false };
   }
 }
 
@@ -224,14 +226,14 @@ export async function deleteMemory(memoryId: string, userId: string) {
 export async function likeMemory(userId: string, memoryId: string) {
   try {
     const { error } = await supabase.from('Like').insert({
-      userId,
       memoryId,
+      userId,
     });
 
     if (error) throw error;
-    return { success: true, error: null };
+    return { error: null, success: true };
   } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to like memory' };
+    return { error: err.message || 'Failed to like memory', success: false };
   }
 }
 
@@ -243,9 +245,9 @@ export async function unlikeMemory(userId: string, memoryId: string) {
     const { error } = await supabase.from('Like').delete().eq('userId', userId).eq('memoryId', memoryId);
 
     if (error) throw error;
-    return { success: true, error: null };
+    return { error: null, success: true };
   } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to unlike memory' };
+    return { error: err.message || 'Failed to unlike memory', success: false };
   }
 }
 
@@ -313,9 +315,9 @@ export async function addComment(input: CreateCommentInput) {
     const { data, error } = await supabase
       .from('Comment')
       .insert({
+        content: input.content,
         memoryId: input.memoryId,
         userId: input.userId,
-        content: input.content,
       })
       .select(
         `
@@ -345,9 +347,9 @@ export async function deleteComment(commentId: string, userId: string) {
     const { error } = await supabase.from('Comment').delete().eq('id', commentId).eq('userId', userId);
 
     if (error) throw error;
-    return { success: true, error: null };
+    return { error: null, success: true };
   } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to delete comment' };
+    return { error: err.message || 'Failed to delete comment', success: false };
   }
 }
 
@@ -359,8 +361,8 @@ export async function updateComment(commentId: string, userId: string, content: 
     const { error } = await supabase.from('Comment').update({ content }).eq('id', commentId).eq('userId', userId);
 
     if (error) throw error;
-    return { success: true, error: null };
+    return { error: null, success: true };
   } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to update comment' };
+    return { error: err.message || 'Failed to update comment', success: false };
   }
 }

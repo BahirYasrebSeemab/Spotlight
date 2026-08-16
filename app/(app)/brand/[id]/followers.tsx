@@ -1,13 +1,14 @@
-import { View, FlatList, ActivityIndicator, Text, Pressable, Image } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useBrandFollowers } from '@/src/features/brands/hooks/useBrandFollowers';
 import { Users } from 'lucide-react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { View, FlatList, ActivityIndicator, Text, Pressable, Image } from 'react-native';
+
+import { useBrandFollowers } from '@/src/features/brands/hooks/useBrandFollowers';
 
 export default function BrandFollowersScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
 
-  const { data: followersData, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useBrandFollowers(id);
+  const { data: followersData, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useBrandFollowers(id);
 
   const followers = followersData?.pages.flatMap(page => page) || [];
 

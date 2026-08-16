@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+
 import { deleteOwnership } from '../services/ownership.services';
 
 export function useDeleteOwnership() {

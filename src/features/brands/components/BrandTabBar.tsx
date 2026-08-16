@@ -21,8 +21,8 @@ export function BrandTabBar({ activeTab, onTabChange }: BrandTabBarProps) {
           onPress={() => onTabChange(tab.id)}
           className="flex-1 py-3 items-center"
           style={{
-            borderBottomWidth: activeTab === tab.id ? 2 : 0,
             borderBottomColor: '#ffffff',
+            borderBottomWidth: activeTab === tab.id ? 2 : 0,
           }}
         >
           <Text className={activeTab === tab.id ? 'text-white font-semibold' : 'text-gray-400'}>{tab.label}</Text>

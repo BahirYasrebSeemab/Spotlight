@@ -1,33 +1,34 @@
+import { Buffer } from 'buffer';
+import * as FileSystem from 'expo-file-system';
+
 import { supabase } from '@/src/lib/supabase';
 import { UpdateUserPayload, User } from '@/src/shared/types/user.types';
-import * as FileSystem from 'expo-file-system';
-import { Buffer } from 'buffer';
 
 export interface UserProfileData {
   id: string;
-  username: string;
-  name: string | null;
   email: string;
+  username: string;
   avatarUrl: string;
+  createdAt: string;
   bio: string | null;
+  localCount: number;
+  dob: string | null;
+  name: string | null;
+  memoriesCount: number;
+  tailoredCount: number;
   followersCount: number;
   followingCount: number;
-  memoriesCount: number;
   ownershipsCount: number;
   internationalCount: number;
-  localCount: number;
-  tailoredCount: number;
-  createdAt: string;
-  dob: string | null;
 }
 
 export interface UserMemories {
   id: string;
-  caption: string | null;
-  mediaUrl: string | null;
   createdAt: string;
   likesCount: number;
   commentsCount: number;
+  caption: string | null;
+  mediaUrl: string | null;
   author: {
     id: string;
     username: string;
@@ -36,8 +37,8 @@ export interface UserMemories {
 }
 
 interface InsertResult<T> {
-  data: T | null;
   error: any;
+  data: T | null;
 }
 
 export async function updateUser(id: string, payload: UpdateUserPayload): Promise<{ data: any; error: any }> {
@@ -59,9 +60,9 @@ export async function uploadAvatar(userId: string, file: any) {
   const { error } = await supabase.storage.from('avatars').upload(
     path,
     {
-      uri: file.uri,
-      type: file.type,
       name: file.fileName,
+      type: file.type,
+      uri: file.uri,
     },
     { upsert: true },
   );
@@ -218,9 +219,9 @@ export async function toggleAccountPrivacy(userId: string, isPrivate: boolean) {
     const { error } = await supabase.from('User').update({ isPrivate }).eq('id', userId);
 
     if (error) throw error;
-    return { success: true, error: null };
+    return { error: null, success: true };
   } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to update privacy' };
+    return { error: err.message || 'Failed to update privacy', success: false };
   }
 }
 
@@ -229,9 +230,9 @@ export async function deactivateAccount(userId: string) {
     const { error } = await supabase.from('User').update({ isActive: false }).eq('id', userId);
 
     if (error) throw error;
-    return { success: true, error: null };
+    return { error: null, success: true };
   } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to deactivate account' };
+    return { error: err.message || 'Failed to deactivate account', success: false };
   }
 }
 
@@ -240,8 +241,8 @@ export async function reactivateAccount(userId: string) {
     const { error } = await supabase.from('User').update({ isActive: true }).eq('id', userId);
 
     if (error) throw error;
-    return { success: true, error: null };
+    return { error: null, success: true };
   } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to reactivate account' };
+    return { error: err.message || 'Failed to reactivate account', success: false };
   }
 }

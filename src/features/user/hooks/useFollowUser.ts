@@ -1,5 +1,6 @@
 // src/features/user/hooks/useFollowUser.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+
 import { followUserSmart, unfollowUser } from '../services/follow.services';
 
 export function useFollowUser() {

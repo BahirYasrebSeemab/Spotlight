@@ -4,9 +4,11 @@
 // ========================================
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createItemOwnership, checkProcessingStatus } from '../services/item.services';
-import { CreateItemPayload, Ownership } from '../types/item.types';
+
 import { useAppSelector } from '@/src/shared/hooks/redux';
+
+import { CreateItemPayload, Ownership } from '../types/item.types';
+import { createItemOwnership, checkProcessingStatus } from '../services/item.services';
 
 export function useCreateItem() {
   const [processingStatus, setProcessingStatus] = useState<'pending' | 'processing' | 'completed' | 'failed'>(
@@ -18,9 +20,12 @@ export function useCreateItem() {
   const createMutation = useMutation({
     mutationFn: async (payload: CreateItemPayload) => {
       if (!authUser?.id) throw new Error('User not authenticated');
-      const { data, error } = await createItemOwnership(payload, authUser.id);
+      const { data, error } = await createItemOwnership(payload);
       if (error) throw new Error(error);
       return data!;
+    },
+    onError: () => {
+      setProcessingStatus('failed');
     },
     onSuccess: async (ownership: Ownership) => {
       // Invalidate ownerships query to refetch
@@ -34,9 +39,6 @@ export function useCreateItem() {
       } else {
         setProcessingStatus(ownership.processingStatus as any);
       }
-    },
-    onError: () => {
-      setProcessingStatus('failed');
     },
   });
 
@@ -79,19 +81,19 @@ export function useCreateItem() {
     options?: { onSuccess?: () => void; onError?: (error: Error) => void },
   ) => {
     createMutation.mutate(payload, {
-      onSuccess: () => {
-        options?.onSuccess?.();
-      },
       onError: error => {
         options?.onError?.(error as Error);
+      },
+      onSuccess: () => {
+        options?.onSuccess?.();
       },
     });
   };
 
   return {
     createItem,
-    isLoading: createMutation.isPending,
     error: createMutation.error,
+    isLoading: createMutation.isPending,
     processingStatus,
     reset: () => {
       setProcessingStatus('pending');

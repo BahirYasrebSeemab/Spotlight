@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { Upload, X } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
 import {
   View,
   Text,
@@ -11,29 +14,28 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Spotlight } from '@/src/shared/components/Spotlight';
-import { useAppSelector } from '@/src/shared/hooks/redux';
-import { useBrandApplication } from '@/src/features/brands/hooks/useBrandApplication';
-import * as ImagePicker from 'expo-image-picker';
-import { ChevronLeft, Upload, X } from 'lucide-react-native';
+
 import type { BrandApplication } from '@/src/features/brands/types/brand.types';
+
+import { useAppSelector } from '@/src/shared/hooks/redux';
+import { Spotlight } from '@/src/shared/components/Spotlight';
+import { useBrandApplication } from '@/src/features/brands/hooks/useBrandApplication';
 
 export default function BrandApplicationScreen() {
   const router = useRouter();
   const currentUser = useAppSelector(state => state.auth.user);
-  const { submit, isSubmitting, isSuccess } = useBrandApplication();
+  const { isSubmitting, isSuccess, submit } = useBrandApplication();
 
   // Form state
   const [formData, setFormData] = useState<BrandApplication>({
+    applicationReason: '',
     brandName: '',
     brandType: 'LOCAL',
+    contactEmail: currentUser?.email || '',
     description: '',
+    instagram: '',
     logoUri: undefined,
     website: '',
-    instagram: '',
-    contactEmail: currentUser?.email || '',
-    applicationReason: '',
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof BrandApplication, string>>>({});
@@ -94,9 +96,9 @@ export default function BrandApplicationScreen() {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
     });
 
@@ -123,20 +125,18 @@ export default function BrandApplicationScreen() {
     }
 
     Alert.alert('Submit Application?', 'Are you sure you want to submit your brand application?', [
-      { text: 'Cancel', style: 'cancel' },
+      { style: 'cancel', text: 'Cancel' },
       {
-        text: 'Submit',
-        style: 'default',
         onPress: async () => {
           try {
-            await submit({ userId: currentUser.id, application: formData });
+            await submit({ application: formData, userId: currentUser.id });
             Alert.alert(
               'Application Submitted!',
               'Your brand application has been submitted successfully. You will be notified once it has been reviewed.',
               [
                 {
-                  text: 'OK',
                   onPress: () => router.back(),
+                  text: 'OK',
                 },
               ],
             );
@@ -144,6 +144,8 @@ export default function BrandApplicationScreen() {
             Alert.alert('Submission Failed', error.message || 'Failed to submit application. Please try again.');
           }
         },
+        style: 'default',
+        text: 'Submit',
       },
     ]);
   };

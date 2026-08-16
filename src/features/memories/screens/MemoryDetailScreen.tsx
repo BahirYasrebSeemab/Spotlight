@@ -1,13 +1,15 @@
 import React from 'react';
-import { View, ScrollView, Image, Text, ActivityIndicator, Pressable, Alert, Dimensions } from 'react-native';
-import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
 import { useLayoutEffect, useCallback } from 'react';
-import { useAppSelector } from '@/src/shared/hooks/redux';
-import { useMemoryDetails } from '../hooks/useMemoryDetails';
-import { useDeleteMemory } from '../hooks/useDeleteMemory';
-import { LikeButton } from '../components/LikeButton';
-import { CommentsList } from '@/src/features/memories/components/CommentsList';
 import { MoreVertical, Tag, ArrowLeft } from 'lucide-react-native';
+import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
+import { View, ScrollView, Image, Text, ActivityIndicator, Pressable, Alert, Dimensions } from 'react-native';
+
+import { useAppSelector } from '@/src/shared/hooks/redux';
+import { CommentsList } from '@/src/features/memories/components/CommentsList';
+
+import { LikeButton } from '../components/LikeButton';
+import { useDeleteMemory } from '../hooks/useDeleteMemory';
+import { useMemoryDetails } from '../hooks/useMemoryDetails';
 
 const { width } = Dimensions.get('window');
 
@@ -17,29 +19,28 @@ export default function MemoryDetailScreen() {
   const navigation = useNavigation();
   const currentUser = useAppSelector(state => state.auth.user);
 
-  const { data: memory, isLoading, error } = useMemoryDetails(id, currentUser?.id);
-  const { mutate: deleteMemory, isPending: isDeleting } = useDeleteMemory();
+  const { data: memory, error, isLoading } = useMemoryDetails(id, currentUser?.id);
+  const { isPending: isDeleting, mutate: deleteMemory } = useDeleteMemory();
 
   const isOwner = currentUser?.id === memory?.userId;
 
   const handleDelete = useCallback(() => {
     Alert.alert('Delete Memory?', 'This action cannot be undone.', [
-      { text: 'Cancel', style: 'cancel' },
+      { style: 'cancel', text: 'Cancel' },
       {
-        text: 'Delete',
-        style: 'destructive',
         onPress: () => {
           deleteMemory(id, {
             onSuccess: () => router.push('/profile'),
           });
         },
+        style: 'destructive',
+        text: 'Delete',
       },
     ]);
   }, [id, deleteMemory, router]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: 'Memory',
       headerLeft: () => (
         <Pressable onPress={() => router.back()} style={{ paddingRight: 24 }}>
           <ArrowLeft size={22} color="white" />
@@ -51,6 +52,7 @@ export default function MemoryDetailScreen() {
             <MoreVertical size={22} color="white" />
           </Pressable>
         ) : null,
+      title: 'Memory',
     });
   }, [isOwner, handleDelete, router]);
 
@@ -85,8 +87,8 @@ export default function MemoryDetailScreen() {
               <Text className="text-white font-semibold">{memory.user?.name || `@${memory.user?.username}`}</Text>
               <Text className="text-gray-400 text-xs">
                 {new Date(memory.createdAt).toLocaleDateString('en-US', {
-                  month: 'long',
                   day: 'numeric',
+                  month: 'long',
                   year: 'numeric',
                 })}
               </Text>
@@ -96,13 +98,13 @@ export default function MemoryDetailScreen() {
 
         {/* Media */}
         {isDeleting ? (
-          <View style={{ width, height: width }} className="bg-white/5 items-center justify-center">
+          <View style={{ height: width, width }} className="bg-white/5 items-center justify-center">
             <ActivityIndicator size="large" color="#ffffff" />
           </View>
         ) : (
           <Image
             source={{ uri: memory.mediaUrl }}
-            style={{ width, height: width }}
+            style={{ height: width, width }}
             className="bg-white/5"
             resizeMode="cover"
           />

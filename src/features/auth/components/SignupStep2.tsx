@@ -1,22 +1,23 @@
 // ========================================
 // src/features/auth/components/SignupStep2.tsx - Updated
 // ========================================
-import { View, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
+import { ChevronLeft } from 'lucide-react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
+
+import { SignupForm } from '../../../shared/types/form.types';
 import { InputField } from '../../../shared/components/InputField';
 import { PrimaryButton } from '../../../shared/components/PrimaryButton';
-import { SignupForm } from '../../../shared/types/form.types';
-import { ChevronLeft } from 'lucide-react-native';
 
 interface SignupStep2Props {
   form: SignupForm;
-  onChange: (field: keyof SignupForm, value: string) => void;
+  loading: boolean;
   onNext: () => void;
   onBack: () => void;
   error: string | null;
-  loading: boolean;
+  onChange: (field: keyof SignupForm, value: string) => void;
 }
 
-export const SignupStep2 = ({ form, onChange, onNext, onBack, error, loading }: SignupStep2Props) => {
+export const SignupStep2 = ({ error, form, loading, onBack, onChange, onNext }: SignupStep2Props) => {
   const isValid =
     form.username.trim() && form.password.trim() && form.confirmPass.trim() && form.password === form.confirmPass;
 
@@ -58,8 +59,8 @@ export const SignupStep2 = ({ form, onChange, onNext, onBack, error, loading }: 
 
       {/* Error Message */}
       {error && (
-        <View className="bg-red-50 dark:bg-red-900/20 p-3 rounded-xl mb-4">
-          <Text className="text-red-600 dark:text-red-400 text-center">{error}</Text>
+        <View className="bg-destructive/20 p-3 rounded-xl mb-4">
+          <Text className="text-destructive-foreground text-center">{error}</Text>
         </View>
       )}
 
@@ -68,10 +69,10 @@ export const SignupStep2 = ({ form, onChange, onNext, onBack, error, loading }: 
         <TouchableOpacity
           onPress={onBack}
           disabled={loading}
-          className="flex-row items-center gap-2 px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl"
+          className="flex-row items-center gap-2 px-4 py-3 border border-border rounded-xl"
         >
           <ChevronLeft size={20} color="#6B7280" />
-          <Text className="text-gray-700 dark:text-gray-300 font-medium">Back</Text>
+          <Text className="text-muted-foreground font-medium">Back</Text>
         </TouchableOpacity>
 
         <View className="flex-1">

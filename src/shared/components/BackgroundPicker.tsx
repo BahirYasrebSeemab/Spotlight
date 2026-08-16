@@ -2,18 +2,19 @@
 // src/shared/components/BackgroundPicker.tsx
 // Beautiful background template picker
 // ========================================
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Check } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+
 import { STUDIO_BACKGROUNDS, BackgroundTemplate } from '../constants/studioBackgrounds';
 
 interface BackgroundPickerProps {
+  enabled?: boolean;
   selectedId: string;
   onSelect: (id: string) => void;
-  enabled?: boolean;
 }
 
-export function BackgroundPicker({ selectedId, onSelect, enabled = true }: BackgroundPickerProps) {
+export function BackgroundPicker({ enabled = true, onSelect, selectedId }: BackgroundPickerProps) {
   return (
     <View className="mb-6">
       <Text className="text-white font-semibold text-base mb-3">Background Style</Text>
@@ -36,13 +37,13 @@ export function BackgroundPicker({ selectedId, onSelect, enabled = true }: Backg
 }
 
 interface BackgroundOptionProps {
-  template: BackgroundTemplate;
   selected: boolean;
-  onSelect: () => void;
   disabled?: boolean;
+  onSelect: () => void;
+  template: BackgroundTemplate;
 }
 
-function BackgroundOption({ template, selected, onSelect, disabled }: BackgroundOptionProps) {
+function BackgroundOption({ disabled, onSelect, selected, template }: BackgroundOptionProps) {
   return (
     <TouchableOpacity
       onPress={onSelect}
