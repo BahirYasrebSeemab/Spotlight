@@ -1,11 +1,12 @@
 // ========================================
 // src/features/user/components/FollowerItem.tsx - NEW COMPONENT
 // ========================================
-import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
-import { useFollowUser } from '@/src/features/user/hooks/useFollowUser';
+import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+
 import { useAppSelector } from '@/src/shared/hooks/redux';
+import { useFollowUser } from '@/src/features/user/hooks/useFollowUser';
+import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
 
 interface FollowerItemProps {
   item: {
@@ -20,7 +21,7 @@ interface FollowerItemProps {
 export function FollowerItem({ item }: FollowerItemProps) {
   const router = useRouter();
   const authUser = useAppSelector(state => state.auth.user);
-  const { follow, unfollow, isFollowing: followActionLoading } = useFollowUser();
+  const { follow, isFollowing: followActionLoading, unfollow } = useFollowUser();
   const { data: followStatus } = useFollowStatus(authUser?.id, item.id);
 
   const isOwnProfile = authUser?.id === item.id;
@@ -38,7 +39,7 @@ export function FollowerItem({ item }: FollowerItemProps) {
   return (
     <TouchableOpacity
       onPress={() => router.push(`/user/${item.id}`)}
-      className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black"
+      className="flex-row items-center justify-between px-4 py-3 border-b border-border bg-background"
       activeOpacity={0.7}
     >
       <View className="flex-row items-center flex-1">
@@ -50,14 +51,14 @@ export function FollowerItem({ item }: FollowerItemProps) {
           </View>
         )}
         <View className="flex-1">
-          <Text className="font-semibold text-black dark:text-white" numberOfLines={1}>
+          <Text className="font-semibold text-foreground" numberOfLines={1}>
             {item.name || item.username}
           </Text>
-          <Text className="text-sm text-gray-500 dark:text-gray-400" numberOfLines={1}>
+          <Text className="text-sm text-muted-foreground" numberOfLines={1}>
             @{item.username}
           </Text>
           {item.bio && (
-            <Text className="text-xs text-gray-600 dark:text-gray-500 mt-1" numberOfLines={1}>
+            <Text className="text-xs text-muted-foreground mt-1" numberOfLines={1}>
               {item.bio}
             </Text>
           )}
@@ -69,18 +70,14 @@ export function FollowerItem({ item }: FollowerItemProps) {
           onPress={handleFollowToggle}
           disabled={followActionLoading}
           className={`px-4 py-2 rounded-full min-w-[90px] items-center ${
-            followStatus?.isFollowing ? 'bg-gray-200 dark:bg-gray-800' : 'bg-white'
+            followStatus?.isFollowing ? 'bg-muted' : 'bg-white'
           }`}
           activeOpacity={0.8}
         >
           {followActionLoading ? (
             <ActivityIndicator size="small" color={followStatus?.isFollowing ? '#FFF' : '#000'} />
           ) : (
-            <Text
-              className={`font-semibold text-sm ${
-                followStatus?.isFollowing ? 'text-black dark:text-white' : 'text-black'
-              }`}
-            >
+            <Text className={`font-semibold text-sm ${followStatus?.isFollowing ? 'text-foreground' : 'text-black'}`}>
               {followStatus?.isFollowing ? 'Spotting' : 'Spot'}
             </Text>
           )}

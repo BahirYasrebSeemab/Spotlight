@@ -1,20 +1,21 @@
 // ========================================
 // app/(tabs)/notifications/index.tsx - FIXED
 // ========================================
-import { View, FlatList, Text, ActivityIndicator, Alert } from 'react-native';
 import { useState } from 'react';
-import { useAppSelector } from '@/src/shared/hooks/redux';
-import { useReceivedFollowRequests } from '@/src/features/user/hooks/useReceivedFollowRequests';
-import { useFollowRequests } from '@/src/features/user/hooks/useFollowRequests';
 import { UserPlus } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
+import { View, FlatList, Text, ActivityIndicator, Alert } from 'react-native';
+
+import { useAppSelector } from '@/src/shared/hooks/redux';
+import { useFollowRequests } from '@/src/features/user/hooks/useFollowRequests';
 import { FollowRequestItem } from '@/src/features/notifications/components/FollowRequestItem';
+import { useReceivedFollowRequests } from '@/src/features/user/hooks/useReceivedFollowRequests';
 
 export default function NotificationsScreen() {
   const authUser = useAppSelector(state => state.auth.user);
   const [activeTab, setActiveTab] = useState<'requests' | 'activity'>('requests');
 
-  const { data: requestsData, isLoading, fetchNextPage, hasNextPage } = useReceivedFollowRequests(authUser?.id);
+  const { data: requestsData, fetchNextPage, hasNextPage, isLoading } = useReceivedFollowRequests(authUser?.id);
 
   const { acceptAsync, rejectAsync } = useFollowRequests();
 
@@ -40,9 +41,9 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white dark:bg-black">
+    <View className="flex-1 bg-background">
       {/* Tab Switcher */}
-      <View className="flex-row border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black">
+      <View className="flex-row border-b border-border bg-background">
         <TouchableOpacity
           onPress={() => setActiveTab('requests')}
           className={`flex-1 py-4 items-center border-b-2 ${
@@ -52,7 +53,7 @@ export default function NotificationsScreen() {
           <View className="flex-row items-center">
             <Text
               className={`font-semibold text-base ${
-                activeTab === 'requests' ? 'text-white' : 'text-gray-500 dark:text-gray-400'
+                activeTab === 'requests' ? 'text-foreground' : 'text-muted-foreground'
               }`}
             >
               Spot Requests
@@ -64,21 +65,6 @@ export default function NotificationsScreen() {
             )}
           </View>
         </TouchableOpacity>
-
-        {/* <TouchableOpacity
-          onPress={() => setActiveTab('activity')}
-          className={`flex-1 py-4 items-center border-b-2 ${
-            activeTab === 'activity' ? 'border-white' : 'border-transparent'
-          }`}
-        > */}
-        {/* <Text
-            className={`font-semibold text-base ${
-              activeTab === 'activity' ? 'text-white' : 'text-gray-500 dark:text-gray-400'
-            }`}
-          >
-            Activity
-          </Text>
-        </TouchableOpacity>*/}
       </View>
 
       {/* Content */}
@@ -98,11 +84,11 @@ export default function NotificationsScreen() {
                 <ActivityIndicator size="large" color="#ffffff" />
               ) : (
                 <>
-                  <View className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-900 items-center justify-center mb-4">
+                  <View className="w-20 h-20 rounded-full bg-muted items-center justify-center mb-4">
                     <UserPlus size={32} color="#9CA3AF" strokeWidth={1.5} />
                   </View>
-                  <Text className="text-xl font-bold text-black dark:text-white mb-2">No spot requests</Text>
-                  <Text className="text-gray-500 dark:text-gray-400 text-center">
+                  <Text className="text-xl font-bold text-foreground mb-2">No spot requests</Text>
+                  <Text className="text-muted-foreground text-center">
                     When someone requests to spot you,{'\n'}
                     they'll appear here
                   </Text>
@@ -113,13 +99,11 @@ export default function NotificationsScreen() {
         />
       ) : (
         <View className="flex-1 items-center justify-center px-8">
-          <View className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-900 items-center justify-center mb-4">
+          <View className="w-20 h-20 rounded-full bg-muted items-center justify-center mb-4">
             <Text className="text-3xl">🔔</Text>
           </View>
-          <Text className="text-xl font-bold text-black dark:text-white mb-2">Activity feed</Text>
-          <Text className="text-gray-500 dark:text-gray-400 text-center">
-            Your activity notifications will appear here soon
-          </Text>
+          <Text className="text-xl font-bold text-foreground mb-2">Activity feed</Text>
+          <Text className="text-muted-foreground text-center">Your activity notifications will appear here soon</Text>
         </View>
       )}
     </View>

@@ -165,10 +165,10 @@ export async function deleteOwnership(
 
     if (deleteError) throw deleteError;
 
-    return { success: true, error: null };
+    return { error: null, success: true };
   } catch (err: any) {
     console.error('Error deleting ownership:', err);
-    return { success: false, error: err.message || 'Failed to delete ownership' };
+    return { error: err.message || 'Failed to delete ownership', success: false };
   }
 }
 

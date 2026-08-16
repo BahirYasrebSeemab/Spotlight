@@ -1,6 +1,8 @@
+import { Share, MoreVertical, Lock, Play } from 'lucide-react-native';
+import { useState, useLayoutEffect, useCallback, useRef } from 'react';
+import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
 import {
   View,
-  FlatList,
   ActivityIndicator,
   Text,
   RefreshControl,
@@ -10,21 +12,19 @@ import {
   Dimensions,
   Animated,
 } from 'react-native';
-import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
-import { useState, useLayoutEffect, useRef } from 'react';
+
 import { useAppSelector } from '@/src/shared/hooks/redux';
-import { ProfileIdentity } from '@/src/features/user/components/ProfileIdentity';
-import { ProfileTabBar } from '@/src/features/user/components/ProfileTabBar';
-import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
-import { Share, MoreVertical, Lock, Play } from 'lucide-react-native';
 import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
-import { useUserMemories } from '@/src/features/memories/hooks/useUserMemories';
-import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
 import { useFollowUser } from '@/src/features/user/hooks/useFollowUser';
+import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
+import { ProfileTabBar } from '@/src/features/user/components/ProfileTabBar';
+import { useUserMemories } from '@/src/features/memories/hooks/useUserMemories';
 import { useFollowRequests } from '@/src/features/user/hooks/useFollowRequests';
+import { ProfileIdentity } from '@/src/features/user/components/ProfileIdentity';
+import { EmptyProfileContent } from '@/src/features/user/components/EmptyProfileContent';
 import { useFollowRequestStatus } from '@/src/features/user/hooks/useFollowRequestStatus';
 
-const { width, height } = Dimensions.get('window');
+const { height, width } = Dimensions.get('window');
 const ITEM_SIZE = (width - 4) / 3;
 const IDENTITY_HEIGHT = 380;
 
@@ -46,22 +46,34 @@ export default function UserProfileScreen() {
 
   const {
     data: memoriesData,
-    isLoading: memoriesLoading,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isLoading: memoriesLoading,
     refetch: refetchMemories,
   } = useUserMemories(id, 20, shouldFetchMemories); // ← Pass enabled flag
 
-  const { follow, unfollow, isLoading: followLoading } = useFollowUser();
-  const { send, cancel, isSending, isCanceling } = useFollowRequests();
+  const { follow, isLoading: followLoading, unfollow } = useFollowUser();
+  const { cancel, isCanceling, isSending } = useFollowRequests();
 
   const memories = memoriesData?.pages.flatMap(page => page) ?? [];
+
+  const handleShare = useCallback(() => {
+    console.log('Share profile:', user?.username);
+  }, [user?.username]);
+
+  const handleMore = useCallback(() => {
+    Alert.alert('Options', '', [
+      { onPress: () => console.log('Report'), style: 'destructive', text: 'Report User' },
+      { onPress: () => console.log('Block'), style: 'destructive', text: 'Block User' },
+      { onPress: () => console.log('Copy'), text: 'Copy Profile Link' },
+      { style: 'cancel', text: 'Cancel' },
+    ]);
+  }, []);
 
   useLayoutEffect(() => {
     if (user?.username) {
       navigation.setOptions({
-        title: `@${user.username}`,
         headerRight: () => (
           <View className="flex-row items-center gap-2">
             <Pressable onPress={handleShare} className="p-2">
@@ -74,9 +86,10 @@ export default function UserProfileScreen() {
             )}
           </View>
         ),
+        title: `@${user.username}`,
       });
     }
-  }, [user, isOwnProfile]);
+  }, [user, isOwnProfile, navigation, handleShare, handleMore]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -105,20 +118,7 @@ export default function UserProfileScreen() {
 
   const handleCancelRequest = () => {
     if (!currentUser) return;
-    cancel({ requesterId: currentUser.id, requestedId: id });
-  };
-
-  const handleShare = () => {
-    console.log('Share profile:', user?.username);
-  };
-
-  const handleMore = () => {
-    Alert.alert('Options', '', [
-      { text: 'Report User', onPress: () => console.log('Report'), style: 'destructive' },
-      { text: 'Block User', onPress: () => console.log('Block'), style: 'destructive' },
-      { text: 'Copy Profile Link', onPress: () => console.log('Copy') },
-      { text: 'Cancel', style: 'cancel' },
-    ]);
+    cancel({ requestedId: id, requesterId: currentUser.id });
   };
 
   if (userLoading) {
@@ -146,15 +146,15 @@ export default function UserProfileScreen() {
   const isPrivateAndNotFollowing = user.isPrivate && !followStatus?.isFollowing;
 
   const identityTranslateY = scrollY.interpolate({
+    extrapolate: 'clamp',
     inputRange: [0, 300],
     outputRange: [0, IDENTITY_HEIGHT],
-    extrapolate: 'clamp',
   });
 
   const identityOpacity = scrollY.interpolate({
+    extrapolate: 'clamp',
     inputRange: [0, 200],
     outputRange: [1, 0],
-    extrapolate: 'clamp',
   });
 
   return (
@@ -179,11 +179,11 @@ export default function UserProfileScreen() {
           <Pressable
             onPress={() => router.push(`/memory/${item.id}` as any)}
             className="bg-gray-900"
-            style={{ width: ITEM_SIZE, height: ITEM_SIZE, margin: 1 }}
+            style={{ height: ITEM_SIZE, margin: 1, width: ITEM_SIZE }}
           >
             <Image
               source={{ uri: item.thumbnailUrl || item.mediaUrl || '' }}
-              style={{ width: ITEM_SIZE, height: ITEM_SIZE }}
+              style={{ height: ITEM_SIZE, width: ITEM_SIZE }}
               resizeMode="cover"
             />
             {item.mediaType === 'video' && (
@@ -258,8 +258,8 @@ export default function UserProfileScreen() {
         className="absolute bottom-0 left-0 right-0 bg-black"
         style={{
           height: IDENTITY_HEIGHT,
-          transform: [{ translateY: identityTranslateY }],
           opacity: identityOpacity,
+          transform: [{ translateY: identityTranslateY }],
         }}
       >
         <ProfileIdentity

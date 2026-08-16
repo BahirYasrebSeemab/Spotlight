@@ -1,30 +1,29 @@
 // app/(tabs)/search/index.tsx
+import { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { Search } from 'lucide-react-native';
 import {
   View,
-  TextInput,
   FlatList,
   Text,
   TouchableOpacity,
-  Image,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from 'react-native';
-import { useState } from 'react';
-import { useRouter } from 'expo-router';
-import { Search } from 'lucide-react-native';
-import { useDebounce } from '@/src/shared/hooks/useDebounce';
-import { useSearchUsers } from '@/src/features/search/hooks/useSearchUsers';
-import { useSearchProducts } from '@/src/features/products/hooks/useSearchProducts';
-import { useSearchBrands } from '@/src/features/brands/hooks/useSearchBrands';
-import { Spotlight } from '@/src/shared/components/Spotlight';
-import { InputField } from '@/src/shared/components/InputField';
-import type { Product, ProductCategory } from '@/src/features/products/types/product.types';
+
 import type { Brand } from '@/src/features/brands/types/brand.types';
-import { BrandCard } from '@/src/features/brands/components/BrandCard';
-import { ProductCard } from '@/src/features/products/components/ProductCard'
+import type { Product, ProductCategory } from '@/src/features/products/types/product.types';
+
+import { useDebounce } from '@/src/shared/hooks/useDebounce';
+import { InputField } from '@/src/shared/components/InputField';
 import { UserCard } from '@/src/features/user/components/UserCard';
+import { BrandCard } from '@/src/features/brands/components/BrandCard';
+import { useSearchUsers } from '@/src/features/search/hooks/useSearchUsers';
+import { ProductCard } from '@/src/features/products/components/ProductCard';
+import { useSearchBrands } from '@/src/features/brands/hooks/useSearchBrands';
+import { useSearchProducts } from '@/src/features/products/hooks/useSearchProducts';
 
 type Tab = 'people' | 'products' | 'brands';
 
@@ -83,9 +82,9 @@ export default function SearchScreen() {
 
     if (!searchQuery) {
       const placeholders = {
-        people: { title: 'Search for people', subtitle: 'Find users by their username or name' },
-        products: { title: 'Search for products', subtitle: 'Find sneakers, apparel, and more' },
-        brands: { title: 'Search for brands', subtitle: 'Discover verified brands' },
+        brands: { subtitle: 'Discover verified brands', title: 'Search for brands' },
+        people: { subtitle: 'Find users by their username or name', title: 'Search for people' },
+        products: { subtitle: 'Find sneakers, apparel, and more', title: 'Search for products' },
       };
 
       const placeholder = placeholders[activeTab];
@@ -118,11 +117,11 @@ export default function SearchScreen() {
   const getCurrentData = (): SearchResult[] => {
     switch (activeTab) {
       case 'people':
-        return (users || []).map(user => ({ type: 'people' as const, data: user }));
+        return (users || []).map(user => ({ data: user, type: 'people' as const }));
       case 'products':
-        return (filteredProducts || []).map(product => ({ type: 'products' as const, data: product }));
+        return (filteredProducts || []).map(product => ({ data: product, type: 'products' as const }));
       case 'brands':
-        return (brands || []).map(brand => ({ type: 'brands' as const, data: brand }));
+        return (brands || []).map(brand => ({ data: brand, type: 'brands' as const }));
       default:
         return [];
     }
@@ -131,86 +130,82 @@ export default function SearchScreen() {
   const renderItem = ({ item }: { item: SearchResult }) => {
     switch (item.type) {
       case 'people':
-        return <UserCard user={item.data}/>;
+        return <UserCard user={item.data} />;
       case 'products':
         return <ProductCard product={item.data} onPress={handleProductPress} />;
       case 'brands':
-        return <BrandCard brand={item.data} onPress={handleBrandPress}/>;
+        return <BrandCard brand={item.data} onPress={handleBrandPress} />;
       default:
         return null;
     }
   };
 
   return (
-    <Spotlight intensity={0.25}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 bg-black">
-        {/* Header */}
-        <View className="pb-4 px-4 bg-black border-b border-gray-800">
-          {/* Search Input */}
-          <View className="pt-3">
-            <InputField
-              placeholder={`Search ${activeTab}...`}
-              placeholderTextColor="#888"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </View>
-
-          {/* Tabs */}
-          <View className="flex-row gap-2 mb-2">
-            {(['people', 'products', 'brands'] as Tab[]).map(tab => (
-              <TouchableOpacity
-                key={tab}
-                onPress={() => setActiveTab(tab)}
-                className={`flex-1 py-2 rounded-xl ${activeTab === tab ? 'bg-white' : 'bg-gray-900'}`}
-              >
-                <Text
-                  className={`text-center text-sm font-semibold capitalize ${
-                    activeTab === tab ? 'text-black' : 'text-gray-400'
-                  }`}
-                >
-                  {tab}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Category Filters (Scrollable) */}
-          {activeTab === 'products' && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
-              <View className="flex-row gap-2">
-                {PRODUCT_CATEGORIES.map(category => (
-                  <TouchableOpacity
-                    key={category}
-                    onPress={() => setSelectedCategory(category)}
-                    className={`px-4 py-2 rounded-xl ${selectedCategory === category ? 'bg-white' : 'bg-gray-900'}`}
-                  >
-                    <Text
-                      className={`text-sm font-medium ${
-                        selectedCategory === category ? 'text-black' : 'text-gray-400'
-                      }`}
-                    >
-                      {category}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
-          )}
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 bg-black">
+      {/* Header */}
+      <View className="pb-4 px-4 bg-black border-b border-gray-800">
+        {/* Search Input */}
+        <View className="pt-3">
+          <InputField
+            placeholder={`Search ${activeTab}...`}
+            placeholderTextColor="#888"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
         </View>
 
-        {/* Results */}
-        <FlatList
-          data={getCurrentData()}
-          renderItem={renderItem}
-          keyExtractor={item => item.data.id}
-          ListEmptyComponent={renderEmpty}
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
-        />
-      </KeyboardAvoidingView>
-    </Spotlight>
+        {/* Tabs */}
+        <View className="flex-row gap-2 mb-2">
+          {(['people', 'products', 'brands'] as Tab[]).map(tab => (
+            <TouchableOpacity
+              key={tab}
+              onPress={() => setActiveTab(tab)}
+              className={`flex-1 py-2 rounded-xl ${activeTab === tab ? 'bg-white' : 'bg-gray-900'}`}
+            >
+              <Text
+                className={`text-center text-sm font-semibold capitalize ${
+                  activeTab === tab ? 'text-black' : 'text-gray-400'
+                }`}
+              >
+                {tab}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Category Filters (Scrollable) */}
+        {activeTab === 'products' && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
+            <View className="flex-row gap-2">
+              {PRODUCT_CATEGORIES.map(category => (
+                <TouchableOpacity
+                  key={category}
+                  onPress={() => setSelectedCategory(category)}
+                  className={`px-4 py-2 rounded-xl ${selectedCategory === category ? 'bg-white' : 'bg-gray-900'}`}
+                >
+                  <Text
+                    className={`text-sm font-medium ${selectedCategory === category ? 'text-black' : 'text-gray-400'}`}
+                  >
+                    {category}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+        )}
+      </View>
+
+      {/* Results */}
+      <FlatList
+        data={getCurrentData()}
+        renderItem={renderItem}
+        keyExtractor={item => item.data.id}
+        ListEmptyComponent={renderEmpty}
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      />
+    </KeyboardAvoidingView>
   );
 }

@@ -2,6 +2,7 @@
 // src/features/auth/hooks/useResendVerification.ts
 // ========================================
 import { useMutation } from '@tanstack/react-query';
+
 import { resendVerificationEmail } from '@/src/features/auth/services/authServices';
 
 export function useResendVerification() {
@@ -20,9 +21,9 @@ export function useResendVerification() {
   };
 
   return {
-    resend,
     loading: resendMutation.isPending,
     message: resendMutation.isSuccess ? 'Verification email sent successfully.' : resendMutation.error?.message || null,
+    resend,
     success: resendMutation.isSuccess,
   };
 }

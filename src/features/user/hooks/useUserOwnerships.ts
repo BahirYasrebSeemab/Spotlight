@@ -2,6 +2,7 @@
 // src/features/profile/hooks/useUserOwnerships.ts
 // ========================================
 import { useInfiniteQuery } from '@tanstack/react-query';
+
 import { getUserOwnerships } from '@/src/features/user/services/user.services';
 
 export function useUserOwnerships(userId: string | undefined, limit = 20) {

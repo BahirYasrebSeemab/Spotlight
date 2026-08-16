@@ -2,35 +2,35 @@
 // src/features/new/components/ItemImagePicker.tsx
 // Image picker component for item upload
 // ========================================
-import { View, Image, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera, X, Image as ImageIcon } from 'lucide-react-native';
+import { View, Image, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 
 interface ItemImagePickerProps {
   imageUri?: string;
-  onImageSelected: (uri: string) => void;
-  onImageRemoved: () => void;
   disabled?: boolean;
+  onImageRemoved: () => void;
+  onImageSelected: (uri: string) => void;
 }
 
-export function ItemImagePicker({ imageUri, onImageSelected, onImageRemoved, disabled }: ItemImagePickerProps) {
+export function ItemImagePicker({ disabled, imageUri, onImageRemoved, onImageSelected }: ItemImagePickerProps) {
   const [loading, setLoading] = useState(false);
 
   const pickImage = async () => {
     try {
       setLoading(true);
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
+
       if (status !== 'granted') {
         alert('Permission to access camera roll is required!');
         return;
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 0.8,
       });
 
@@ -49,7 +49,7 @@ export function ItemImagePicker({ imageUri, onImageSelected, onImageRemoved, dis
     try {
       setLoading(true);
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      
+
       if (status !== 'granted') {
         alert('Permission to access camera is required!');
         return;
@@ -101,12 +101,10 @@ export function ItemImagePicker({ imageUri, onImageSelected, onImageRemoved, dis
       ) : (
         <>
           <ImageIcon size={48} color="#666666" />
-          <Text className="text-gray-400 mt-4 text-center px-4">
-            Tap to add photo{'\n'}or take a picture
-          </Text>
+          <Text className="text-gray-400 mt-4 text-center px-4">Tap to add photo{'\n'}or take a picture</Text>
           <View className="flex-row gap-4 mt-4">
             <TouchableOpacity
-              onPress={(e) => {
+              onPress={e => {
                 e.stopPropagation();
                 pickImage();
               }}
@@ -115,7 +113,7 @@ export function ItemImagePicker({ imageUri, onImageSelected, onImageRemoved, dis
               <Text className="text-black font-semibold">Gallery</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={(e) => {
+              onPress={e => {
                 e.stopPropagation();
                 takePhoto();
               }}

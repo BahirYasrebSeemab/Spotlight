@@ -1,2 +1,2 @@
-import MemoryFormScreen from "@/src/features/new/screens/MemoryFormScreen";
+import MemoryFormScreen from '@/src/features/new/screens/MemoryFormScreen';
 export default MemoryFormScreen;

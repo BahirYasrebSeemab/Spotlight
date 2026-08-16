@@ -3,6 +3,7 @@
 // FIXED: Properly sends processImage parameter
 // ========================================
 import { supabase } from '@/src/lib/supabase';
+
 import { CreateOwnershipPayload, Ownership } from '../types/ownership.types';
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;
@@ -72,9 +73,9 @@ export async function createOwnership(
         // React Native FormData format
         // @ts-ignore - React Native specific FormData format
         formData.append('image', {
-          uri: payload.originalImageUrl,
-          type: blob.type || 'image/jpeg',
           name: `item-photo.${fileExtension}`,
+          type: blob.type || 'image/jpeg',
+          uri: payload.originalImageUrl,
         });
 
         console.log('Image added to FormData');
@@ -96,12 +97,12 @@ export async function createOwnership(
 
     // Call edge function
     const response = await fetch(`${SUPABASE_URL}/functions/v1/create-item-ownership`, {
-      method: 'POST',
+      body: formData,
       headers: {
         Authorization: `Bearer ${session.access_token}`,
         // CRITICAL: Don't set Content-Type - let fetch handle multipart/form-data boundary
       },
-      body: formData,
+      method: 'POST',
     });
 
     console.log('Edge function response status:', response.status);
@@ -195,7 +196,6 @@ export async function createOwnership(
 //       ownershipData.communityProductId = communityProductId;
 //     }
 
-
 //     const { data: ownership, error: ownershipError } = await supabase
 //       .from('Ownership')
 //       .insert(ownershipData)
@@ -284,7 +284,7 @@ export async function getOwnershipById(ownershipId: string) {
           thumbnailUrl,
           category
         )
-      `
+      `,
       )
       .eq('id', ownershipId)
       .single();

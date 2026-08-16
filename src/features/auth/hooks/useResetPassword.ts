@@ -2,8 +2,9 @@
 // src/features/auth/hooks/useResetPassword.ts
 // ========================================
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
 import { useAppDispatch } from '@/src/shared/hooks/redux';
 import { applyNewPassword, logout } from '@/src/features/auth/services/authServices';
 import { setPasswordResetSession, clearCurrentUser } from '@/src/features/auth/slices/authSlice';
@@ -31,6 +32,11 @@ export function useResetPassword() {
       const { error } = await applyNewPassword(password);
       if (error) throw error;
     },
+    onError: (error: any) => {
+      const msg = error.message || 'Error resetting password';
+      setLocalError(msg);
+      console.error('❌ Password reset error:', msg);
+    },
     onSuccess: async () => {
       setSuccess(true);
 
@@ -50,11 +56,6 @@ export function useResetPassword() {
       // Navigate immediately
       router.replace('/(auth)');
     },
-    onError: (error: any) => {
-      const msg = error.message || 'Error resetting password';
-      setLocalError(msg);
-      console.error('❌ Password reset error:', msg);
-    },
   });
 
   const handleSubmit = () => {
@@ -63,13 +64,13 @@ export function useResetPassword() {
   };
 
   return {
-    password,
     confirm,
-    setPassword,
-    setConfirm,
     handleSubmit,
-    localError,
-    success,
     loading: resetPasswordMutation.isPending,
+    localError,
+    password,
+    setConfirm,
+    setPassword,
+    success,
   };
 }

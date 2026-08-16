@@ -17,7 +17,7 @@ const corsHeaders = {
 function generateSignature(params: Record<string, any>, apiSecret: string): string {
   const sortedParams = Object.keys(params)
     .sort()
-    .map((key) => `${key}=${params[key]}`)
+    .map(key => `${key}=${params[key]}`)
     .join('&');
   const hash = createHash('sha256');
   hash.update(sortedParams + apiSecret);
@@ -47,10 +47,10 @@ async function processWithCloudinary(
   formData.append('signature', signature);
   formData.append('public_id', publicId);
 
-  const uploadResponse = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-    { method: 'POST', body: formData },
-  );
+  const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: 'POST',
+    body: formData,
+  });
 
   if (!uploadResponse.ok) {
     throw new Error(`Cloudinary upload failed: ${await uploadResponse.text()}`);
@@ -108,7 +108,7 @@ async function processWithCloudinary(
   return { original, processed, thumbnail: thumbnailBuffer };
 }
 
-serve(async (req) => {
+serve(async req => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
@@ -116,9 +116,10 @@ serve(async (req) => {
     if (!authHeader) throw new Error('Missing authorization');
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', ''),
-    );
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
     if (authError || !user) throw new Error('Unauthorized');
 
     const formData = await req.formData();
@@ -155,11 +156,7 @@ serve(async (req) => {
 
       console.log('📊 Image size:', (arrayBuffer.byteLength / 1024 / 1024).toFixed(2), 'MB');
 
-      const canProcess =
-        processImage &&
-        CLOUDINARY_CLOUD_NAME &&
-        CLOUDINARY_API_KEY &&
-        CLOUDINARY_API_SECRET;
+      const canProcess = processImage && CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET;
 
       if (canProcess) {
         try {
@@ -267,10 +264,12 @@ serve(async (req) => {
         flagged: false,
         processingStatus,
       })
-      .select(`
+      .select(
+        `
         *,
         communityProduct:communityProductId (*)
-      `)
+      `,
+      )
       .single();
 
     if (ownershipError) throw new Error(`Failed to create ownership: ${ownershipError.message}`);
@@ -292,9 +291,9 @@ serve(async (req) => {
     );
   } catch (error: any) {
     console.error('💥 Error:', error.message);
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 },
-    );
+    return new Response(JSON.stringify({ success: false, error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    });
   }
 });

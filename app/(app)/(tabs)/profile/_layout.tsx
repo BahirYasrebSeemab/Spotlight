@@ -2,10 +2,11 @@
 // app/(tabs)/profile/_layout.tsx - FIXED
 // ========================================
 import { Stack, useRouter } from 'expo-router';
+import { Settings } from 'lucide-react-native';
+import { Pressable, ActivityIndicator, View } from 'react-native';
+
 import { useAppSelector } from '@/src/shared/hooks/redux';
 import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
-import { Pressable, ActivityIndicator, View } from 'react-native';
-import { Settings } from 'lucide-react-native';
 
 export default function ProfileLayout() {
   // Get auth user ID from Redux
@@ -29,22 +30,22 @@ export default function ProfileLayout() {
       <Stack.Screen
         name="index"
         options={{
-          headerShown: true,
-          headerTitle: profile.username,
-          headerStyle: { backgroundColor: 'transparent' },
           headerRight: () => (
             <Pressable onPress={() => router.push('/(tabs)/profile/settings')} className="p-2">
               <Settings size={22} color={'white'} />
             </Pressable>
           ),
+          headerShown: true,
+          headerStyle: { backgroundColor: 'transparent' },
+          headerTitle: profile.username,
         }}
       />
       <Stack.Screen
         name="settings"
         options={{
           headerShown: true,
-          title: 'Settings',
           headerStyle: { backgroundColor: 'transparent' },
+          title: 'Settings',
         }}
       />
       <Stack.Screen
@@ -68,9 +69,9 @@ export default function ProfileLayout() {
       <Stack.Screen
         name="danger"
         options={{
-          title: 'Account Management',
-          headerStyle: { backgroundColor: 'transparent' },
           headerShown: false,
+          headerStyle: { backgroundColor: 'transparent' },
+          title: 'Account Management',
         }}
       />
     </Stack>

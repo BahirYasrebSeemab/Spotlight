@@ -3,6 +3,7 @@
 // ========================================
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+
 import { sendPasswordReset } from '../services/authServices';
 
 export function useForgotPassword() {
@@ -19,15 +20,15 @@ export function useForgotPassword() {
       const { error } = await sendPasswordReset(email);
       if (error) throw error;
     },
-    onSuccess: () => {
-      setSuccess(true);
-      setLocalError(null);
-    },
     onError: (error: any) => {
       const msg = error.message || 'Something went wrong.';
       setLocalError(msg);
       setSuccess(false);
       console.error('❌ Password reset error:', msg);
+    },
+    onSuccess: () => {
+      setSuccess(true);
+      setLocalError(null);
     },
   });
 
@@ -39,10 +40,10 @@ export function useForgotPassword() {
 
   return {
     email,
-    setEmail,
     handleReset,
-    localError,
-    success,
     loading: resetMutation.isPending,
+    localError,
+    setEmail,
+    success,
   };
 }

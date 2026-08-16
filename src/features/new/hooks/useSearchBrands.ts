@@ -3,23 +3,23 @@
 // Hook for searching brands using search_all()
 // ========================================
 import { useQuery } from '@tanstack/react-query';
+
 import { supabase } from '@/src/lib/supabase';
 import { useDebounce } from '@/src/shared/hooks/useDebounce';
 
 interface SearchAllResult {
-  type: 'user' | 'product' | 'brand';
   id: string;
   name: string;
   imageUrl?: string;
   verified?: boolean;
   similarity?: number;
+  type: 'user' | 'product' | 'brand';
 }
 
 export function useSearchBrands(query: string) {
   const debouncedQuery = useDebounce(query, 300);
 
   return useQuery({
-    queryKey: ['brand-search', debouncedQuery],
     queryFn: async () => {
       if (!debouncedQuery || debouncedQuery.length < 2) {
         // Return top verified brands when query is empty
@@ -33,15 +33,15 @@ export function useSearchBrands(query: string) {
         if (error) throw new Error(error.message);
         return (data || []).map(brand => ({
           id: brand.id,
-          name: brand.name,
           imageUrl: brand.logoUrl,
+          name: brand.name,
           verified: brand.verified,
         }));
       }
 
       const { data, error } = await supabase.rpc('search_all', {
-        search_query: debouncedQuery,
         limit_count: 20,
+        search_query: debouncedQuery,
       });
 
       if (error) throw new Error(error.message);
@@ -51,14 +51,15 @@ export function useSearchBrands(query: string) {
         .filter((item: SearchAllResult) => item.type === 'brand')
         .map((item: SearchAllResult) => ({
           id: item.id,
-          name: item.name,
           imageUrl: item.imageUrl,
-          verified: item.verified,
+          name: item.name,
           similarity: item.similarity || 0,
+          verified: item.verified,
         }));
 
       return brands;
     },
+    queryKey: ['brand-search', debouncedQuery],
     staleTime: 60000, // 1 minute
   });
 }

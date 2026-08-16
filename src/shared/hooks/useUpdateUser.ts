@@ -1,18 +1,19 @@
-import { updateUser, uploadAvatarToSupabase } from '@/src/features/user/services/user.services';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
+
 import { UpdateUserPayload } from '@/src/shared/types/user.types';
+import { updateUser, uploadAvatarToSupabase } from '@/src/features/user/services/user.services';
 
 export function useUpdateUser() {
   const queryClient = useQueryClient();
 
   const uploadAvatar = useMutation({
-    mutationFn: async ({ userId, uri }: { userId: string; uri: string }) => {
+    mutationFn: async ({ uri, userId }: { userId: string; uri: string }) => {
       return uploadAvatarToSupabase(userId, uri);
     },
   });
 
   const updateProfile = useMutation({
-    mutationFn: async ({ userId, payload }: { userId: string; payload: UpdateUserPayload }) => {
+    mutationFn: async ({ payload, userId }: { userId: string; payload: UpdateUserPayload }) => {
       const { data, error } = await updateUser(userId, payload);
       if (error) throw error;
       return data;
@@ -25,10 +26,10 @@ export function useUpdateUser() {
   });
 
   return {
-    uploadAvatar: uploadAvatar.mutateAsync,
-    updateProfile: updateProfile.mutateAsync,
-    isUploading: uploadAvatar.isPending,
-    isUpdating: updateProfile.isPending,
     error: uploadAvatar.error || updateProfile.error,
+    isUpdating: updateProfile.isPending,
+    isUploading: uploadAvatar.isPending,
+    updateProfile: updateProfile.mutateAsync,
+    uploadAvatar: uploadAvatar.mutateAsync,
   };
 }

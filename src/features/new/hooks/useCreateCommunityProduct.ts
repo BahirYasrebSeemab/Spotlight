@@ -1,7 +1,8 @@
 // src/features/new/hooks/useCreateCommunityProduct.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {createCommunityProductWithOwnership} from '@/src/features/new/services/communityProduct.services';
+
 import { CreateCommunityProductPayload } from '@/src/features/new/types/item.types';
+import { createCommunityProductWithOwnership } from '@/src/features/new/services/communityProduct.services';
 
 export function useCreateCommunityProduct() {
   const queryClient = useQueryClient();
@@ -20,7 +21,7 @@ export function useCreateCommunityProduct() {
 
   return {
     createCommunityProduct: mutation.mutate,
-    isLoading: mutation.isPending,
     error: mutation.error as Error | null,
+    isLoading: mutation.isPending,
   };
 }

@@ -1,15 +1,15 @@
 // ========================================
 // app/user/[id]/followers.tsx - INVERTED with Privacy Check
 // ========================================
-import { View, FlatList, Text, ActivityIndicator } from 'react-native';
+import { Lock } from 'lucide-react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { View, FlatList, Text, ActivityIndicator } from 'react-native';
+
 import { useAppSelector } from '@/src/shared/hooks/redux';
 import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
+import { FollowerItem } from '@/src/features/user/components/FollowerItem';
 import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
 import { useUserFollowers } from '@/src/features/user/hooks/useUserFollowers';
-import { FollowerItem } from '@/src/features/user/components/FollowerItem';
-import { Lock } from 'lucide-react-native';
-import { useLayoutEffect } from 'react';
 
 export default function FollowersScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -29,9 +29,9 @@ export default function FollowersScreen() {
 
   const {
     data: followersData,
-    isLoading: followersLoading,
     fetchNextPage,
     hasNextPage,
+    isLoading: followersLoading,
   } = useUserFollowers(id, { enabled: shouldFetchFollowers });
 
   // Loading state

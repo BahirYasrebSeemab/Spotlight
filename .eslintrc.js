@@ -5,12 +5,9 @@ module.exports = {
   rules: {
     'perfectionist/sort-imports': ['error'],
     'perfectionist/sort-interfaces': ['error'],
-    'perfectionist/sort-objects': [
-      'error',
-      {
-        type: 'alphabetical',
-      },
-    ],
+    // sort-objects is intentionally disabled: alphabetizing runtime object literals
+    // reorders things like useMutation/useInfiniteQuery option bags, which breaks
+    // TanStack Query's property-order-dependent generic inference (TContext, TPageParam, etc).
     'prettier/prettier': 'error',
     'unused-imports/no-unused-imports': 'error',
     'unused-imports/no-unused-vars': [

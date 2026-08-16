@@ -2,6 +2,7 @@
 // src/features/profile/hooks/useUserPosts.ts
 // ========================================
 import { useInfiniteQuery } from '@tanstack/react-query';
+
 import { getUsersMemories } from '@/src/features/user/services/user.services';
 
 export function useUserMemories(userId: string | undefined, limit = 20) {

@@ -1,7 +1,8 @@
 // app/user/[id]/_layout.tsx - Individual user layout
-import { useBrandProfile } from '@/src/features/brands/hooks/useBrandProfile';
 import { Stack } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
+
+import { useBrandProfile } from '@/src/features/brands/hooks/useBrandProfile';
 
 export default function BrandProfileLayout() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -12,24 +13,24 @@ export default function BrandProfileLayout() {
       <Stack.Screen
         name="index"
         options={{
+          headerShadowVisible: false,
           headerShown: true,
-          title: brand?.name, // Brnad name will be set in the screen
           headerStyle: {
             backgroundColor: '#000',
           },
           headerTintColor: '#fff',
-          headerShadowVisible: false,
+          title: brand?.name, // Brnad name will be set in the screen
         }}
       />
       <Stack.Screen
         name="followers"
         options={{
           headerShown: true,
-          title: 'Followers',
           headerStyle: {
             backgroundColor: '#000',
           },
           headerTintColor: '#fff',
+          title: 'Followers',
         }}
       />
     </Stack>

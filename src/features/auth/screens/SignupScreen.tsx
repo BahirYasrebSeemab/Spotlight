@@ -2,24 +2,23 @@
 // app/(auth)/signup.tsx - Updated Signup Screen
 // ========================================
 import { View } from 'react-native';
-import { SignupStep1, SignupStep2, AuthHeader } from '@/src/features/auth/components';
-import { useSignup, useOAuth } from '@/src/features/auth/hooks';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Spotlight } from '@/src/shared/components/Spotlight';
+
+import { useSignup, useOAuth } from '@/src/features/auth/hooks';
+import { SignupStep1, SignupStep2, AuthHeader } from '@/src/features/auth/components';
 
 export default function SignupScreen() {
-  const { form, step, nextStep, prevStep, updateField, handleSignup, loading, error } = useSignup();
-  const { loading: oAuthLoading, handleGoogleLogin } = useOAuth();
+  const { error, form, handleSignup, loading, nextStep, prevStep, step, updateField } = useSignup();
+  const { handleGoogleLogin } = useOAuth();
 
   return (
-    <Spotlight intensity={0.25}>
-      <KeyboardAwareScrollView
-        className="flex-1 bg-black"
-        enableOnAndroid
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ flexGrow: 1 }}
-      >
-        <View className="flex-1 justify-center px-8 py-12">
+    <KeyboardAwareScrollView
+      className="flex-1"
+      enableOnAndroid
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{ flexGrow: 1 }}
+    >
+      <View className="flex-1 justify-center px-8 py-12">
         <AuthHeader title="Create Account" subtitle={step === 1 ? "Let's get started" : 'Almost there!'} />
 
         {step === 1 && (
@@ -44,6 +43,5 @@ export default function SignupScreen() {
         )}
       </View>
     </KeyboardAwareScrollView>
-    </Spotlight>
   );
 }

@@ -1,10 +1,11 @@
 // ========================================
 // src/features/auth/hooks/useLogout.ts
 // ========================================
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useAppDispatch } from '@/src/shared/hooks/redux';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { useAppDispatch } from '@/src/shared/hooks/redux';
 import { clearCurrentUser } from '@/src/features/auth/slices/authSlice';
 import { logout as logoutService } from '@/src/features/auth/services/authServices';
 
@@ -17,6 +18,9 @@ export function useLogout() {
     mutationFn: async () => {
       const { error } = await logoutService();
       if (error) throw error;
+    },
+    onError: (error: any) => {
+      console.error('❌ Logout error:', error.message);
     },
     onSuccess: async () => {
       // Clear AsyncStorage
@@ -31,9 +35,6 @@ export function useLogout() {
       // Navigate to auth
       router.replace('/(auth)');
     },
-    onError: (error: any) => {
-      console.error('❌ Logout error:', error.message);
-    },
   });
 
   const handleLogout = () => {
@@ -41,8 +42,8 @@ export function useLogout() {
   };
 
   return {
+    error: logoutMutation.error?.message || null,
     handleLogout,
     loading: logoutMutation.isPending,
-    error: logoutMutation.error?.message || null,
   };
 }

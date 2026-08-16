@@ -1,26 +1,27 @@
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
 import { Heart } from 'lucide-react-native';
+import { Pressable, Text } from 'react-native';
+
 import { useLikeMemory } from '@/src/features/memories/hooks/useLikeMemory';
 
 interface LikeButtonProps {
-  memoryId: string;
+  size?: number;
   userId: string;
+  memoryId: string;
   isLiked: boolean;
   likesCount: number;
-  size?: number;
 }
 
-export function LikeButton({ memoryId, userId, isLiked, likesCount, size = 24 }: LikeButtonProps) {
-  const { like, unlike, isLoading } = useLikeMemory();
+export function LikeButton({ isLiked, likesCount, memoryId, size = 24, userId }: LikeButtonProps) {
+  const { isLoading, like, unlike } = useLikeMemory();
 
   const handleToggleLike = () => {
     if (isLoading) return;
 
     if (isLiked) {
-      unlike({ userId, memoryId });
+      unlike({ memoryId, userId });
     } else {
-      like({ userId, memoryId });
+      like({ memoryId, userId });
     }
   };
 

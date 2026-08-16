@@ -1,7 +1,7 @@
 export interface BlurConfirmModalProps {
-  visible: boolean;
   title?: string;
   message: string;
-  onConfirm: () => void;
+  visible: boolean;
   onCancel: () => void;
+  onConfirm: () => void;
 }

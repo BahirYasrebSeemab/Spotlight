@@ -3,17 +3,10 @@
 // Centralized Supabase calls for item/ownership operations
 // ========================================
 import { supabase } from '@/src/lib/supabase';
-import {
-  CreateItemPayload,
-  Ownership,
-  CommunityProduct,
-  Prototype,
-  Brand,
-  ProductSearchResult,
-} from '../types/item.types';
+
+import { CreateItemPayload, Ownership, Brand, ProductSearchResult } from '../types/item.types';
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;
-
 
 /**
  * Search for existing products (Prototype or CommunityProduct)
@@ -26,7 +19,7 @@ export async function searchProducts(params: {
   limit?: number;
 }): Promise<{ data: ProductSearchResult[] | null; error: string | null }> {
   try {
-    const { name, brandName, upc, limit = 10 } = params;
+    const { brandName, limit = 10, name, upc } = params;
     const results: ProductSearchResult[] = [];
 
     // Search by UPC first (most accurate)
@@ -41,7 +34,7 @@ export async function searchProducts(params: {
 
       if (!protoError && prototypes) {
         prototypes.forEach((p: any) => {
-          results.push({ type: 'prototype', product: p, similarity: 100 });
+          results.push({ product: p, similarity: 100, type: 'prototype' });
         });
       }
 
@@ -55,7 +48,7 @@ export async function searchProducts(params: {
 
       if (!commError && communityProducts) {
         communityProducts.forEach((cp: any) => {
-          results.push({ type: 'community', product: cp, similarity: 100 });
+          results.push({ product: cp, similarity: 100, type: 'community' });
         });
       }
     }
@@ -76,7 +69,7 @@ export async function searchProducts(params: {
         prototypes.forEach((p: any) => {
           const brandMatch = p.brand?.name?.toLowerCase().trim() === normalizedBrand;
           const similarity = brandMatch ? 90 : 70;
-          results.push({ type: 'prototype', product: p, similarity });
+          results.push({ product: p, similarity, type: 'prototype' });
         });
       }
 
@@ -94,7 +87,7 @@ export async function searchProducts(params: {
           const exactMatch =
             cp.name.toLowerCase() === name.toLowerCase() && cp.brandName.toLowerCase() === normalizedBrand;
           const similarity = exactMatch ? 90 : 70;
-          results.push({ type: 'community', product: cp, similarity });
+          results.push({ product: cp, similarity, type: 'community' });
         });
       }
     }
@@ -118,7 +111,6 @@ export async function searchProducts(params: {
  */
 export async function createItemOwnership(
   payload: CreateItemPayload,
-  userId: string,
 ): Promise<{ data: Ownership | null; error: string | null }> {
   try {
     const formData = new FormData();
@@ -168,11 +160,10 @@ export async function createItemOwnership(
         // CRITICAL: React Native FormData needs this specific format
         // @ts-ignore - React Native specific FormData format
         formData.append('image', {
-          uri: payload.imageUri,
-          type: blob.type || 'image/jpeg',
           name: `photo.${fileExtension}`,
+          type: blob.type || 'image/jpeg',
+          uri: payload.imageUri,
         });
-
       } catch (imageError: string | any) {
         console.error('Error processing image:', imageError);
         throw new Error(`Failed to process image file: ${imageError.message}`);
@@ -189,12 +180,12 @@ export async function createItemOwnership(
 
     // Use fetch directly - better FormData support in React Native
     const response = await fetch(`${SUPABASE_URL}/functions/v1/create-item-ownership`, {
-      method: 'POST',
+      body: formData,
       headers: {
         Authorization: `Bearer ${session.access_token}`,
         // CRITICAL: Don't set Content-Type - let fetch handle multipart/form-data boundary
       },
-      body: formData,
+      method: 'POST',
     });
 
     if (!response.ok) {

@@ -1,13 +1,13 @@
-import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
 import { useState } from 'react';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { X, Tag } from 'lucide-react-native';
-import { InputField } from '@/src/shared/components/InputField';
-import { Spotlight } from '@/src/shared/components/Spotlight';
-import { ClosetItemSelector } from '@/src/features/memories/components/ClosetItemSelector';
-import { useCreateMemory } from '@/src/features/memories/hooks/useCreateMemory';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
+
 import { useAppSelector } from '@/src/shared/hooks/redux';
+import { InputField } from '@/src/shared/components/InputField';
+import { useCreateMemory } from '@/src/features/memories/hooks/useCreateMemory';
+import { ClosetItemSelector } from '@/src/features/memories/components/ClosetItemSelector';
 
 export default function MemoryFormScreen() {
   const params = useLocalSearchParams<{ imageUri?: string }>();
@@ -35,27 +35,27 @@ export default function MemoryFormScreen() {
 
     create(
       {
-        userId: authUser.id,
-        mediaUrl: params.imageUri,
-        mediaType: 'photo',
         caption: caption.trim() || undefined,
-        title: title.trim() || undefined,
         location: location.trim() || undefined,
+        mediaType: 'photo',
+        mediaUrl: params.imageUri,
         ownershipIds: selectedOwnershipIds,
+        title: title.trim() || undefined,
+        userId: authUser.id,
       },
       {
+        onError: (err: Error) => {
+          Alert.alert('Error', err.message || 'Failed to create memory');
+        },
         onSuccess: () => {
           Alert.alert('Success', 'Memory created!', [
             {
-              text: 'OK',
               onPress: () => {
                 router.replace('/(tabs)/profile');
               },
+              text: 'OK',
             },
           ]);
-        },
-        onError: (err: Error) => {
-          Alert.alert('Error', err.message || 'Failed to create memory');
         },
       },
     );
@@ -66,7 +66,7 @@ export default function MemoryFormScreen() {
   };
 
   return (
-    <Spotlight intensity={0.2}>
+    <>
       <KeyboardAwareScrollView
         className="flex-1 bg-black"
         enableOnAndroid
@@ -191,6 +191,6 @@ export default function MemoryFormScreen() {
           }}
         />
       )}
-    </Spotlight>
+    </>
   );
 }

@@ -6,27 +6,27 @@ export interface Product {
   id: string;
   name: string;
   brandName: string;
-  brandId: string | null;
-  imageUrl: string | null;
-  thumbnailUrl: string | null;
-  upc: string | null;
-  category: string | null;
-  retailPrice: number | null;
   type: ProductType;
   verified: boolean;
-  ownershipCount: number;
+  upc: string | null;
   relevance?: number;
+  brandId: string | null;
+  ownershipCount: number;
+  imageUrl: string | null;
+  category: string | null;
+  retailPrice: number | null;
+  thumbnailUrl: string | null;
 }
 
 export interface ProductDetail extends Product {
-  description?: string | null;
-  sku?: string | null;
   variants?: any;
+  sku?: string | null;
+  description?: string | null;
   // For Prototype
   isActive?: boolean;
   // For CommunityProduct
-  createdBy?: string;
   status?: string;
+  createdBy?: string;
 }
 
 export type ProductCategory = 'All' | 'Footwear' | 'Apparel' | 'Accessories';

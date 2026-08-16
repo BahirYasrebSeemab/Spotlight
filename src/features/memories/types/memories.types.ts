@@ -1,25 +1,25 @@
 export interface Memory {
   id: string;
   userId: string;
-  title: string | null;
-  caption: string | null;
   mediaUrl: string;
-  mediaType: 'photo' | 'video';
-  thumbnailUrl: string | null;
-  takenAt: string | null;
-  location: string | null;
-  likesCount: number;
-  commentsCount: number;
   createdAt: string;
   updatedAt: string;
+  isLiked?: boolean;
+  likesCount: number;
+  title: string | null;
+  items?: MemoryItem[];
+  commentsCount: number;
+  caption: string | null;
+  takenAt: string | null;
+  location: string | null;
+  thumbnailUrl: string | null;
+  mediaType: 'photo' | 'video';
   user?: {
     id: string;
     username: string;
     name: string | null;
     avatarUrl: string;
   };
-  items?: MemoryItem[];
-  isLiked?: boolean;
 }
 
 export interface MemoryItem {
@@ -52,9 +52,9 @@ export interface MemoryItem {
 
 export interface Comment {
   id: string;
-  memoryId: string;
   userId: string;
   content: string;
+  memoryId: string;
   createdAt: string;
   updatedAt: string;
   user: {
@@ -67,24 +67,24 @@ export interface Comment {
 
 export interface Like {
   id: string;
-  memoryId: string;
   userId: string;
+  memoryId: string;
   createdAt: string;
 }
 
 export interface CreateMemoryInput {
   userId: string;
-  mediaUrl: string;
-  mediaType: 'photo' | 'video';
-  thumbnailUrl?: string;
-  caption?: string;
   title?: string;
+  mediaUrl: string;
+  caption?: string;
   location?: string;
+  thumbnailUrl?: string;
   ownershipIds: string[];
+  mediaType: 'photo' | 'video';
 }
 
 export interface CreateCommentInput {
-  memoryId: string;
   userId: string;
   content: string;
+  memoryId: string;
 }

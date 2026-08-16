@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useAppDispatch } from '@/src/shared/hooks/redux';
-import { loginWithEmail } from '../services/authServices';
-import { setCurrentUser } from '@/src/features/auth/slices/authSlice';
-import { supabase } from '@/src/lib/supabase';
-import { reactivateAccount } from '@/src/features/user/services/user.services';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { supabase } from '@/src/lib/supabase';
+import { useAppDispatch } from '@/src/shared/hooks/redux';
+import { setCurrentUser } from '@/src/features/auth/slices/authSlice';
+import { reactivateAccount } from '@/src/features/user/services/user.services';
+
+import { loginWithEmail } from '../services/authServices';
 
 export function useLogin() {
   const dispatch = useAppDispatch();
@@ -22,12 +24,12 @@ export function useLogin() {
     dispatch(setCurrentUser(user));
     await AsyncStorage.setItem('authState', JSON.stringify({ user }));
     queryClient.prefetchQuery({
-      queryKey: ['user-profile', user.id],
       queryFn: async () => {
         const { getUserProfile } = await import('@/src/features/user/services/user.services');
         const { data } = await getUserProfile(user.id);
         return data;
       },
+      queryKey: ['user-profile', user.id],
     });
     router.replace('/(tabs)');
   };
@@ -35,10 +37,14 @@ export function useLogin() {
   const loginMutation = useMutation({
     mutationFn: async () => {
       if (!email || !password) throw new Error('Please fill in both fields.');
-      const { user, error } = await loginWithEmail(email, password);
+      const { error, user } = await loginWithEmail(email, password);
       if (error) throw error;
       if (!user) throw new Error('Login failed');
       return user;
+    },
+    onError: (error: any) => {
+      const msg = error.message || 'Login failed';
+      setLocalError(msg);
     },
     onSuccess: async user => {
       // Check if account is deactivated
@@ -49,29 +55,25 @@ export function useLogin() {
         await supabase.auth.signOut();
 
         Alert.alert('Account Deactivated', 'Your account is deactivated. Would you like to reactivate it?', [
-          { text: 'Cancel', style: 'cancel' },
+          { style: 'cancel', text: 'Cancel' },
           {
-            text: 'Reactivate',
             onPress: async () => {
               await reactivateAccount(user.id);
               // Re-sign in after reactivation
-              const { user: freshUser, error } = await loginWithEmail(email, password);
+              const { error, user: freshUser } = await loginWithEmail(email, password);
               if (error || !freshUser) {
                 setLocalError('Reactivation failed. Please try logging in again.');
                 return;
               }
               await proceedWithLogin(freshUser);
             },
+            text: 'Reactivate',
           },
         ]);
         return;
       }
 
       await proceedWithLogin(user);
-    },
-    onError: (error: any) => {
-      const msg = error.message || 'Login failed';
-      setLocalError(msg);
     },
   });
 
@@ -82,11 +84,11 @@ export function useLogin() {
 
   return {
     email,
+    handleLogin,
+    loading: loginMutation.isPending,
+    localError: localError || (loginMutation.error?.message ?? null),
     password,
     setEmail,
     setPassword,
-    handleLogin,
-    localError: localError || (loginMutation.error?.message ?? null),
-    loading: loginMutation.isPending,
   };
 }

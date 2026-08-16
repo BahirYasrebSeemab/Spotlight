@@ -1,6 +1,6 @@
-import { View, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { Play } from 'lucide-react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { View, Image, TouchableOpacity, Dimensions } from 'react-native';
 
 interface Post {
   id: string;
@@ -10,11 +10,11 @@ interface Post {
 
 interface ProfileContentGridProps {
   posts: Post[];
-  onPostPress: (postId: string) => void;
   columns?: number;
+  onPostPress: (postId: string) => void;
 }
 
-export function ProfileContentGrid({ posts, onPostPress, columns = 3 }: ProfileContentGridProps) {
+export function ProfileContentGrid({ columns = 3, onPostPress, posts }: ProfileContentGridProps) {
   const screenWidth = Dimensions.get('window').width;
   const gap = 2;
   const itemSize = (screenWidth - gap * (columns - 1)) / columns;
@@ -31,25 +31,25 @@ export function ProfileContentGrid({ posts, onPostPress, columns = 3 }: ProfileC
         <Animated.View
           key={post.id}
           entering={FadeIn.delay(index * 30).duration(300)}
-          style={{ width: itemSize, height: itemSize }}
+          style={{ height: itemSize, width: itemSize }}
         >
           <TouchableOpacity
             onPress={() => onPostPress(post.id)}
             activeOpacity={0.9}
-            style={{ width: itemSize, height: itemSize, backgroundColor: '#ffffff10' }}
+            style={{ backgroundColor: '#ffffff10', height: itemSize, width: itemSize }}
           >
-            <Image source={{ uri: post.imageUrl }} style={{ width: itemSize, height: itemSize }} resizeMode="cover" />
+            <Image source={{ uri: post.imageUrl }} style={{ height: itemSize, width: itemSize }} resizeMode="cover" />
             {post.type === 'video' && (
               <View
                 style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
                   alignItems: 'center',
-                  justifyContent: 'center',
                   backgroundColor: 'rgba(0,0,0,0.2)',
+                  bottom: 0,
+                  justifyContent: 'center',
+                  left: 0,
+                  position: 'absolute',
+                  right: 0,
+                  top: 0,
                 }}
               >
                 <View

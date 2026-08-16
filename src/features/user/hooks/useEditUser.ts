@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
+
 import { useValidation } from '@/src/shared/hooks/validation';
 import { useUpdateUser } from '@/src/shared/hooks/useUpdateUser';
 
@@ -17,14 +18,14 @@ export function useEditProfile(userId: string, defaults: Defaults) {
   const [avatarUrl, setAvatarUrl] = useState(defaults.avatarUrl);
   const [avatarFile, setAvatarFile] = useState<string | null>(null);
 
-  const { validateUsername, error, setError } = useValidation();
-  const { uploadAvatar, updateProfile, isUpdating, isUploading } = useUpdateUser();
+  const { error, setError, validateUsername } = useValidation();
+  const { isUpdating, isUploading, updateProfile, uploadAvatar } = useUpdateUser();
 
   const pickAvatar = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
     });
 
@@ -43,7 +44,7 @@ export function useEditProfile(userId: string, defaults: Defaults) {
       let finalAvatar = avatarUrl;
 
       if (avatarFile && avatarFile.startsWith('file://')) {
-        finalAvatar = await uploadAvatar({ userId, uri: avatarFile });
+        finalAvatar = await uploadAvatar({ uri: avatarFile, userId });
       }
 
       const payload: any = {};
@@ -54,7 +55,7 @@ export function useEditProfile(userId: string, defaults: Defaults) {
 
       if (Object.keys(payload).length === 0) return true;
 
-      await updateProfile({ userId, payload });
+      await updateProfile({ payload, userId });
       return true;
     } catch (e: any) {
       setError(e.message || 'Failed to update profile');
@@ -63,16 +64,16 @@ export function useEditProfile(userId: string, defaults: Defaults) {
   };
 
   return {
-    name,
-    setName,
-    username,
-    setUsername,
-    bio,
-    setBio,
     avatarUrl,
-    pickAvatar,
-    submit,
-    loading: isUpdating || isUploading,
+    bio,
     error,
+    loading: isUpdating || isUploading,
+    name,
+    pickAvatar,
+    setBio,
+    setName,
+    setUsername,
+    submit,
+    username,
   };
 }

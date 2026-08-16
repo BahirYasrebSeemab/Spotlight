@@ -1,43 +1,44 @@
-import { View, Text, TouchableOpacity, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAppSelector } from '@/src/shared/hooks/redux';
 import { Shirt, Search, Plus, Bell, User } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, Dimensions } from 'react-native';
+
+import { useAppSelector } from '@/src/shared/hooks/redux';
 import { Spotlight } from '@/src/shared/components/Spotlight';
 
 const { width } = Dimensions.get('window');
 
 const SLIDES = [
   {
-    icon: Shirt,
-    title: 'Your Digital Closet',
     description:
       'Everything you own, in one place. Your closet is your personal catalog of items — shoes, clothes, accessories. Add anything you own and build your collection.',
+    icon: Shirt,
+    title: 'Your Digital Closet',
   },
   {
-    icon: Plus,
-    title: 'Add What You Own',
     description:
       'Tap the Add button to log an item. Search for it in our database, pick a match, upload your own photo, and optionally remove the background for a clean professional look.',
+    icon: Plus,
+    title: 'Add What You Own',
   },
   {
-    icon: Search,
-    title: 'Discover & Search',
     description:
       'Search for products, brands, and other people. Find items you want to add to your closet or discover what others are wearing.',
+    icon: Search,
+    title: 'Discover & Search',
   },
   {
-    icon: Bell,
-    title: 'Stay in the Loop',
     description:
       "Activity keeps you updated — see who followed you, who liked your memories, and what's happening in your community.",
+    icon: Bell,
+    title: 'Stay in the Loop',
   },
   {
-    icon: User,
-    title: 'Your Profile',
     description:
       'Your profile is your public identity. Others can follow you, browse your closet, and see your memories. Make it yours.',
+    icon: User,
+    title: 'Your Profile',
   },
 ];
 

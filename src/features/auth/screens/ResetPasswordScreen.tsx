@@ -1,23 +1,22 @@
 // ========================================
 // app/(auth)/reset-password.tsx - Updated Reset Password Screen
 // ========================================
-import { Text, TouchableOpacity, View } from 'react-native';
-import { InputField } from '@/src/shared/components/InputField';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { useResetPassword } from '@/src/features/auth/hooks/useResetPassword';
-import { AuthHeader } from '@/src/features/auth/components';
-import { Spotlight } from '@/src/shared/components/Spotlight';
 import { CheckCircle } from 'lucide-react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+
+import { AuthHeader } from '@/src/features/auth/components';
+import { InputField } from '@/src/shared/components/InputField';
+import { useResetPassword } from '@/src/features/auth/hooks/useResetPassword';
 
 export default function ResetPasswordScreen() {
-  const { password, confirm, setPassword, setConfirm, handleSubmit, localError, success, loading } = useResetPassword();
+  const { confirm, handleSubmit, loading, localError, password, setConfirm, setPassword, success } = useResetPassword();
 
   return (
-    <Spotlight intensity={0.25}>
-      <KeyboardAwareScrollView
-        className="flex-1 bg-black"
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
-      >
+    <KeyboardAwareScrollView
+      className="flex-1 bg-black"
+      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
+    >
       <AuthHeader title="Reset Password" subtitle={!success ? 'Enter your new password below' : undefined} />
 
       {!success ? (
@@ -61,6 +60,5 @@ export default function ResetPasswordScreen() {
         </View>
       )}
     </KeyboardAwareScrollView>
-    </Spotlight>
   );
 }

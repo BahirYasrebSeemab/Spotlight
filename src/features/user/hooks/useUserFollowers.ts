@@ -1,5 +1,6 @@
 // src/features/user/hooks/useUserFollowers.ts - HANDLE PRIVATE ACCOUNTS
 import { useInfiniteQuery } from '@tanstack/react-query';
+
 import { getUserFollowers } from '@/src/features/user/services/follow.services';
 
 interface UseUserFollowersOptions {
