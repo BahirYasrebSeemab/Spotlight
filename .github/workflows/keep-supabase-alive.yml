@@ -1,0 +1,20 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    - cron: '0 0 */3 * *'   # runs every 3 days at midnight UTC
+  workflow_dispatch:         # lets you trigger it manually from the Actions tab too
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Project 1
+        run: |
+          curl -s "${{ secrets.SUPABASE_URL_1 }}/rest/v1/${{ secrets.SUPABASE_TABLE_1 }}?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_KEY_1 }}"
+
+      - name: Ping Supabase Project 2
+        run: |
+          curl -s "${{ secrets.SUPABASE_URL_2 }}/rest/v1/${{ secrets.SUPABASE_TABLE_2 }}?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_KEY_2 }}"
