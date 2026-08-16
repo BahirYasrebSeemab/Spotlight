@@ -1,4 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
+
 import { getBrandProducts } from '../services/brand.services';
 
 export function useBrandProducts(brandId: string | undefined, limit = 20) {

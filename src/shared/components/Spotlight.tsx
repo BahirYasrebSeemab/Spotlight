@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { View, StyleSheet, ViewStyle } from 'react-native';
 
 interface SpotlightProps {
-  children: React.ReactNode;
-  intensity?: number; // 0-1, controls how strong the spotlight is
   style?: ViewStyle;
+  intensity?: number; // 0-1, controls how strong the spotlight is
+  children: React.ReactNode;
 }
 
 /**

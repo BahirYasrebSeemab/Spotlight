@@ -2,21 +2,20 @@
 // src/features/new/components/ProductMatchCard.tsx
 // Shows matched product when searching
 // ========================================
-import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { ProductSearchResult } from '../types/item.types';
 import { CheckCircle } from 'lucide-react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
+
+import { ProductSearchResult } from '../types/item.types';
 
 interface ProductMatchCardProps {
-  match: ProductSearchResult;
   onSelect: () => void;
+  match: ProductSearchResult;
 }
 
 export function ProductMatchCard({ match, onSelect }: ProductMatchCardProps) {
   const product = match.product;
   const isPrototype = match.type === 'prototype';
-  const imageUrl = isPrototype 
-    ? (product as any).imageUrl 
-    : (product as any).imageUrl;
+  const imageUrl = isPrototype ? (product as any).imageUrl : (product as any).imageUrl;
 
   return (
     <TouchableOpacity
@@ -32,7 +31,7 @@ export function ProductMatchCard({ match, onSelect }: ProductMatchCardProps) {
             <Text className="text-gray-400 text-xs">No Image</Text>
           </View>
         )}
-        
+
         <View className="flex-1">
           <View className="flex-row items-center mb-1">
             <Text className="text-white font-semibold text-base flex-1">{product.name}</Text>
@@ -42,11 +41,11 @@ export function ProductMatchCard({ match, onSelect }: ProductMatchCardProps) {
               </View>
             )}
           </View>
-          
+
           <Text className="text-gray-400 text-sm mb-1">
             {isPrototype ? (product as any).brand?.name : (product as any).brandName}
           </Text>
-          
+
           {match.similarity && (
             <View className="flex-row items-center mt-1">
               <CheckCircle size={14} color="#ffffff" />

@@ -1,31 +1,25 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  Modal,
-  FlatList,
-  Pressable,
-  Image,
-  ActivityIndicator,
-} from 'react-native';
 import { X, CheckCircle } from 'lucide-react-native';
-import { useUserOwnerships } from '@/src/features/closet/hooks/useCloset';
+import { View, Text, Modal, FlatList, Pressable, Image, ActivityIndicator } from 'react-native';
+
 import type { OwnershipWithProduct } from '@/src/features/closet/types/closet.types';
 
+import { useUserOwnerships } from '@/src/features/closet/hooks/useCloset';
+
 interface ClosetItemSelectorProps {
-  visible: boolean;
   userId: string;
+  visible: boolean;
   onClose: () => void;
   onConfirm: (selectedIds: string[]) => void;
 }
 
-export function ClosetItemSelector({ visible, userId, onClose, onConfirm }: ClosetItemSelectorProps) {
+export function ClosetItemSelector({ onClose, onConfirm, userId, visible }: ClosetItemSelectorProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const { data: ownerships, isLoading } = useUserOwnerships(userId);
 
   const toggleSelection = (ownershipId: string) => {
     setSelectedIds(prev =>
-      prev.includes(ownershipId) ? prev.filter(id => id !== ownershipId) : [...prev, ownershipId]
+      prev.includes(ownershipId) ? prev.filter(id => id !== ownershipId) : [...prev, ownershipId],
     );
   };
 

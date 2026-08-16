@@ -1,14 +1,10 @@
 // src/store/index.ts (or wherever your store is configured)
 import { configureStore } from '@reduxjs/toolkit';
+
 import authReducer from '@/src/features/auth/slices/authSlice';
 // Remove userReducer import
 
 export const store = configureStore({
-  reducer: {
-    auth: authReducer,
-    // Remove user: userReducer
-    // Add other slices as needed
-  },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
       serializableCheck: {
@@ -17,6 +13,11 @@ export const store = configureStore({
         ignoredPaths: ['auth.user'],
       },
     }),
+  reducer: {
+    auth: authReducer,
+    // Remove user: userReducer
+    // Add other slices as needed
+  },
 });
 
 export type RootState = ReturnType<typeof store.getState>;

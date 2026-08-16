@@ -1,11 +1,11 @@
-import { View, Text, FlatList, Pressable, ActivityIndicator, Image, RefreshControl, Dimensions } from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { Spotlight } from '@/src/shared/components/Spotlight';
-import { useAppSelector } from '@/src/shared/hooks/redux';
-import { useUserOwnerships, useClosetStats } from '@/src/features/closet/hooks/useCloset';
-import { OwnershipWithProduct } from '@/src/features/closet/types/closet.types';
 import { Package, ShoppingBag, CheckCircle, Plus } from 'lucide-react-native';
+import { View, Text, FlatList, Pressable, ActivityIndicator, Image, RefreshControl, Dimensions } from 'react-native';
+
+import { useAppSelector } from '@/src/shared/hooks/redux';
+import { OwnershipWithProduct } from '@/src/features/closet/types/closet.types';
+import { useUserOwnerships, useClosetStats } from '@/src/features/closet/hooks/useCloset';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2; // 2 columns with 16px padding on sides + 16pxgap
@@ -15,7 +15,7 @@ export default function ClosetScreen() {
   const authUser = useAppSelector(state => state.auth.user);
   const [refreshing, setRefreshing] = useState(false);
 
-  const { data: ownerships, isLoading, error, refetch } = useUserOwnerships(authUser?.id);
+  const { data: ownerships, error, isLoading, refetch } = useUserOwnerships(authUser?.id);
   const stats = useClosetStats(authUser?.id);
 
   const onRefresh = async () => {
@@ -49,7 +49,7 @@ export default function ClosetScreen() {
         <View className="bg-white/5 rounded-2xl overflow-hidden border border-white/10">
           <View style={{ height: CARD_WIDTH }} className="bg-white/5 items-center justify-center">
             {imageUrl ? (
-              <Image source={{ uri: imageUrl }} style={{ width: CARD_WIDTH, height: CARD_WIDTH }} resizeMode="cover" />
+              <Image source={{ uri: imageUrl }} style={{ height: CARD_WIDTH, width: CARD_WIDTH }} resizeMode="cover" />
             ) : (
               <Package size={48} color="#6B7280" strokeWidth={1.5} />
             )}
@@ -101,76 +101,69 @@ export default function ClosetScreen() {
 
   if (isLoading) {
     return (
-      <Spotlight intensity={0.2}>
-        <View className="flex-1 bg-black items-center justify-center">
-          <ActivityIndicator size="large" color="#ffffff" />
-          <Text className="text-gray-400 mt-4">Loading your closet...</Text>
-        </View>
-      </Spotlight>
+      <View className="flex-1 bg-black items-center justify-center">
+        <ActivityIndicator size="large" color="#ffffff" />
+        <Text className="text-gray-400 mt-4">Loading your closet...</Text>
+      </View>
     );
   }
 
   if (error) {
     return (
-      <Spotlight intensity={0.2}>
-        <View className="flex-1 bg-black items-center justify-center px-8">
-          <Text className="text-white text-xl font-bold mb-4">Error Loading Closet</Text>
-          <Text className="text-gray-400 text-center mb-6">
-            {error instanceof Error ? error.message : 'Something went wrong'}
-          </Text>
-          <Pressable className="bg-white px-6 py-3 rounded-xl" onPress={() => refetch()}>
-            <Text className="text-black font-semibold">Try Again</Text>
-          </Pressable>
-        </View>
-      </Spotlight>
+      <View className="flex-1 bg-black items-center justify-center px-8">
+        <Text className="text-white text-xl font-bold mb-4">Error Loading Closet</Text>
+        <Text className="text-gray-400 text-center mb-6">
+          {error instanceof Error ? error.message : 'Something went wrong'}
+        </Text>
+        <Pressable className="bg-white px-6 py-3 rounded-xl" onPress={() => refetch()}>
+          <Text className="text-black font-semibold">Try Again</Text>
+        </Pressable>
+      </View>
     );
   }
 
   return (
-    <Spotlight intensity={0.2}>
-      <View className="flex-1 bg-black">
-        {/* Header */}
-        // Replace the header View in ClosetScreen
-        <View className="flex-row items-center justify-between pt-16 pb-6 px-4 border-b border-white/10">
-          <View>
-            <Text className="text-white text-3xl font-bold mb-2">My Closet</Text>
-            <View className="flex-row items-center gap-4">
-              <Text className="text-gray-400 text-sm">
-                {stats.totalItems} {stats.totalItems === 1 ? 'item' : 'items'}
-              </Text>
-              {stats.verifiedItems > 0 && (
-                <View className="flex-row items-center gap-1">
-                  <CheckCircle size={14} color="#10B981" fill="#10B981" />
-                  <Text className="text-green-400 text-sm">{stats.verifiedItems} verified</Text>
-                </View>
-              )}
-            </View>
-          </View>
-          <View className="flex-row items-center gap-2">
-            <Pressable
-              onPress={() => router.push('/(tabs)/closet/explore' as any)}
-              className="px-4 py-2 rounded-xl bg-white/10 border border-white/10"
-            >
-              <Text className="text-white font-semibold text-sm">Explore</Text>
-            </Pressable>
-            <Pressable onPress={() => router.push('/(tabs)/new/community-product')} className="p-2">
-              <Plus size={25} color="white" />
-            </Pressable>
+    <View className="flex-1 bg-black">
+      {/* Header */}
+      <View className="flex-row items-center justify-between pt-16 pb-6 px-4 border-b border-white/10">
+        <View>
+          <Text className="text-white text-3xl font-bold mb-2">My Closet</Text>
+          <View className="flex-row items-center gap-4">
+            <Text className="text-gray-400 text-sm">
+              {stats.totalItems} {stats.totalItems === 1 ? 'item' : 'items'}
+            </Text>
+            {stats.verifiedItems > 0 && (
+              <View className="flex-row items-center gap-1">
+                <CheckCircle size={14} color="#10B981" fill="#10B981" />
+                <Text className="text-green-400 text-sm">{stats.verifiedItems} verified</Text>
+              </View>
+            )}
           </View>
         </View>
-        {/* Grid */}
-        <FlatList
-          data={ownerships}
-          renderItem={renderItem}
-          keyExtractor={item => item.id}
-          numColumns={2}
-          columnWrapperStyle={{ paddingHorizontal: 16, gap: 16 }}
-          contentContainerStyle={{ paddingTop: 16, paddingBottom: 100 }}
-          ListEmptyComponent={EmptyState}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" />}
-          showsVerticalScrollIndicator={false}
-        />
+        <View className="flex-row items-center gap-2">
+          <Pressable
+            onPress={() => router.push('/(tabs)/closet/explore' as any)}
+            className="px-4 py-2 rounded-xl bg-white/10 border border-white/10"
+          >
+            <Text className="text-white font-semibold text-sm">Explore</Text>
+          </Pressable>
+          <Pressable onPress={() => router.push('/(tabs)/new/community-product')} className="p-2">
+            <Plus size={25} color="white" />
+          </Pressable>
+        </View>
       </View>
-    </Spotlight>
+      {/* Grid */}
+      <FlatList
+        data={ownerships}
+        renderItem={renderItem}
+        keyExtractor={item => item.id}
+        numColumns={2}
+        columnWrapperStyle={{ gap: 16, paddingHorizontal: 16 }}
+        contentContainerStyle={{ paddingBottom: 100, paddingTop: 16 }}
+        ListEmptyComponent={EmptyState}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" />}
+        showsVerticalScrollIndicator={false}
+      />
+    </View>
   );
 }

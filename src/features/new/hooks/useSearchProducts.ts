@@ -1,36 +1,37 @@
 import { useQuery } from '@tanstack/react-query';
+
 import { supabase } from '@/src/lib/supabase';
 import { useDebounce } from '@/src/shared/hooks/useDebounce';
 
 interface SearchProductsParams {
   name: string;
-  brandName: string;
   upc?: string;
+  brandName: string;
 }
 
 interface SearchAllResult {
-  type: 'user' | 'product' | 'brand';
   id: string;
   name: string;
   imageUrl?: string;
   brandName?: string;
   verified?: boolean;
-  productType?: 'prototype' | 'community';
   similarity?: number;
+  type: 'user' | 'product' | 'brand';
+  productType?: 'prototype' | 'community';
 }
 
-export function useSearchProducts({ name, brandName, upc }: SearchProductsParams) {
+export function useSearchProducts({ brandName, name, upc }: SearchProductsParams) {
   const query = [name, brandName, upc].filter(Boolean).join(' ').trim();
   const debouncedQuery = useDebounce(query, 400);
 
   return useQuery({
-    queryKey: ['product-search', debouncedQuery],
+    enabled: !!debouncedQuery && debouncedQuery.length >= 2,
     queryFn: async () => {
       if (!debouncedQuery || debouncedQuery.length < 2) return [];
 
       const { data, error } = await supabase.rpc('search_all', {
-        search_query: debouncedQuery,
         limit_count: 20,
+        search_query: debouncedQuery,
       });
 
       if (error) throw new Error(error.message);
@@ -38,16 +39,16 @@ export function useSearchProducts({ name, brandName, upc }: SearchProductsParams
       return (data || [])
         .filter((item: SearchAllResult) => item.type === 'product')
         .map((item: SearchAllResult) => ({
-          id: item.id,
-          name: item.name,
           brandName: item.brandName,
+          id: item.id,
           imageUrl: item.imageUrl,
-          verified: item.verified,
+          name: item.name,
           productType: item.productType,
           similarity: item.similarity || 0,
+          verified: item.verified,
         }));
     },
-    enabled: !!debouncedQuery && debouncedQuery.length >= 2,
+    queryKey: ['product-search', debouncedQuery],
     staleTime: 30000,
   });
 }

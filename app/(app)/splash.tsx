@@ -2,14 +2,15 @@
 // app/(app)/splash.tsx - NUKED THE RECOVERY SESSION LOGIC
 // ========================================
 import { useEffect } from 'react';
-import { useRouter } from 'expo-router';
 import { Linking } from 'react-native';
-import { supabase } from '@/src/lib/supabase';
-import { setCurrentUser, setPasswordResetSession, clearCurrentUser } from '@/src/features/auth/slices/authSlice';
-import { useAppDispatch } from '@/src/shared/hooks/redux';
+import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { supabase } from '@/src/lib/supabase';
+import { useAppDispatch } from '@/src/shared/hooks/redux';
 import CustomSplashScreen from '@/src/shared/components/CustomSplashScreen';
+import { setCurrentUser, setPasswordResetSession, clearCurrentUser } from '@/src/features/auth/slices/authSlice';
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -24,7 +25,6 @@ export default function SplashScreen() {
 
         // Handle password reset link from cold start
         if (initialUrl && initialUrl.includes('type=recovery')) {
-
           let tokenHash = null;
           const queryMatch = initialUrl.match(/[?&]token_hash=([^&#]+)/);
           if (queryMatch) {
@@ -57,7 +57,6 @@ export default function SplashScreen() {
 
         // Handle OAuth callback from cold start
         if (initialUrl && initialUrl.includes('access_token') && initialUrl.includes('refresh_token')) {
-
           try {
             const hashIndex = initialUrl.indexOf('#');
             if (hashIndex !== -1) {
@@ -82,12 +81,12 @@ export default function SplashScreen() {
 
                   // Prefetch user profile
                   await queryClient.prefetchQuery({
-                    queryKey: ['user-profile', user.id],
                     queryFn: async () => {
                       const { getUserProfile } = await import('@/src/features/user/services/user.services');
                       const { data } = await getUserProfile(user.id);
                       return data;
                     },
+                    queryKey: ['user-profile', user.id],
                   });
 
                   // Update lastLoginAt
@@ -117,12 +116,12 @@ export default function SplashScreen() {
 
           // Prefetch user profile with React Query
           await queryClient.prefetchQuery({
-            queryKey: ['user-profile', user.id],
             queryFn: async () => {
               const { getUserProfile } = await import('@/src/features/user/services/user.services');
               const { data: profileData } = await getUserProfile(user.id);
               return profileData;
             },
+            queryKey: ['user-profile', user.id],
           });
 
           router.replace('/(tabs)');

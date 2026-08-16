@@ -1,15 +1,15 @@
+import { Camera } from 'lucide-react-native';
 import { View, Text, Pressable } from 'react-native';
-import { Camera, Layers } from 'lucide-react-native';
 
 interface ProfileTabBarProps {
+  isOwnProfile: boolean;
   activeTab: 'memories' | 'matches';
   onTabChange: (tab: 'memories' | 'matches') => void;
-  isOwnProfile: boolean;
 }
 
-export function ProfileTabBar({ activeTab, onTabChange, isOwnProfile }: ProfileTabBarProps) {
+export function ProfileTabBar({ activeTab, onTabChange }: ProfileTabBarProps) {
   const tabs = [
-    { id: 'memories' as const, label: 'Memories', icon: Camera },
+    { icon: Camera, id: 'memories' as const, label: 'Memories' },
     // { id: 'matches' as const, label: 'Matches', icon: Layers },
   ];
 

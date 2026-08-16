@@ -1,14 +1,15 @@
 // ========================================
 // app/user/[id]/following.tsx - INVERTED with Privacy Check
 // ========================================
-import { View, FlatList, Text, ActivityIndicator } from 'react-native';
+import { Lock } from 'lucide-react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { View, FlatList, Text, ActivityIndicator } from 'react-native';
+
 import { useAppSelector } from '@/src/shared/hooks/redux';
 import { useUserProfile } from '@/src/shared/hooks/useUserProfile';
+import { FollowerItem } from '@/src/features/user/components/FollowerItem';
 import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
 import { useUserFollowing } from '@/src/features/user/hooks/useUserFollowing';
-import { FollowerItem } from '@/src/features/user/components/FollowerItem';
-import { Lock } from 'lucide-react-native';
 
 export default function FollowingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -27,9 +28,9 @@ export default function FollowingScreen() {
 
   const {
     data: followingData,
-    isLoading: followingLoading,
     fetchNextPage,
     hasNextPage,
+    isLoading: followingLoading,
   } = useUserFollowing(id, { enabled: shouldFetchFollowing });
 
   // Loading state

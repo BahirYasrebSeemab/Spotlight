@@ -1,11 +1,12 @@
-import { useMutation } from '@tanstack/react-query';
-import { useDispatch } from 'react-redux';
 import { useRouter } from 'expo-router';
-import { deactivateAccount } from '@/src/features/user/services/user.services';
-import { clearCurrentUser } from '@/src/features/auth/slices/authSlice';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
+import { useMutation } from '@tanstack/react-query';
 import { useQueryClient } from '@tanstack/react-query';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { useLogout } from '@/src/features/auth/hooks';
+import { clearCurrentUser } from '@/src/features/auth/slices/authSlice';
+import { deactivateAccount } from '@/src/features/user/services/user.services';
 
 export function useDeactivateAccount() {
   const dispatch = useDispatch();
@@ -15,7 +16,7 @@ export function useDeactivateAccount() {
 
   return useMutation({
     mutationFn: async (userId: string) => {
-      const { success, error } = await deactivateAccount(userId);
+      const { error, success } = await deactivateAccount(userId);
       if (!success) throw new Error(error);
     },
     onSuccess: async () => {

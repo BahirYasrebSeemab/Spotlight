@@ -1,6 +1,6 @@
 // src/features/search/components/UserCard.tsx
-import { TouchableOpacity, View, Image, Text } from 'react-native';
 import { useRouter } from 'expo-router';
+import { TouchableOpacity, View, Image, Text } from 'react-native';
 
 interface UserCardProps {
   user: {

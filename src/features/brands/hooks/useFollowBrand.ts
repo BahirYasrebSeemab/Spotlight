@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { followBrand, unfollowBrand } from '../services/brand.services';
+
 import { useAppSelector } from '@/src/shared/hooks/redux';
+
+import { followBrand, unfollowBrand } from '../services/brand.services';
 
 export function useFollowBrand() {
   const queryClient = useQueryClient();

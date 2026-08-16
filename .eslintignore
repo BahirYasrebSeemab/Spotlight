@@ -1,0 +1,8 @@
+node_modules
+src/generated
+android
+ios
+.expo
+dist
+web-build
+supabase/functions

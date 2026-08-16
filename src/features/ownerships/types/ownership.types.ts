@@ -13,15 +13,15 @@ export interface CreateOwnershipPayload {
   originalImageUrl?: string; // User's own photo (if useOfficialImage = false)
 
   // Item Details
-  condition?: 'new' | 'like-new' | 'good' | 'fair' | 'poor';
+  notes?: string;
   purchaseDate?: string; // ISO date string
   purchasePrice?: number;
+  condition?: 'new' | 'like-new' | 'good' | 'fair' | 'poor';
   selectedVariant?: {
     size?: string;
     color?: string;
     [key: string]: any;
   };
-  notes?: string;
 
   // Auto-filled from source
   status?: 'owned' | 'sold' | 'gifted' | 'lost';
@@ -29,23 +29,23 @@ export interface CreateOwnershipPayload {
 
 export interface Ownership {
   id: string;
-  ownerId: string;
-  prototypeId?: string;
-  communityProductId?: string;
-  verified: boolean;
-  verificationCode?: string;
-  transferId?: string;
-  useOfficialImage: boolean;
-  originalImageUrl?: string;
-  condition?: string;
   notes?: string;
-  purchaseDate?: string;
-  purchasePrice?: number;
-  selectedVariant?: any;
   status: string;
+  ownerId: string;
   flagged: boolean;
+  verified: boolean;
   createdAt: string;
   updatedAt: string;
+  condition?: string;
+  transferId?: string;
+  prototypeId?: string;
+  purchaseDate?: string;
+  selectedVariant?: any;
+  purchasePrice?: number;
+  verificationCode?: string;
+  useOfficialImage: boolean;
+  originalImageUrl?: string;
+  communityProductId?: string;
 
   // Joined data
   prototype?: Prototype;
@@ -54,27 +54,27 @@ export interface Ownership {
 
 export interface Prototype {
   id: string;
-  brandId: string;
   name: string;
-  description?: string;
+  upc?: string;
+  brand?: Brand;
+  variants?: any;
+  brandId: string;
   imageUrl?: string;
   category?: string;
-  variants?: any;
-  upc?: string;
   isActive: boolean;
-  brand?: Brand;
+  description?: string;
 }
 
 export interface CommunityProduct {
   id: string;
-  creatorId: string;
   name: string;
+  upc?: string;
+  status: string;
+  creatorId: string;
   brandName: string;
   imageUrl?: string;
   category?: string;
   description?: string;
-  upc?: string;
-  status: string;
 }
 
 export interface Brand {

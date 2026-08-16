@@ -1,20 +1,22 @@
 import React from 'react';
-import { View, Text, Image, Pressable, Dimensions } from 'react-native';
 import { MessageCircle, MoreVertical } from 'lucide-react-native';
-import { LikeButton } from './LikeButton';
+import { View, Text, Image, Pressable, Dimensions } from 'react-native';
+
 import type { Memory } from '@/src/features/memories/types/memories.types';
+
+import { LikeButton } from './LikeButton';
 
 const { width } = Dimensions.get('window');
 
 interface MemoryCardProps {
   memory: Memory;
-  currentUserId: string;
   onPress: () => void;
+  currentUserId: string;
   onUserPress: () => void;
   onMorePress?: () => void;
 }
 
-export function MemoryCard({ memory, currentUserId, onPress, onUserPress, onMorePress }: MemoryCardProps) {
+export function MemoryCard({ currentUserId, memory, onMorePress, onPress, onUserPress }: MemoryCardProps) {
   return (
     <View className="mb-6">
       {/* Header */}
@@ -25,8 +27,8 @@ export function MemoryCard({ memory, currentUserId, onPress, onUserPress, onMore
             <Text className="text-white font-semibold">{memory.user?.name || `@${memory.user?.username}`}</Text>
             <Text className="text-gray-400 text-xs">
               {new Date(memory.createdAt).toLocaleDateString('en-US', {
-                month: 'short',
                 day: 'numeric',
+                month: 'short',
               })}
             </Text>
           </View>
@@ -43,7 +45,7 @@ export function MemoryCard({ memory, currentUserId, onPress, onUserPress, onMore
       <Pressable onPress={onPress}>
         <Image
           source={{ uri: memory.thumbnailUrl || memory.mediaUrl }}
-          style={{ width, height: width }}
+          style={{ height: width, width }}
           className="bg-white/5"
           resizeMode="cover"
         />

@@ -1,2 +1,2 @@
-import Signup from "@/src/features/auth/screens/SignupScreen";
+import Signup from '@/src/features/auth/screens/SignupScreen';
 export default Signup;

@@ -4,10 +4,10 @@ import { supabase } from '@/src/lib/supabase';
 export interface SearchResult {
   id: string;
   name: string;
-  type: 'USER' | 'PROTOTYPE' | 'COMMUNITY' | 'BRAND';
   subtitle: string;
-  imageUrl: string | null;
   verified: boolean;
+  imageUrl: string | null;
+  type: 'USER' | 'PROTOTYPE' | 'COMMUNITY' | 'BRAND';
   extra: {
     // User fields
     username?: string;
@@ -33,8 +33,8 @@ export async function searchAll(query: string, limit = 20) {
 
   try {
     const { data, error } = await supabase.rpc('search_all', {
-      search_query: query,
       limit_count: limit,
+      search_query: query,
     });
 
     if (error) throw error;

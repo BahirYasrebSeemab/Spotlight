@@ -2,13 +2,14 @@
 // src/features/auth/hooks/useSignup.ts
 // ========================================
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { SignupForm } from '@/src/shared/types/form.types';
-import { signupWithEmail } from '@/src/features/auth/services/authServices';
 import { useRouter } from 'expo-router';
-import { useAppDispatch } from '@/src/shared/hooks/redux';
-import { setCurrentUser } from '@/src/features/auth/slices/authSlice';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { useAppDispatch } from '@/src/shared/hooks/redux';
+import { SignupForm } from '@/src/shared/types/form.types';
+import { setCurrentUser } from '@/src/features/auth/slices/authSlice';
+import { signupWithEmail } from '@/src/features/auth/services/authServices';
 
 export function useSignup() {
   const [step, setStep] = useState(1);
@@ -17,23 +18,23 @@ export function useSignup() {
   const queryClient = useQueryClient();
 
   const [form, setForm] = useState<SignupForm>({
-    fullName: '',
-    email: '',
-    username: '',
-    password: '',
     confirmPass: '',
     dob: '',
+    email: '',
+    fullName: '',
+    password: '',
+    username: '',
   });
 
   const signupMutation = useMutation({
     mutationFn: async () => {
       // Create auth user
-      const { user, error } = await signupWithEmail({
-        email: form.email,
-        password: form.password,
-        fullName: form.fullName,
-        username: form.username,
+      const { error, user } = await signupWithEmail({
         dob: form.dob,
+        email: form.email,
+        fullName: form.fullName,
+        password: form.password,
+        username: form.username,
       });
 
       if (error) throw error;
@@ -41,8 +42,10 @@ export function useSignup() {
 
       return user;
     },
+    onError: (error: any) => {
+      console.error('❌ Signup error:', error);
+    },
     onSuccess: async user => {
-
       // Set auth user in Redux
       dispatch(setCurrentUser(user));
 
@@ -51,19 +54,16 @@ export function useSignup() {
 
       // Prefetch user profile
       queryClient.prefetchQuery({
-        queryKey: ['user-profile', user.id],
         queryFn: async () => {
           const { getUserProfile } = await import('@/src/features/user/services/user.services');
           const { data } = await getUserProfile(user.id);
           return data;
         },
+        queryKey: ['user-profile', user.id],
       });
 
       // Navigate to tabs
       router.replace('/(tabs)');
-    },
-    onError: (error: any) => {
-      console.error('❌ Signup error:', error);
     },
   });
 
@@ -79,13 +79,13 @@ export function useSignup() {
   };
 
   return {
+    error: signupMutation.error?.message || null,
     form,
-    step,
-    nextStep,
-    prevStep,
-    updateField,
     handleSignup,
     loading: signupMutation.isPending,
-    error: signupMutation.error?.message || null,
+    nextStep,
+    prevStep,
+    step,
+    updateField,
   };
 }

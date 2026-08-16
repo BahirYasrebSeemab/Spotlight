@@ -12,13 +12,13 @@ interface ProfileStatsProps {
 }
 
 export function ProfileStats({
-  postsCount,
   followersCount,
   followingCount,
-  onPostsPress,
+  isPrivateAndNotFollowing = false,
   onFollowersPress,
   onFollowingPress,
-  isPrivateAndNotFollowing = false,
+  onPostsPress,
+  postsCount,
 }: ProfileStatsProps) {
   return (
     <View className="flex-row items-center gap-6">
@@ -28,9 +28,7 @@ export function ProfileStats({
         activeOpacity={0.7}
         disabled={!onPostsPress || isPrivateAndNotFollowing}
       >
-        <Text
-          className={`text-base font-bold ${isPrivateAndNotFollowing ? 'text-gray-600' : 'text-white'}`}
-        >
+        <Text className={`text-base font-bold ${isPrivateAndNotFollowing ? 'text-gray-600' : 'text-white'}`}>
           {postsCount}
         </Text>
         <Text className="text-xs text-gray-400">Owns</Text>
@@ -42,9 +40,7 @@ export function ProfileStats({
         activeOpacity={0.7}
         disabled={!onFollowersPress || isPrivateAndNotFollowing}
       >
-        <Text
-          className={`text-base font-bold ${isPrivateAndNotFollowing ? 'text-gray-600' : 'text-white'}`}
-        >
+        <Text className={`text-base font-bold ${isPrivateAndNotFollowing ? 'text-gray-600' : 'text-white'}`}>
           {followersCount}
         </Text>
         <Text className="text-xs text-gray-400">Spotters</Text>
@@ -56,9 +52,7 @@ export function ProfileStats({
         activeOpacity={0.7}
         disabled={!onFollowingPress || isPrivateAndNotFollowing}
       >
-        <Text
-          className={`text-base font-bold ${isPrivateAndNotFollowing ? 'text-gray-600' : 'text-white'}`}
-        >
+        <Text className={`text-base font-bold ${isPrivateAndNotFollowing ? 'text-gray-600' : 'text-white'}`}>
           {followingCount}
         </Text>
         <Text className="text-xs text-gray-400">Spotted</Text>

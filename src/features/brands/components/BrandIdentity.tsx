@@ -1,26 +1,27 @@
-import { View, Text, Image, Pressable, ActivityIndicator } from 'react-native';
-import { Globe, Instagram, BadgeCheckIcon } from 'lucide-react-native';
-import type { BrandProfile } from '../types/brand.types';
 import { useState, useEffect } from 'react';
+import { Globe, Instagram, BadgeCheckIcon } from 'lucide-react-native';
+import { View, Text, Image, Pressable, ActivityIndicator } from 'react-native';
+
+import type { BrandProfile } from '../types/brand.types';
 
 interface BrandIdentityProps {
-  brand: BrandProfile;
   loading: boolean;
+  brand: BrandProfile;
   isFollowing: boolean;
-  onFollowToggle: () => void;
-  onLogoPress?: () => void;
-  onFollowersPress?: () => void;
   followLoading?: boolean;
+  onLogoPress?: () => void;
+  onFollowToggle: () => void;
+  onFollowersPress?: () => void;
 }
 
 export function BrandIdentity({
   brand,
-  loading,
+  followLoading = false,
   isFollowing,
+  loading,
+  onFollowersPress,
   onFollowToggle,
   onLogoPress,
-  onFollowersPress,
-  followLoading = false,
 }: BrandIdentityProps) {
   const getBrandTypeColor = (type: string) => {
     switch (type) {

@@ -22,16 +22,16 @@ export async function createCommunityProductWithOwnership(payload: CreateCommuni
       const fileName = payload.imageUri.split('/').pop() || 'image.jpg';
       const fileType = fileName.endsWith('.png') ? 'image/png' : 'image/jpeg';
       formData.append('image', {
-        uri: payload.imageUri,
         name: fileName,
         type: fileType,
+        uri: payload.imageUri,
       } as any);
     }
 
     const response = await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/create-community-product`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${session.access_token}` },
       body: formData,
+      headers: { Authorization: `Bearer ${session.access_token}` },
+      method: 'POST',
     });
 
     const result = await response.json();

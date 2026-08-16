@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteMemory } from '../services/memories.services';
+
 import { useAppSelector } from '@/src/shared/hooks/redux';
+
+import { deleteMemory } from '../services/memories.services';
 
 export function useDeleteMemory() {
   const queryClient = useQueryClient();

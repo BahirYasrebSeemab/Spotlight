@@ -5,11 +5,11 @@ import { supabase } from '@/src/lib/supabase';
 
 export interface FollowRequest {
   id: string;
+  createdAt: string;
+  updatedAt: string;
   requesterId: string;
   requestedId: string;
   status: 'pending' | 'accepted' | 'rejected';
-  createdAt: string;
-  updatedAt: string;
   requester?: {
     id: string;
     username: string;
@@ -30,8 +30,8 @@ export async function sendFollowRequest(requesterId: string, requestedId: string
     const { data, error } = await supabase
       .from('FollowRequest')
       .insert({
-        requesterId,
         requestedId,
+        requesterId,
         status: 'pending',
       })
       .select()
@@ -54,16 +54,15 @@ export async function cancelFollowRequest(requesterId: string, requestedId: stri
       .eq('requestedId', requestedId);
 
     if (error) throw error;
-    return { success: true, error: null };
+    return { error: null, success: true };
   } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to cancel follow request' };
+    return { error: err.message || 'Failed to cancel follow request', success: false };
   }
 }
 
 // Accept a follow request - LOGS EVERYTHING
 export async function acceptFollowRequest(requestId: string) {
   try {
-
     // Update status to 'accepted'
     const { data, error } = await supabase
       .from('FollowRequest')
@@ -82,28 +81,16 @@ export async function acceptFollowRequest(requestId: string) {
       throw new Error('Follow request not found');
     }
 
-    // Give the trigger time to run (if it exists)
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    // Check if follower relationship was created by trigger
-    const { data: followerCheck, error: checkError } = await supabase
-      .from('Follower')
-      .select('*')
-      .eq('followerId', data.requesterId)
-      .eq('followingId', data.requestedId)
-      .single();
-
-    return { success: true, error: null, data };
+    return { data, error: null, success: true };
   } catch (err: any) {
     console.error('❌ [SERVICE] acceptFollowRequest failed:', err);
-    return { success: false, error: err.message || 'Failed to accept follow request' };
+    return { error: err.message || 'Failed to accept follow request', success: false };
   }
 }
 
 // Reject a follow request - JUST DELETE
 export async function rejectFollowRequest(requestId: string) {
   try {
-
     const { error } = await supabase.from('FollowRequest').delete().eq('id', requestId);
 
     if (error) {
@@ -111,10 +98,10 @@ export async function rejectFollowRequest(requestId: string) {
       throw error;
     }
 
-    return { success: true, error: null };
+    return { error: null, success: true };
   } catch (err: any) {
     console.error('❌ [SERVICE] rejectFollowRequest failed:', err);
-    return { success: false, error: err.message || 'Failed to reject follow request' };
+    return { error: err.message || 'Failed to reject follow request', success: false };
   }
 }
 

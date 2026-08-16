@@ -1,10 +1,10 @@
-import { View, Text, FlatList, Pressable, ActivityIndicator, Image, Dimensions, RefreshControl } from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
+import { Package, Play } from 'lucide-react-native';
+import { View, Text, FlatList, Pressable, ActivityIndicator, Image, Dimensions, RefreshControl } from 'react-native';
+
 import { useAppSelector } from '@/src/shared/hooks/redux';
 import { useExplore } from '@/src/features/closet/hooks/useExplore';
-import { Spotlight } from '@/src/shared/components/Spotlight';
-import { Package, Play } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 const CARD = Math.floor(width / 3);
@@ -17,7 +17,7 @@ export default function ExploreScreen() {
   const [activeTab, setActiveTab] = useState<Tab>('community');
   const [refreshing, setRefreshing] = useState(false);
 
-  const { data, isLoading, error, refetch } = useExplore(user?.id);
+  const { data, error, isLoading, refetch } = useExplore(user?.id);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -52,25 +52,25 @@ export default function ExploreScreen() {
     const handlePress = () => {
       if (isMemory) router.push(`/memory/${item.id}` as any);
       else if (isCommunity)
-        router.push({ pathname: '/product/[id]', params: { id: item.id, type: 'COMMUNITY' } } as any);
+        router.push({ params: { id: item.id, type: 'COMMUNITY' }, pathname: '/product/[id]' } as any);
       else if (isOwnership) router.push(`/ownership/${item.id}` as any);
     };
 
     return (
       <Pressable
         style={{
-          width: CARD,
-          height: CARD,
-          borderWidth: 0.5,
           borderColor: '#2a2a2a',
+          borderWidth: 0.5,
+          height: CARD,
+          width: CARD,
         }}
         onPress={handlePress}
       >
         {imageUrl ? (
-          <Image source={{ uri: imageUrl }} style={{ width: CARD, height: CARD }} resizeMode="cover" />
+          <Image source={{ uri: imageUrl }} style={{ height: CARD, width: CARD }} resizeMode="cover" />
         ) : (
           <View
-            style={{ width: CARD, height: CARD, backgroundColor: '#141414' }}
+            style={{ backgroundColor: '#141414', height: CARD, width: CARD }}
             className="items-center justify-center"
           >
             <Package size={28} color="#3a3a3a" strokeWidth={1.5} />
@@ -115,24 +115,20 @@ export default function ExploreScreen() {
 
   if (isLoading) {
     return (
-      <Spotlight intensity={0.2}>
-        <View className="flex-1 bg-black items-center justify-center">
-          <ActivityIndicator size="large" color="#ffffff" />
-        </View>
-      </Spotlight>
+      <View className="flex-1 bg-black items-center justify-center">
+        <ActivityIndicator size="large" color="#ffffff" />
+      </View>
     );
   }
 
   if (error) {
     return (
-      <Spotlight intensity={0.2}>
-        <View className="flex-1 bg-black items-center justify-center px-8">
-          <Text className="text-white text-xl font-bold mb-4">Something went wrong</Text>
-          <Pressable className="bg-white px-6 py-3 rounded-xl" onPress={() => refetch()}>
-            <Text className="text-black font-semibold">Try Again</Text>
-          </Pressable>
-        </View>
-      </Spotlight>
+      <View className="flex-1 bg-black items-center justify-center px-8">
+        <Text className="text-white text-xl font-bold mb-4">Something went wrong</Text>
+        <Pressable className="bg-white px-6 py-3 rounded-xl" onPress={() => refetch()}>
+          <Text className="text-black font-semibold">Try Again</Text>
+        </Pressable>
+      </View>
     );
   }
 
@@ -141,24 +137,22 @@ export default function ExploreScreen() {
   const activeData = activeTab === 'community' ? communityData : followingData;
 
   return (
-    <Spotlight intensity={0.2}>
-      <View className="flex-1 bg-black">
-        <View className="pt-16 pb-4 px-4">
-          <Text className="text-white text-3xl font-bold">Explore</Text>
-        </View>
-
-        <FlatList
-          data={activeData}
-          keyExtractor={item => `${item._type}-${item.id}`}
-          numColumns={3}
-          renderItem={renderCard}
-          ListHeaderComponent={<TabBar />}
-          ListEmptyComponent={activeTab === 'community' ? <EmptyCommunity /> : <EmptyFollowing />}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" />}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 100 }}
-        />
+    <View className="flex-1 bg-black">
+      <View className="pt-16 pb-4 px-4">
+        <Text className="text-white text-3xl font-bold">Explore</Text>
       </View>
-    </Spotlight>
+
+      <FlatList
+        data={activeData}
+        keyExtractor={item => `${item._type}-${item.id}`}
+        numColumns={3}
+        renderItem={renderCard}
+        ListHeaderComponent={<TabBar />}
+        ListEmptyComponent={activeTab === 'community' ? <EmptyCommunity /> : <EmptyFollowing />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" />}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      />
+    </View>
   );
 }

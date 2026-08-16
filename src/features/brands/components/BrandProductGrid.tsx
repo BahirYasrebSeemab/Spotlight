@@ -6,18 +6,18 @@ const { width } = Dimensions.get('window');
 
 interface Prototype {
   id: string;
-  imageUrl: string | null;
-  thumbnailUrl: string | null;
   name: string;
   type: string;
+  imageUrl: string | null;
+  thumbnailUrl: string | null;
 }
 
 interface BrandProductGridProps {
-  products: Prototype[];
   columns?: number;
+  products: Prototype[];
 }
 
-export function BrandProductGrid({ products, columns = 3 }: BrandProductGridProps) {
+export function BrandProductGrid({ columns = 3, products }: BrandProductGridProps) {
   const itemWidth = (width - (columns + 1) * 2) / columns; // 2px gap
   const router = useRouter();
   return (
@@ -28,7 +28,7 @@ export function BrandProductGrid({ products, columns = 3 }: BrandProductGridProp
           onPress={() => {
             router.push(`/product/${product.id}?type=${product.type}`);
           }}
-          style={{ width: itemWidth, height: itemWidth }}
+          style={{ height: itemWidth, width: itemWidth }}
           className="bg-white/5"
         >
           <Image
@@ -38,7 +38,7 @@ export function BrandProductGrid({ products, columns = 3 }: BrandProductGridProp
                 product.imageUrl ||
                 `https://ui-avatars.com/api/?name=${encodeURIComponent(product.name)}&size=400`,
             }}
-            style={{ width: itemWidth, height: itemWidth }}
+            style={{ height: itemWidth, width: itemWidth }}
             className="bg-white/10"
           />
         </Pressable>

@@ -1,19 +1,20 @@
 // ========================================
 // app/(app)/_layout.tsx - FIXED
 // ========================================
-import { useEffect, useRef } from 'react';
-import { Stack, SplashScreen } from 'expo-router';
-import { Linking } from 'react-native';
-import { supabase } from '@/src/lib/supabase';
-import { setCurrentUser, setPasswordResetSession, clearCurrentUser } from '@/src/features/auth/slices/authSlice';
 import { useFonts } from 'expo-font';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
-import { useColorScheme } from 'nativewind';
-import { useAppDispatch, useAppSelector } from '@/src/shared/hooks/redux';
+import { Linking } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useEffect, useRef } from 'react';
+import { useColorScheme } from 'nativewind';
+import { Stack, SplashScreen } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
+
+import { supabase } from '@/src/lib/supabase';
+import { useAppDispatch, useAppSelector } from '@/src/shared/hooks/redux';
+import { setCurrentUser, setPasswordResetSession, clearCurrentUser } from '@/src/features/auth/slices/authSlice';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -94,12 +95,12 @@ export default function AppLayout() {
 
           try {
             await queryClient.prefetchQuery({
-              queryKey: ['user-profile', user.id],
               queryFn: async () => {
                 const { getUserProfile } = await import('@/src/features/user/services/user.services');
                 const { data } = await getUserProfile(user.id);
                 return data;
               },
+              queryKey: ['user-profile', user.id],
             });
             await supabase.from('User').update({ lastLoginAt: new Date().toISOString() }).eq('id', user.id);
           } catch (err) {
@@ -196,19 +197,19 @@ export default function AppLayout() {
             dispatch(clearCurrentUser());
             await AsyncStorage.removeItem('authState');
             router.replace({
-              pathname: '/(auth)',
               params: { deactivated: 'true', userId: currentSession.user.id },
+              pathname: '/(auth)',
             });
             return;
           }
 
           queryClient.prefetchQuery({
-            queryKey: ['user-profile', currentSession.user.id],
             queryFn: async () => {
               const { getUserProfile } = await import('@/src/features/user/services/user.services');
               const { data } = await getUserProfile(currentSession.user.id);
               return data;
             },
+            queryKey: ['user-profile', currentSession.user.id],
           });
           dispatch(setPasswordResetSession(false));
         }

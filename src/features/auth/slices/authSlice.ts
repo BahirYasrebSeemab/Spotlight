@@ -1,8 +1,8 @@
 // ========================================
 // src/features/auth/slices/authSlice.ts
 // ========================================
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { User } from '@supabase/supabase-js';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface AuthState {
   user: User | null;
@@ -11,14 +11,14 @@ interface AuthState {
 }
 
 const initialState: AuthState = {
-  user: null,
   isAuthenticated: false,
   isPasswordResetSession: false,
+  user: null,
 };
 
 const authSlice = createSlice({
-  name: 'auth',
   initialState,
+  name: 'auth',
   reducers: {
     // Set current authenticated user
     setCurrentUser(state, action: PayloadAction<User | null>) {
@@ -40,7 +40,7 @@ const authSlice = createSlice({
   },
 });
 
-export const { setCurrentUser, clearCurrentUser, setPasswordResetSession } = authSlice.actions;
+export const { clearCurrentUser, setCurrentUser, setPasswordResetSession } = authSlice.actions;
 
 export default authSlice.reducer;
 

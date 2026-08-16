@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createMemory } from '@/src/features/memories/services/memories.services';
+
 import type { CreateMemoryInput } from '@/src/features/memories/types/memories.types';
+
+import { createMemory } from '@/src/features/memories/services/memories.services';
 
 export function useCreateMemory() {
   const queryClient = useQueryClient();
@@ -22,8 +24,8 @@ export function useCreateMemory() {
   return {
     create: mutation.mutate,
     createAsync: mutation.mutateAsync,
-    isCreating: mutation.isPending,
     error: mutation.error,
+    isCreating: mutation.isPending,
     isSuccess: mutation.isSuccess,
   };
 }

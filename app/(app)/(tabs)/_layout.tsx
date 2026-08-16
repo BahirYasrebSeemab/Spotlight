@@ -1,9 +1,9 @@
 // app/(tabs)/_layout.tsx - Updated with closet icon
-import { Spotlight } from '@/src/shared/components/Spotlight';
 import { Tabs } from 'expo-router';
-import { Search, PlusSquare, Heart, User } from 'lucide-react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Svg, Path } from 'react-native-svg';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Search, PlusSquare, Heart, User } from 'lucide-react-native';
+
 import { EmailVerifiedGuard } from '@/src/shared/components/EmailVerifiedGaurd';
 
 // Custom Closet Icon Component
@@ -39,6 +39,10 @@ export default function TabLayout() {
             headerShown: false,
             tabBarActiveTintColor: '#FFFFFF', // White for active
             tabBarInactiveTintColor: '#666666', // Gray for inactive
+            tabBarLabelStyle: {
+              fontSize: 12,
+              fontWeight: '600',
+            },
             tabBarStyle: {
               backgroundColor: '#000',
               borderTopColor: '#333333',
@@ -46,47 +50,43 @@ export default function TabLayout() {
               paddingBottom: 4,
               paddingTop: 4,
             },
-            tabBarLabelStyle: {
-              fontSize: 12,
-              fontWeight: '600',
-            },
           }}
         >
           <Tabs.Screen
             name="closet"
             options={{
-              title: 'Closet',
               tabBarIcon: ({ color, size }) => <ClosetIcon color={color} size={size} />,
+              title: 'Closet',
             }}
           />
 
           <Tabs.Screen
             name="search"
             options={{
-              title: 'Search',
               tabBarIcon: ({ color, size }) => <Search size={size} color={color} />,
+              title: 'Search',
             }}
           />
           <Tabs.Screen
             name="new"
             options={{
-              title: 'Add',
               tabBarIcon: ({ color, size }) => <PlusSquare size={size} color={color} />,
+              title: 'Add',
             }}
           />
           <Tabs.Screen
             name="notifications"
             options={{
-              title: 'Activity',
-              tabBarIcon: ({ color, size }) => <Heart size={size} color={color} />,
               headerShown: false,
+              tabBarIcon: ({ color, size }) => <Heart size={size} color={color} />,
+              title: 'Activity',
             }}
           />
           <Tabs.Screen
             name="profile"
             options={{
-              title: 'Profile',
               tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
+              title: 'Profile',
             }}
           />
         </Tabs>

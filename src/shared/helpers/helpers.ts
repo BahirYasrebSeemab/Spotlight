@@ -8,14 +8,14 @@ export function generateUsername(email: string): string {
 
 export const pickAvatar = async () => {
   const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
     allowsEditing: true,
     aspect: [1, 1],
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
     quality: 0.8,
   });
 
   if (!result.canceled) {
     const file = result.assets[0];
-    return {file, uri: file.uri};
+    return { file, uri: file.uri };
   }
 };

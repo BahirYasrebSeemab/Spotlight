@@ -28,8 +28,8 @@ module.exports = {
           foreground: '#ffffff',
         },
         destructive: {
-          DEFAULT: '#ffffff',
-          foreground: '#000000',
+          DEFAULT: '#7f1d1d',
+          foreground: '#f87171',
         },
         foreground: '#ffffff',
         input: '#2a2a2a',
@@ -57,16 +57,6 @@ module.exports = {
       },
       fontFamily: {
         mono: ['SpaceMono'],
-      },
-      keyframes: {
-        'accordion-down': {
-          from: { height: '0' },
-          to: { height: 'var(--radix-accordion-content-height)' },
-        },
-        'accordion-up': {
-          from: { height: 'var(--radix-accordion-content-height)' },
-          to: { height: '0' },
-        },
       },
     },
   },

@@ -26,9 +26,9 @@ export function useValidation() {
 
   return {
     error,
-    validateUsername,
-    validatePassword,
-    validateEmail,
     setError,
+    validateEmail,
+    validatePassword,
+    validateUsername,
   };
 }

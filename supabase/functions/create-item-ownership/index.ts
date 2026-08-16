@@ -25,7 +25,7 @@ const corsHeaders = {
 function generateSignature(params: Record<string, any>, apiSecret: string): string {
   const sortedParams = Object.keys(params)
     .sort()
-    .map((key) => `${key}=${params[key]}`)
+    .map(key => `${key}=${params[key]}`)
     .join('&');
 
   const hash = createHash('sha256');
@@ -123,7 +123,7 @@ async function processWithCloudinary(
     // Download processed - with retry
     console.log('Downloading processed...');
     let processedResponse = await fetch(processedUrl);
-    
+
     // If first attempt fails, try without some optimizations
     if (!processedResponse.ok || processedResponse.headers.get('content-length') === '0') {
       console.log('  ⚠️  First attempt failed, trying simpler transformation...');
@@ -131,17 +131,17 @@ async function processWithCloudinary(
       console.log('  Trying:', simpleProcessedUrl);
       processedResponse = await fetch(simpleProcessedUrl);
     }
-    
+
     if (!processedResponse.ok) {
       throw new Error(`Processed download failed: ${processedResponse.status}`);
     }
-    
+
     processedBuffer = await processedResponse.arrayBuffer();
-    
+
     if (processedBuffer.byteLength === 0) {
       throw new Error('Processed image is empty (0 bytes)');
     }
-    
+
     console.log('  ✓ Processed:', (processedBuffer.byteLength / 1024).toFixed(1), 'KB');
 
     // Download thumbnail
@@ -157,7 +157,6 @@ async function processWithCloudinary(
       thumbnailBuffer = await thumbnailResponse.arrayBuffer();
     }
     console.log('  ✓ Thumbnail:', (thumbnailBuffer.byteLength / 1024).toFixed(1), 'KB');
-
   } catch (downloadError: any) {
     console.error('❌ Download error:', downloadError.message);
     throw downloadError;
@@ -195,7 +194,7 @@ async function processWithCloudinary(
   };
 }
 
-serve(async (req) => {
+serve(async req => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -278,9 +277,9 @@ serve(async (req) => {
 
             if (originalError) throw new Error(`Original upload failed: ${originalError.message}`);
 
-            const { data: { publicUrl: originalUrl } } = supabase.storage
-              .from('item-originals')
-              .getPublicUrl(originalFileName);
+            const {
+              data: { publicUrl: originalUrl },
+            } = supabase.storage.from('item-originals').getPublicUrl(originalFileName);
 
             originalImageUrl = originalUrl;
             console.log('✅ Original saved');
@@ -298,9 +297,9 @@ serve(async (req) => {
 
             if (processedError) throw new Error(`Processed upload failed: ${processedError.message}`);
 
-            const { data: { publicUrl: processedUrl } } = supabase.storage
-              .from('item-processed')
-              .getPublicUrl(processedFileName);
+            const {
+              data: { publicUrl: processedUrl },
+            } = supabase.storage.from('item-processed').getPublicUrl(processedFileName);
 
             processedImageUrl = processedUrl;
             console.log('✅ Processed saved');
@@ -318,9 +317,9 @@ serve(async (req) => {
 
             if (thumbError) throw new Error(`Thumbnail upload failed: ${thumbError.message}`);
 
-            const { data: { publicUrl: thumbUrl } } = supabase.storage
-              .from('item-thumbnails')
-              .getPublicUrl(thumbnailFileName);
+            const {
+              data: { publicUrl: thumbUrl },
+            } = supabase.storage.from('item-thumbnails').getPublicUrl(thumbnailFileName);
 
             thumbnailImageUrl = thumbUrl;
             console.log('✅ Thumbnail saved');
@@ -336,7 +335,9 @@ serve(async (req) => {
               upsert: false,
             });
 
-            const { data: { publicUrl } } = supabase.storage.from('item-originals').getPublicUrl(originalFileName);
+            const {
+              data: { publicUrl },
+            } = supabase.storage.from('item-originals').getPublicUrl(originalFileName);
             originalImageUrl = publicUrl;
           }
         } else {
@@ -349,7 +350,9 @@ serve(async (req) => {
             upsert: false,
           });
 
-          const { data: { publicUrl } } = supabase.storage.from('item-originals').getPublicUrl(originalFileName);
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from('item-originals').getPublicUrl(originalFileName);
           originalImageUrl = publicUrl;
           console.log('✅ Original saved');
         }

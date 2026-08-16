@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { addComment } from '@/src/features/memories/services/memories.services';
+
 import type { CreateCommentInput } from '@/src/features/memories/types/memories.types';
+
+import { addComment } from '@/src/features/memories/services/memories.services';
 
 export function useAddComment() {
   const queryClient = useQueryClient();

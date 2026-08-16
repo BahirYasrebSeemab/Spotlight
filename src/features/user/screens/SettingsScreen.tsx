@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useLogout } from '../../auth/hooks';
 import { useRouter } from 'expo-router';
-import { useAppSelector } from '@/src/shared/hooks/redux';
-import { useUserBrandStatus } from '@/src/features/brands/hooks/useUserBrandStatus';
-import BlurConfirmModal from '@/src/shared/components/Modal';
 import { ChevronRight } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+
+import { useAppSelector } from '@/src/shared/hooks/redux';
+import BlurConfirmModal from '@/src/shared/components/Modal';
+import { useUserBrandStatus } from '@/src/features/brands/hooks/useUserBrandStatus';
 import { useDeactivateAccount } from '@/src/features/user/hooks/useDeactivateAccount';
 
-function Row({ label, danger, onPress }: { label: string; danger?: boolean; onPress: () => void }) {
+import { useLogout } from '../../auth/hooks';
+
+function Row({ danger, label, onPress }: { label: string; danger?: boolean; onPress: () => void }) {
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -29,7 +31,7 @@ export default function SettingsScreen() {
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
-  const { mutate: deactivate, isPending: isDeactivating } = useDeactivateAccount();
+  const { mutate: deactivate } = useDeactivateAccount();
 
   const handleDeleteConfirm = () => {
     setDeleteModalVisible(false);
@@ -37,7 +39,6 @@ export default function SettingsScreen() {
       deactivate(currentUser.id);
     }
   };
-
 
   return (
     <View className="flex-1 bg-black p-6">

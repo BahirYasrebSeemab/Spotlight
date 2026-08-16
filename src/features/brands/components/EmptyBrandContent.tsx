@@ -11,21 +11,21 @@ export function EmptyBrandContent({ activeTab }: EmptyBrandContentProps) {
     switch (activeTab) {
       case 'products':
         return {
+          description: "This brand hasn't added any products to their catalog.",
           icon: <Package size={48} color="#6B7280" strokeWidth={1.5} />,
           title: 'No Products Yet',
-          description: "This brand hasn't added any products to their catalog.",
         };
       case 'community':
         return {
+          description: "No users have shared photos with this brand's products yet.",
           icon: <Users size={48} color="#6B7280" strokeWidth={1.5} />,
           title: 'No Community Posts',
-          description: "No users have shared photos with this brand's products yet.",
         };
       case 'about':
         return {
+          description: 'Brand information will appear here.',
           icon: <FileText size={48} color="#6B7280" strokeWidth={1.5} />,
           title: 'About This Brand',
-          description: 'Brand information will appear here.',
         };
       default:
         return null;

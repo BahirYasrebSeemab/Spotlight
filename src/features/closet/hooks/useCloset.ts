@@ -2,6 +2,8 @@
 // Custom hooks for closet feature using React Query
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+import { Ownership } from '../types/closet.types';
 import {
   getUserOwnerships,
   getOwnershipById,
@@ -10,21 +12,20 @@ import {
   getUserOwnershipCount,
   getOwnershipsByCategory,
 } from '../services/closet.services';
-import { OwnershipWithProduct, Ownership } from '../types/closet.types';
 
 /**
  * Hook to fetch all user ownerships
  */
 export function useUserOwnerships(userId: string | undefined) {
   return useQuery({
-    queryKey: ['user-ownerships', userId],
+    enabled: !!userId,
     queryFn: async () => {
       if (!userId) throw new Error('User ID required');
       const { data, error } = await getUserOwnerships(userId);
       if (error) throw new Error(error);
       return data || [];
     },
-    enabled: !!userId,
+    queryKey: ['user-ownerships', userId],
   });
 }
 
@@ -33,14 +34,14 @@ export function useUserOwnerships(userId: string | undefined) {
  */
 export function useOwnership(ownershipId: string | undefined) {
   return useQuery({
-    queryKey: ['ownership', ownershipId],
+    enabled: !!ownershipId,
     queryFn: async () => {
       if (!ownershipId) throw new Error('Ownership ID required');
       const { data, error } = await getOwnershipById(ownershipId);
       if (error) throw new Error(error);
       return data;
     },
-    enabled: !!ownershipId,
+    queryKey: ['ownership', ownershipId],
   });
 }
 
@@ -52,7 +53,7 @@ export function useDeleteOwnership(userId: string) {
 
   return useMutation({
     mutationFn: async (ownershipId: string) => {
-      const { success, error } = await deleteOwnership(ownershipId, userId);
+      const { error, success } = await deleteOwnership(ownershipId, userId);
       if (!success || error) throw new Error(error || 'Failed to delete');
       return ownershipId;
     },
@@ -95,14 +96,14 @@ export function useUpdateOwnership(userId: string) {
  */
 export function useOwnershipCount(userId: string | undefined) {
   return useQuery({
-    queryKey: ['user-ownership-count', userId],
+    enabled: !!userId,
     queryFn: async () => {
       if (!userId) throw new Error('User ID required');
       const { count, error } = await getUserOwnershipCount(userId);
       if (error) throw new Error(error);
       return count;
     },
-    enabled: !!userId,
+    queryKey: ['user-ownership-count', userId],
   });
 }
 
@@ -111,14 +112,14 @@ export function useOwnershipCount(userId: string | undefined) {
  */
 export function useOwnershipsByCategory(userId: string | undefined, category: string | undefined) {
   return useQuery({
-    queryKey: ['user-ownerships', userId, 'category', category],
+    enabled: !!userId && !!category,
     queryFn: async () => {
       if (!userId || !category) throw new Error('User ID and category required');
       const { data, error } = await getOwnershipsByCategory(userId, category);
       if (error) throw new Error(error);
       return data || [];
     },
-    enabled: !!userId && !!category,
+    queryKey: ['user-ownerships', userId, 'category', category],
   });
 }
 
@@ -130,18 +131,18 @@ export function useClosetStats(userId: string | undefined) {
 
   if (!ownerships) {
     return {
+      brands: {},
+      categories: {},
       totalItems: 0,
       verifiedItems: 0,
-      categories: {},
-      brands: {},
     };
   }
 
   const stats = {
+    brands: {} as Record<string, number>,
+    categories: {} as Record<string, number>,
     totalItems: ownerships.length,
     verifiedItems: ownerships.filter(o => o.verified).length,
-    categories: {} as Record<string, number>,
-    brands: {} as Record<string, number>,
   };
 
   ownerships.forEach(ownership => {

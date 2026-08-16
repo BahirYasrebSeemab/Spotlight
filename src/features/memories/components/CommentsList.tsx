@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TextInput, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
 import { Send } from 'lucide-react-native';
-import { useMemoryComments } from '@/src/features/memories/hooks/useMemoryComments';
-import { useAddComment } from '@/src/features/memories/hooks/useAddComment';
+import { View, Text, FlatList, TextInput, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
+
 import type { Comment } from '@/src/features/memories/types/memories.types';
+
+import { useAddComment } from '@/src/features/memories/hooks/useAddComment';
+import { useMemoryComments } from '@/src/features/memories/hooks/useMemoryComments';
 
 interface CommentsListProps {
   memoryId: string;
   currentUserId: string;
 }
 
-export function CommentsList({ memoryId, currentUserId }: CommentsListProps) {
+export function CommentsList({ currentUserId, memoryId }: CommentsListProps) {
   const [commentText, setCommentText] = useState('');
   const { data: comments, isLoading } = useMemoryComments(memoryId);
   const { addComment, isAdding } = useAddComment();
@@ -20,18 +22,18 @@ export function CommentsList({ memoryId, currentUserId }: CommentsListProps) {
 
     addComment(
       {
+        content: commentText.trim(),
         memoryId,
         userId: currentUserId,
-        content: commentText.trim(),
       },
       {
-        onSuccess: () => {
-          setCommentText('');
-        },
         onError: (error: any) => {
           Alert.alert('Error', error.message || 'Failed to post comment');
         },
-      }
+        onSuccess: () => {
+          setCommentText('');
+        },
+      },
     );
   };
 
@@ -43,10 +45,10 @@ export function CommentsList({ memoryId, currentUserId }: CommentsListProps) {
         <Text className="text-gray-300 text-sm mt-1 leading-5">{item.content}</Text>
         <Text className="text-gray-500 text-xs mt-1">
           {new Date(item.createdAt).toLocaleDateString('en-US', {
-            month: 'short',
             day: 'numeric',
             hour: 'numeric',
             minute: '2-digit',
+            month: 'short',
           })}
         </Text>
       </View>

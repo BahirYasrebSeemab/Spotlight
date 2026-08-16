@@ -2,21 +2,23 @@
 // src/features/auth/components/SignupStep1.tsx - Updated
 // ========================================
 import { View } from 'react-native';
-import { InputField } from '../../../shared/components/InputField';
-import { PrimaryButton } from '../../../shared/components/PrimaryButton';
-import { SignupForm } from '../../../shared/types/form.types';
+
 import { Divider } from '@/src/shared/components/Divider';
 import { GoogleButton } from '@/src/shared/components/GoogleButton';
 
+import { SignupForm } from '../../../shared/types/form.types';
+import { InputField } from '../../../shared/components/InputField';
+import { PrimaryButton } from '../../../shared/components/PrimaryButton';
+
 interface SignupStep1Props {
   form: SignupForm;
-  onChange: (field: keyof SignupForm, value: string) => void;
+  loading: boolean;
   onNext: () => void;
   handleGoogleLogin: () => void;
-  loading: boolean;
+  onChange: (field: keyof SignupForm, value: string) => void;
 }
 
-export const SignupStep1 = ({ form, onChange, onNext, handleGoogleLogin, loading }: SignupStep1Props) => {
+export const SignupStep1 = ({ form, handleGoogleLogin, loading, onChange, onNext }: SignupStep1Props) => {
   const isValid = form.fullName.trim() && form.dob && form.email.trim();
 
   return (
@@ -47,7 +49,7 @@ export const SignupStep1 = ({ form, onChange, onNext, handleGoogleLogin, loading
         editable={!loading}
       />
 
-      <PrimaryButton title="Next" onPress={onNext} disabled={!isValid || loading} loading={loading}  />
+      <PrimaryButton title="Next" onPress={onNext} disabled={!isValid || loading} loading={loading} />
 
       <Divider />
 

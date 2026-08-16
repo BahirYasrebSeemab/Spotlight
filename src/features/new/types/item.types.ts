@@ -2,15 +2,15 @@
 
 export interface CreateItemPayload {
   name: string;
-  brandName: string;
   upc?: string;
+  notes?: string;
+  brandName: string;
   category?: string;
-  description?: string;
   imageUri?: string; // Local file URI from image picker
   condition?: string;
-  purchasePrice?: number;
+  description?: string;
   purchaseDate?: string;
-  notes?: string;
+  purchasePrice?: number;
   existingPrototypeId?: string;
   existingCommunityProductId?: string;
   selectedVariant?: {
@@ -23,39 +23,39 @@ export interface CreateItemPayload {
 export interface CommunityProduct {
   id: string;
   name: string;
-  brandName: string;
-  description?: string;
   upc?: string;
+  brandName: string;
   category?: string;
   imageUrl?: string;
-  thumbnailUrl?: string;
   createdBy: string;
-  status: 'ACTIVE' | 'UNDER_REVIEW' | 'MIGRATED' | 'DELETED';
-  migratedToPrototypeId?: string;
-  ownershipCount: number;
   flagCount: number;
   createdAt: string;
   updatedAt: string;
+  description?: string;
+  thumbnailUrl?: string;
+  ownershipCount: number;
+  migratedToPrototypeId?: string;
+  status: 'ACTIVE' | 'UNDER_REVIEW' | 'MIGRATED' | 'DELETED';
 }
 
 export interface Prototype {
   id: string;
   name: string;
-  description?: string;
-  brandId: string;
   sku?: string;
   upc?: string;
-  category?: string;
-  retailPrice?: number;
-  imageUrl?: string;
-  thumbnailUrl?: string;
   variants?: any;
-  isVerified: boolean;
-  verifiedAt: string;
-  verifiedBy?: string;
+  brandId: string;
+  category?: string;
+  imageUrl?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  verifiedAt: string;
+  isVerified: boolean;
+  verifiedBy?: string;
+  description?: string;
+  retailPrice?: number;
+  thumbnailUrl?: string;
   brand?: {
     id: string;
     name: string;
@@ -66,54 +66,54 @@ export interface Prototype {
 
 export interface Ownership {
   id: string;
-  ownerId: string;
-  prototypeId?: string;
-  communityProductId?: string;
-  status: 'owned' | 'sold' | 'donated' | 'wishlisted';
-  verified: boolean;
-  isAuthenticated: boolean;
-  condition?: string;
   notes?: string;
-  originalImageUrl?: string;
-  processedImageUrl?: string;
+  ownerId: string;
+  verified: boolean;
+  createdAt: string;
+  updatedAt: string;
+  condition?: string;
+  prototypeId?: string;
+  ownershipChain?: any;
   thumbnailUrl?: string;
-  processingStatus: 'pending' | 'processing' | 'completed' | 'failed';
   purchaseDate?: string;
-  purchasePrice?: number;
   selectedVariant?: any;
   serialNumber?: string;
   transferable: boolean;
-  ownershipChain?: any;
-  createdAt: string;
-  updatedAt: string;
   prototype?: Prototype;
+  purchasePrice?: number;
+  isAuthenticated: boolean;
+  originalImageUrl?: string;
+  processedImageUrl?: string;
+  communityProductId?: string;
   communityProduct?: CommunityProduct;
+  status: 'owned' | 'sold' | 'donated' | 'wishlisted';
+  processingStatus: 'pending' | 'processing' | 'completed' | 'failed';
 }
 
 export interface Brand {
   id: string;
   name: string;
-  description?: string;
   logoUrl?: string;
   verified: boolean;
-  type: 'INTERNATIONAL' | 'LOCAL' | 'TAILORED';
   createdAt: string;
   updatedAt: string;
+  description?: string;
+  type: 'INTERNATIONAL' | 'LOCAL' | 'TAILORED';
 }
 
 export interface ProductSearchResult {
+  similarity?: number;
   type: 'prototype' | 'community';
   product: Prototype | CommunityProduct;
-  similarity?: number;
 }
 
 export interface CreateCommunityProductPayload {
   name: string;
-  brandName: string;
-  description?: string;
-  category?: string;
   upc?: string;
-  condition?: string;
+  brandName: string;
+  category?: string;
   imageUri?: string;
+  condition?: string;
+  description?: string;
   processImage?: boolean;
 }
