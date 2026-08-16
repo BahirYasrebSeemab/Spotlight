@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { Package, Play } from 'lucide-react-native';
 import { View, Text, FlatList, Pressable, ActivityIndicator, Image, Dimensions, RefreshControl } from 'react-native';
 
+import { Button } from '@/src/shared/ui';
 import { useAppSelector } from '@/src/shared/hooks/redux';
 import { useExplore } from '@/src/features/closet/hooks/useExplore';
 
@@ -125,9 +126,7 @@ export default function ExploreScreen() {
     return (
       <View className="flex-1 bg-black items-center justify-center px-8">
         <Text className="text-white text-xl font-bold mb-4">Something went wrong</Text>
-        <Pressable className="bg-white px-6 py-3 rounded-xl" onPress={() => refetch()}>
-          <Text className="text-black font-semibold">Try Again</Text>
-        </Pressable>
+        <Button title="Try Again" onPress={() => refetch()} fullWidth={false} />
       </View>
     );
   }

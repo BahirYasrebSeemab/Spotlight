@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { Package, ShoppingBag, CheckCircle, Plus } from 'lucide-react-native';
 import { View, Text, FlatList, Pressable, ActivityIndicator, Image, RefreshControl, Dimensions } from 'react-native';
 
+import { Button } from '@/src/shared/ui';
 import { useAppSelector } from '@/src/shared/hooks/redux';
 import { OwnershipWithProduct } from '@/src/features/closet/types/closet.types';
 import { useUserOwnerships, useClosetStats } from '@/src/features/closet/hooks/useCloset';
@@ -93,9 +94,7 @@ export default function ClosetScreen() {
       <Text className="text-gray-400 text-center mb-8 leading-6">
         Start adding items to build your digital wardrobe
       </Text>
-      <Pressable className="bg-white px-8 py-4 rounded-xl" onPress={() => router.push('/(tabs)/new')}>
-        <Text className="text-black font-bold text-base">Add Your First Item</Text>
-      </Pressable>
+      <Button title="Add Your First Item" onPress={() => router.push('/(tabs)/new')} fullWidth={false} />
     </View>
   );
 
@@ -115,9 +114,7 @@ export default function ClosetScreen() {
         <Text className="text-gray-400 text-center mb-6">
           {error instanceof Error ? error.message : 'Something went wrong'}
         </Text>
-        <Pressable className="bg-white px-6 py-3 rounded-xl" onPress={() => refetch()}>
-          <Text className="text-black font-semibold">Try Again</Text>
-        </Pressable>
+        <Button title="Try Again" onPress={() => refetch()} fullWidth={false} />
       </View>
     );
   }

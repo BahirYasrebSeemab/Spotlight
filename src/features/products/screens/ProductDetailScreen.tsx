@@ -6,7 +6,7 @@ import { ArrowLeft, Plus } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 
-import { PrimaryButton } from '@/src/shared/components/PrimaryButton';
+import { Button, PillBadge } from '@/src/shared/ui';
 
 import { ProductType } from '../types/product.types';
 import { useProductDetails } from '../hooks/useProductDetails';
@@ -42,9 +42,7 @@ export default function ProductDetailScreen() {
     return (
       <View className="flex-1 items-center justify-center bg-black px-6">
         <Text className="text-white text-lg text-center mb-4">Product not found</Text>
-        <TouchableOpacity onPress={() => router.back()} className="bg-white px-6 py-3 rounded-xl">
-          <Text className="text-black font-semibold">Go Back</Text>
-        </TouchableOpacity>
+        <Button title="Go Back" onPress={() => router.back()} fullWidth={false} />
       </View>
     );
   }
@@ -78,11 +76,10 @@ export default function ProductDetailScreen() {
         <View className="px-5">
           {/* Brand Badge */}
           <View className="flex-row items-center mb-2">
-            <View className={`px-3 py-1 rounded-full ${isVerified ? 'bg-white' : 'bg-white/10'}`}>
-              <Text className={`text-xs font-semibold ${isVerified ? 'text-black' : 'text-white'}`}>
-                {isVerified ? '✓ Verified Brand' : 'Community Product'}
-              </Text>
-            </View>
+            <PillBadge
+              label={isVerified ? '✓ Verified Brand' : 'Community Product'}
+              variant={isVerified ? 'solid' : 'subtle'}
+            />
           </View>
 
           {/* Product Name */}
@@ -151,7 +148,7 @@ export default function ProductDetailScreen() {
 
       {/* Fixed Bottom Button */}
       <View className="absolute bottom-0 left-0 right-0 bg-black/95 border-t border-white/10 px-5 py-4">
-        <PrimaryButton
+        <Button
           loading={isLoading}
           onPress={handleAddToCloset}
           title="Add to Closet"

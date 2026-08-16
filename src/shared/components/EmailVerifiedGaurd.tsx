@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
+import { View, Text } from 'react-native';
 import { MailCheck } from 'lucide-react-native';
-import { View, Text, TouchableOpacity } from 'react-native';
 
+import { Button } from '@/src/shared/ui';
 import { useAppSelector } from '@/src/shared/hooks/redux';
 import { selectCurrentUser } from '@/src/features/auth/slices/authSlice';
 
@@ -21,13 +22,7 @@ export function EmailVerifiedGuard({ children }: { children: React.ReactNode }) 
         <Text className="text-gray-400 text-center mb-8 leading-6">
           You need to verify your email address before accessing this page.
         </Text>
-        <TouchableOpacity
-          onPress={() => router.push(`/(auth)/verify-email?email=${user?.email}`)}
-          className="bg-white px-8 py-4 rounded-xl w-full"
-          activeOpacity={0.8}
-        >
-          <Text className="text-black font-bold text-base text-center">Verify Email</Text>
-        </TouchableOpacity>
+        <Button title="Verify Email" onPress={() => router.push(`/(auth)/verify-email?email=${user?.email}`)} />
       </View>
     );
   }

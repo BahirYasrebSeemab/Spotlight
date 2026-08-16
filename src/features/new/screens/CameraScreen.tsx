@@ -7,6 +7,7 @@ import { Image as CompressorImage } from 'react-native-compressor';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { View, Text, TouchableOpacity, Image, Alert, StyleSheet } from 'react-native';
 
+import { Button } from '@/src/shared/ui';
 import { useAppSelector } from '@/src/shared/hooks/redux';
 
 type CameraMode = 'own' | 'photo' | 'video';
@@ -148,9 +149,7 @@ export default function CameraScreen() {
       <View className="flex-1 bg-black items-center justify-center px-8">
         <Text className="text-white text-xl font-semibold mb-4 text-center">Camera Access Required</Text>
         <Text className="text-gray-400 text-center mb-8">We need your permission to use the camera</Text>
-        <TouchableOpacity onPress={requestPermission} className="bg-white py-4 px-8 rounded-xl" activeOpacity={0.7}>
-          <Text className="text-black font-semibold text-center">Grant Permission</Text>
-        </TouchableOpacity>
+        <Button title="Grant Permission" onPress={requestPermission} fullWidth={false} className="px-8" />
       </View>
     );
   }
@@ -170,14 +169,7 @@ export default function CameraScreen() {
 
         {/* Bottom Next button */}
         <View className="absolute bottom-12 left-5 right-5">
-          <TouchableOpacity
-            onPress={handleNext}
-            disabled={isCompressing}
-            className={`py-4 rounded-xl ${isCompressing ? 'bg-gray-600' : 'bg-white'}`}
-            activeOpacity={0.7}
-          >
-            <Text className="text-black font-bold text-center text-lg">{isCompressing ? 'Processing...' : 'Next'}</Text>
-          </TouchableOpacity>
+          <Button title="Next" loading={isCompressing} disabled={isCompressing} onPress={handleNext} />
         </View>
       </View>
     );

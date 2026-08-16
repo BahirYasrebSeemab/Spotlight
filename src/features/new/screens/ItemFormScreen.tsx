@@ -4,7 +4,7 @@ import { X, Sparkles, Info, AlertCircle } from 'lucide-react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Image, Switch } from 'react-native';
 
-import { InputField } from '@/src/shared/components/InputField';
+import { Button, Input } from '@/src/shared/ui';
 import { BackgroundPicker } from '@/src/shared/components/BackgroundPicker';
 
 import { useCreateItem, useSearchProducts } from '../hooks';
@@ -214,7 +214,7 @@ export default function ItemFormScreen() {
         )}
 
         {/* Form Fields */}
-        <InputField
+        <Input
           label="Item Name"
           value={form.name}
           onChangeText={(text: string) => setForm(prev => ({ ...prev, name: text }))}
@@ -229,7 +229,7 @@ export default function ItemFormScreen() {
           placeholder="Brand name"
         />
 
-        <InputField
+        <Input
           label="UPC/Barcode (Optional)"
           value={form.upc}
           onChangeText={(text: string) => setForm(prev => ({ ...prev, upc: text }))}
@@ -238,7 +238,7 @@ export default function ItemFormScreen() {
           editable={!isLoading}
         />
 
-        <InputField
+        <Input
           label="Category (Optional)"
           value={form.category}
           onChangeText={(text: string) => setForm(prev => ({ ...prev, category: text }))}
@@ -277,12 +277,7 @@ export default function ItemFormScreen() {
                     onSelect={() => handleSelectMatch(match)}
                   />
                 ))}
-                <TouchableOpacity
-                  onPress={handleCreateNew}
-                  className="mt-3 bg-white/10 border border-white/20 rounded-xl p-4"
-                >
-                  <Text className="text-white font-semibold text-center">Create New Product</Text>
-                </TouchableOpacity>
+                <Button variant="outline" title="Create New Product" onPress={handleCreateNew} className="mt-3" />
               </>
             ) : (
               <View className="bg-white/10 rounded-xl p-4 mb-4">
@@ -290,9 +285,7 @@ export default function ItemFormScreen() {
                 <Text className="text-gray-400 text-sm mb-3">
                   We couldn't find this product in our database. You can create it as a new community product.
                 </Text>
-                <TouchableOpacity onPress={handleCreateNew} className="bg-white rounded-xl p-3">
-                  <Text className="text-black font-semibold text-center">Create New Product</Text>
-                </TouchableOpacity>
+                <Button title="Create New Product" onPress={handleCreateNew} />
               </View>
             )}
           </View>
@@ -342,34 +335,20 @@ export default function ItemFormScreen() {
 
         {/* Error Message */}
         {error && (
-          <View className="bg-red-500/20 border border-red-500 rounded-xl p-4 mb-4">
-            <Text className="text-red-400 font-semibold mb-1">Error</Text>
+          <View className="bg-destructive/20 border border-destructive rounded-xl p-4 mb-4">
+            <Text className="text-destructive-foreground font-semibold mb-1">Error</Text>
             <Text className="text-white">{error.message}</Text>
           </View>
         )}
 
         {/* Submit Button */}
-        <TouchableOpacity
-          onPress={handleSubmit}
+        <Button
+          title="Add to Closet"
+          loading={isLoading}
           disabled={isLoading || !form.name.trim() || !form.brandName.trim() || (!selectedMatch && !isCreatingNew)}
-          className={`w-full py-4 rounded-xl mb-4 ${
-            isLoading || !form.name.trim() || !form.brandName.trim() || (!selectedMatch && !isCreatingNew)
-              ? 'bg-gray-600'
-              : 'bg-white'
-          }`}
-          activeOpacity={0.7}
-        >
-          {isLoading ? (
-            <View className="flex-row items-center justify-center">
-              <ActivityIndicator size="small" color="#000000" style={{ marginRight: 8 }} />
-              <Text className="text-black font-semibold text-base">
-                {processImage ? 'Processing & adding...' : 'Adding item...'}
-              </Text>
-            </View>
-          ) : (
-            <Text className="text-black font-semibold text-base text-center">Add to Closet</Text>
-          )}
-        </TouchableOpacity>
+          onPress={handleSubmit}
+          className="mb-4"
+        />
       </View>
     </KeyboardAwareScrollView>
   );

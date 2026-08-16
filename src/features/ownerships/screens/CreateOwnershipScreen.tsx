@@ -9,8 +9,8 @@ import { X, Camera, Sparkles, Info } from 'lucide-react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Image, Switch } from 'react-native';
 
+import { Button, Input } from '@/src/shared/ui';
 import { useAppSelector } from '@/src/shared/hooks/redux';
-import { InputField } from '@/src/shared/components/InputField';
 import { useProductDetails } from '@/src/features/products/hooks/useProductDetails';
 
 import { useCreateOwnership } from '../hooks/useCreateOwnership';
@@ -115,9 +115,7 @@ export default function CreateOwnershipScreen() {
     return (
       <View className="flex-1 items-center justify-center bg-black px-6">
         <Text className="text-white text-lg text-center">Product not found</Text>
-        <TouchableOpacity onPress={() => router.back()} className="mt-4 bg-white px-6 py-3 rounded-xl">
-          <Text className="text-black font-semibold">Go Back</Text>
-        </TouchableOpacity>
+        <Button title="Go Back" onPress={() => router.back()} fullWidth={false} className="mt-4" />
       </View>
     );
   }
@@ -195,20 +193,22 @@ export default function CreateOwnershipScreen() {
           {/* Camera/Gallery Buttons (only show when custom photo selected) */}
           {!useOfficialImage && (
             <View className="flex-row gap-3">
-              <TouchableOpacity
+              <Button
+                variant="outline"
+                title="Take Photo"
                 onPress={handleTakePhoto}
-                className="flex-1 py-3 px-4 rounded-xl bg-white/10 border border-white/20 flex-row items-center justify-center gap-2"
-              >
-                <Camera size={20} color="#ffffff" />
-                <Text className="text-white font-medium">Take Photo</Text>
-              </TouchableOpacity>
+                fullWidth={false}
+                className="flex-1"
+                icon={<Camera size={20} color="#ffffff" />}
+              />
 
-              <TouchableOpacity
+              <Button
+                variant="outline"
+                title="Gallery"
                 onPress={handlePickImage}
-                className="flex-1 py-3 px-4 rounded-xl bg-white/10 border border-white/20 flex-row items-center justify-center gap-2"
-              >
-                <Text className="text-white font-medium">Gallery</Text>
-              </TouchableOpacity>
+                fullWidth={false}
+                className="flex-1"
+              />
             </View>
           )}
         </View>
@@ -311,7 +311,7 @@ export default function CreateOwnershipScreen() {
         )}
 
         {/* Purchase Date */}
-        <InputField
+        <Input
           label="Purchase Date (Optional)"
           value={purchaseDate}
           onChangeText={setPurchaseDate}
@@ -320,7 +320,7 @@ export default function CreateOwnershipScreen() {
         />
 
         {/* Purchase Price */}
-        <InputField
+        <Input
           label="Purchase Price (Optional)"
           value={purchasePrice}
           onChangeText={setPurchasePrice}
@@ -330,7 +330,7 @@ export default function CreateOwnershipScreen() {
         />
 
         {/* Notes */}
-        <InputField
+        <Input
           label="Notes (Optional)"
           value={notes}
           onChangeText={setNotes}
@@ -341,23 +341,13 @@ export default function CreateOwnershipScreen() {
         />
 
         {/* Submit Button */}
-        <TouchableOpacity
-          onPress={handleSubmit}
+        <Button
+          title="Add to Closet"
+          loading={isPending}
           disabled={isPending}
-          className={`w-full py-4 rounded-xl mb-4 ${isPending ? 'bg-gray-600' : 'bg-white'}`}
-          activeOpacity={0.7}
-        >
-          {isPending ? (
-            <View className="flex-row items-center justify-center">
-              <ActivityIndicator size="small" color="#000000" style={{ marginRight: 8 }} />
-              <Text className="text-black font-semibold text-base">
-                {processImage && !useOfficialImage ? 'Processing & adding...' : 'Adding to closet...'}
-              </Text>
-            </View>
-          ) : (
-            <Text className="text-black font-semibold text-base text-center">Add to Closet</Text>
-          )}
-        </TouchableOpacity>
+          onPress={handleSubmit}
+          className="mb-4"
+        />
       </View>
     </KeyboardAwareScrollView>
   );

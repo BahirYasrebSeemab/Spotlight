@@ -1,6 +1,7 @@
+import { View, Text } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { View, Text, TouchableOpacity } from 'react-native';
 
+import { Button } from '@/src/shared/ui';
 import { useResendVerification } from '@/src/features/auth/hooks/useResendVerification';
 
 export default function VerifyEmailScreen() {
@@ -14,13 +15,13 @@ export default function VerifyEmailScreen() {
         A verification link has been sent to {email}. Please check your inbox and click the link to verify your account.
       </Text>
 
-      <TouchableOpacity
-        className={`px-6 py-3 rounded-xl bg-white ${loading && 'opacity-60'}`}
+      <Button
+        title="Resend Email"
+        loading={loading}
         disabled={loading}
         onPress={() => resend(email)}
-      >
-        <Text className="text-black font-semibold">{loading ? 'Sending...' : 'Resend Email'}</Text>
-      </TouchableOpacity>
+        fullWidth={false}
+      />
 
       {message && <Text className="text-green-500 mt-4 text-center">{message}</Text>}
     </View>

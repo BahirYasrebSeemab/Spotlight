@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Globe, Instagram, BadgeCheckIcon } from 'lucide-react-native';
-import { View, Text, Image, Pressable, ActivityIndicator } from 'react-native';
+import { Globe, Instagram } from 'lucide-react-native';
+import { View, Text, Image, Pressable } from 'react-native';
+
+import { Button, VerifiedBadge } from '@/src/shared/ui';
 
 import type { BrandProfile } from '../types/brand.types';
 
@@ -59,11 +61,7 @@ export function BrandIdentity({
               }}
               className="w-20 h-20 rounded-full bg-white/10"
             />
-            {brand.verified && (
-              <View className="absolute -bottom-1 -right-1 bg-black rounded-full p-0.5">
-                <BadgeCheckIcon size={20} color="#000" fill="#fff" />
-              </View>
-            )}
+            {brand.verified && <VerifiedBadge size={20} className="absolute -bottom-1 -right-1" />}
           </View>
         </Pressable>
       </View>
@@ -110,23 +108,16 @@ export function BrandIdentity({
       </View>
 
       {/* Follow Button */}
-      <Pressable
+      <Button
+        variant={localFollowing ? 'outline' : 'primary'}
+        title={localFollowing ? 'Following' : 'Follow'}
+        loading={followLoading}
         onPress={() => {
-          if (followLoading) return;
           setLocalFollowing(prev => !prev);
           onFollowToggle();
         }}
-        disabled={followLoading}
-        className={`py-2.5 rounded-lg ${localFollowing ? 'bg-white/10' : 'bg-white'}`}
-      >
-        {followLoading ? (
-          <ActivityIndicator size="small" color={localFollowing ? '#ffffff' : '#000000'} />
-        ) : (
-          <Text className={`text-center font-semibold ${localFollowing ? 'text-white' : 'text-black'}`}>
-            {localFollowing ? 'Following' : 'Follow'}
-          </Text>
-        )}
-      </Pressable>
+        className="rounded-lg"
+      />
     </View>
   );
 }

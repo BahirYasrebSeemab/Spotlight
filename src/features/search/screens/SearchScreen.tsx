@@ -16,8 +16,8 @@ import {
 import type { Brand } from '@/src/features/brands/types/brand.types';
 import type { Product, ProductCategory } from '@/src/features/products/types/product.types';
 
+import { Input } from '@/src/shared/ui';
 import { useDebounce } from '@/src/shared/hooks/useDebounce';
-import { InputField } from '@/src/shared/components/InputField';
 import { UserCard } from '@/src/features/user/components/UserCard';
 import { BrandCard } from '@/src/features/brands/components/BrandCard';
 import { useSearchUsers } from '@/src/features/search/hooks/useSearchUsers';
@@ -146,7 +146,7 @@ export default function SearchScreen() {
       <View className="pb-4 px-4 bg-black border-b border-gray-800">
         {/* Search Input */}
         <View className="pt-3">
-          <InputField
+          <Input
             placeholder={`Search ${activeTab}...`}
             placeholderTextColor="#888"
             value={searchQuery}

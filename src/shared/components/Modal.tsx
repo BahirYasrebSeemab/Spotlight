@@ -1,7 +1,9 @@
 import Modal from 'react-native-modal';
 import React, { useState } from 'react';
 import { BlurView } from '@react-native-community/blur';
-import { View, Text, TouchableOpacity, TextInput, Platform } from 'react-native';
+import { View, Text, TextInput, Platform } from 'react-native';
+
+import { Button } from '@/src/shared/ui';
 
 interface BlurConfirmModalProps {
   title?: string;
@@ -66,17 +68,14 @@ export default function BlurConfirmModal({
 
           {/* Actions */}
           <View className="flex-row justify-end gap-4">
-            <TouchableOpacity onPress={onCancel} className="px-5 py-3 rounded-xl bg-muted">
-              <Text className="text-muted-foreground font-medium">Cancel</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
+            <Button variant="outline" title="Cancel" onPress={onCancel} fullWidth={false} />
+            <Button
+              variant="destructive"
+              title="Delete"
               onPress={onConfirm}
               disabled={!isConfirmed}
-              className={`px-5 py-3 rounded-xl ${isConfirmed ? 'bg-red-600' : 'bg-red-300'}`}
-            >
-              <Text className="text-white font-bold">Delete</Text>
-            </TouchableOpacity>
+              fullWidth={false}
+            />
           </View>
         </View>
       </View>

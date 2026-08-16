@@ -4,9 +4,9 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Check, X } from 'lucide-react-native';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 
-import { Avatar } from '@/src/shared/ui';
+import { Avatar, Button } from '@/src/shared/ui';
 
 interface FollowRequestItemProps {
   onAccept: (requestId: string) => Promise<void>;
@@ -77,37 +77,24 @@ export function FollowRequestItem({ item, onAccept, onReject }: FollowRequestIte
 
       {/* Action Buttons */}
       <View className="flex-row gap-2">
-        <TouchableOpacity
+        <Button
+          title="Accept"
+          loading={isProcessing && action === 'accept'}
+          disabled={isProcessing}
           onPress={handleAccept}
-          disabled={isProcessing}
-          className="flex-1 flex-row items-center justify-center bg-white py-2.5 rounded-lg"
-          activeOpacity={0.8}
-        >
-          {isProcessing && action === 'accept' ? (
-            <ActivityIndicator size="small" color="black" />
-          ) : (
-            <>
-              <Check size={18} color="black" strokeWidth={2.5} />
-              <Text className="text-black font-semibold ml-2">Accept</Text>
-            </>
-          )}
-        </TouchableOpacity>
+          className="flex-1 rounded-lg"
+          icon={<Check size={18} color="black" strokeWidth={2.5} />}
+        />
 
-        <TouchableOpacity
-          onPress={handleReject}
+        <Button
+          variant="outline"
+          title="Decline"
+          loading={isProcessing && action === 'reject'}
           disabled={isProcessing}
-          className="flex-1 flex-row items-center justify-center bg-muted py-2.5 rounded-lg"
-          activeOpacity={0.8}
-        >
-          {isProcessing && action === 'reject' ? (
-            <ActivityIndicator size="small" color="#9CA3AF" />
-          ) : (
-            <>
-              <X size={18} color="#9CA3AF" strokeWidth={2.5} />
-              <Text className="text-muted-foreground font-semibold ml-2">Decline</Text>
-            </>
-          )}
-        </TouchableOpacity>
+          onPress={handleReject}
+          className="flex-1 rounded-lg border-0 bg-muted"
+          icon={<X size={18} color="#9CA3AF" strokeWidth={2.5} />}
+        />
       </View>
     </View>
   );

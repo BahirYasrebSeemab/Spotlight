@@ -7,9 +7,9 @@ import { useState, useRef, useEffect } from 'react';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { X, Sparkles, Info, Camera, ImageIcon, FlipHorizontal } from 'lucide-react-native';
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Image, Switch, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, Image, Switch, StyleSheet } from 'react-native';
 
-import { InputField } from '@/src/shared/components/InputField';
+import { Button, Input } from '@/src/shared/ui';
 import { useCreateCommunityProduct } from '@/src/features/new/hooks/useCreateCommunityProduct';
 
 export default function CommunityProductFormScreen() {
@@ -265,7 +265,7 @@ export default function CommunityProductFormScreen() {
         )}
 
         {/* Form */}
-        <InputField
+        <Input
           label="Product Name *"
           value={name}
           onChangeText={setName}
@@ -273,7 +273,7 @@ export default function CommunityProductFormScreen() {
           editable={!isLoading}
         />
 
-        <InputField
+        <Input
           label="Brand / Maker *"
           value={brandName}
           onChangeText={setBrandName}
@@ -281,7 +281,7 @@ export default function CommunityProductFormScreen() {
           editable={!isLoading}
         />
 
-        <InputField
+        <Input
           label="Category (Optional)"
           value={category}
           onChangeText={setCategory}
@@ -289,7 +289,7 @@ export default function CommunityProductFormScreen() {
           editable={!isLoading}
         />
 
-        <InputField
+        <Input
           label="Description (Optional)"
           value={description}
           onChangeText={setDescription}
@@ -299,7 +299,7 @@ export default function CommunityProductFormScreen() {
           editable={!isLoading}
         />
 
-        <InputField
+        <Input
           label="UPC / Barcode (Optional)"
           value={upc}
           onChangeText={setUpc}
@@ -308,7 +308,7 @@ export default function CommunityProductFormScreen() {
           editable={!isLoading}
         />
 
-        <InputField
+        <Input
           label="Condition (Optional)"
           value={condition}
           onChangeText={setCondition}
@@ -326,32 +326,20 @@ export default function CommunityProductFormScreen() {
 
         {/* Error */}
         {error && (
-          <View className="bg-red-500/20 border border-red-500 rounded-xl p-4 mb-4">
-            <Text className="text-red-400 font-semibold mb-1">Error</Text>
+          <View className="bg-destructive/20 border border-destructive rounded-xl p-4 mb-4">
+            <Text className="text-destructive-foreground font-semibold mb-1">Error</Text>
             <Text className="text-white text-sm">{error.message}</Text>
           </View>
         )}
 
         {/* Submit */}
-        <TouchableOpacity
-          onPress={handleSubmit}
+        <Button
+          title="Add to Closet"
+          loading={isLoading}
           disabled={isLoading || !name.trim() || !brandName.trim()}
-          className={`w-full py-4 rounded-xl mb-4 ${
-            isLoading || !name.trim() || !brandName.trim() ? 'bg-gray-700' : 'bg-white'
-          }`}
-          activeOpacity={0.7}
-        >
-          {isLoading ? (
-            <View className="flex-row items-center justify-center gap-2">
-              <ActivityIndicator size="small" color="#000000" />
-              <Text className="text-black font-semibold text-base">
-                {processImage && capturedImage ? 'Processing & adding...' : 'Adding to closet...'}
-              </Text>
-            </View>
-          ) : (
-            <Text className="text-black font-semibold text-base text-center">Add to Closet</Text>
-          )}
-        </TouchableOpacity>
+          onPress={handleSubmit}
+          className="mb-4"
+        />
       </View>
     </KeyboardAwareScrollView>
   );

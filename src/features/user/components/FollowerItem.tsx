@@ -2,9 +2,9 @@
 // src/features/user/components/FollowerItem.tsx - NEW COMPONENT
 // ========================================
 import { useRouter } from 'expo-router';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 
-import { Avatar } from '@/src/shared/ui';
+import { Avatar, Button } from '@/src/shared/ui';
 import { useAppSelector } from '@/src/shared/hooks/redux';
 import { useFollowUser } from '@/src/features/user/hooks/useFollowUser';
 import { useFollowStatus } from '@/src/features/user/hooks/useFollowStatus';
@@ -61,22 +61,14 @@ export function FollowerItem({ item }: FollowerItemProps) {
       </View>
 
       {!isOwnProfile && (
-        <TouchableOpacity
+        <Button
+          variant={followStatus?.isFollowing ? 'outline' : 'primary'}
+          title={followStatus?.isFollowing ? 'Spotting' : 'Spot'}
+          loading={followActionLoading}
           onPress={handleFollowToggle}
-          disabled={followActionLoading}
-          className={`px-4 py-2 rounded-full min-w-[90px] items-center ${
-            followStatus?.isFollowing ? 'bg-muted' : 'bg-white'
-          }`}
-          activeOpacity={0.8}
-        >
-          {followActionLoading ? (
-            <ActivityIndicator size="small" color={followStatus?.isFollowing ? '#FFF' : '#000'} />
-          ) : (
-            <Text className={`font-semibold text-sm ${followStatus?.isFollowing ? 'text-foreground' : 'text-black'}`}>
-              {followStatus?.isFollowing ? 'Spotting' : 'Spot'}
-            </Text>
-          )}
-        </TouchableOpacity>
+          fullWidth={false}
+          className={`rounded-full min-w-[90px] ${followStatus?.isFollowing ? 'border-0 bg-muted' : ''}`}
+        />
       )}
     </TouchableOpacity>
   );

@@ -1,9 +1,8 @@
 // src/features/products/components/ProductCard.tsx
-import React from 'react';
+import { View, Text } from 'react-native';
 import { Package } from 'lucide-react-native';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
 
-import { VerifiedBadge } from '@/src/shared/ui';
+import { Card, VerifiedBadge } from '@/src/shared/ui';
 
 import type { Product } from '../types/product.types';
 
@@ -16,53 +15,35 @@ export function ProductCard({ onPress, product }: ProductCardProps) {
   const isVerified = product.type === 'PROTOTYPE';
 
   return (
-    <TouchableOpacity
+    <Card
       onPress={() => onPress(product)}
-      className="flex-row items-center p-4 border-b border-border"
-      activeOpacity={0.7}
-    >
-      {/* Product Image */}
-      <View className="relative">
-        <Image
-          source={{
-            uri: product.thumbnailUrl || product.imageUrl || 'https://via.placeholder.com/60',
-          }}
-          className="w-16 h-16 rounded-lg bg-muted"
-        />
-        {/* Type Badge */}
-        <View className="absolute -top-1 -right-1">
-          {isVerified ? (
-            <VerifiedBadge />
-          ) : (
-            <View className="bg-gray-500 rounded-full p-1">
-              <Package size={10} color="white" />
-            </View>
+      imageShape="square"
+      imageSize={64}
+      imageUri={product.thumbnailUrl || product.imageUrl}
+      imageBadge={
+        isVerified ? (
+          <VerifiedBadge />
+        ) : (
+          <View className="bg-gray-500 rounded-full p-1">
+            <Package size={10} color="white" />
+          </View>
+        )
+      }
+      title={product.name}
+      subtitle={product.brandName}
+      meta={
+        <>
+          <View className="flex-row items-center mt-1">
+            {product.category && <Text className="text-xs text-muted-foreground">{product.category}</Text>}
+            {product.retailPrice && <Text className="text-xs text-muted-foreground ml-2">${product.retailPrice}</Text>}
+          </View>
+          {product.ownershipCount > 0 && (
+            <Text className="text-xs text-muted-foreground mt-1">
+              {product.ownershipCount} owner{product.ownershipCount !== 1 ? 's' : ''}
+            </Text>
           )}
-        </View>
-      </View>
-
-      {/* Product Info */}
-      <View className="flex-1 ml-3">
-        <Text className="text-base font-semibold text-foreground" numberOfLines={1}>
-          {product.name}
-        </Text>
-        <Text className="text-sm text-muted-foreground" numberOfLines={1}>
-          {product.brandName}
-        </Text>
-
-        {/* Category & Price */}
-        <View className="flex-row items-center mt-1">
-          {product.category && <Text className="text-xs text-muted-foreground">{product.category}</Text>}
-          {product.retailPrice && <Text className="text-xs text-muted-foreground ml-2">${product.retailPrice}</Text>}
-        </View>
-
-        {/* Ownership Count */}
-        {product.ownershipCount > 0 && (
-          <Text className="text-xs text-muted-foreground mt-1">
-            {product.ownershipCount} owner{product.ownershipCount !== 1 ? 's' : ''}
-          </Text>
-        )}
-      </View>
-    </TouchableOpacity>
+        </>
+      }
+    />
   );
 }

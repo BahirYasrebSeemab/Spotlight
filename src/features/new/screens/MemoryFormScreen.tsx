@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { X, Tag } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { View, Text, TouchableOpacity, Alert, Image } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
 
+import { Button, Input } from '@/src/shared/ui';
 import { useAppSelector } from '@/src/shared/hooks/redux';
-import { InputField } from '@/src/shared/components/InputField';
 import { useCreateMemory } from '@/src/features/memories/hooks/useCreateMemory';
 import { ClosetItemSelector } from '@/src/features/memories/components/ClosetItemSelector';
 
@@ -95,7 +95,7 @@ export default function MemoryFormScreen() {
           )}
 
           {/* Form Fields */}
-          <InputField
+          <Input
             label="Title (Optional)"
             value={title}
             onChangeText={setTitle}
@@ -104,7 +104,7 @@ export default function MemoryFormScreen() {
             maxLength={100}
           />
 
-          <InputField
+          <Input
             label="Caption (Optional)"
             value={caption}
             onChangeText={setCaption}
@@ -115,7 +115,7 @@ export default function MemoryFormScreen() {
             maxLength={500}
           />
 
-          <InputField
+          <Input
             label="Location (Optional)"
             value={location}
             onChangeText={setLocation}
@@ -161,21 +161,13 @@ export default function MemoryFormScreen() {
           </View>
 
           {/* Submit Button */}
-          <TouchableOpacity
-            onPress={handleSubmit}
+          <Button
+            title="Share Memory"
+            loading={isCreating}
             disabled={isCreating || !params.imageUri}
-            className={`w-full py-4 rounded-xl mb-4 ${isCreating || !params.imageUri ? 'bg-gray-600' : 'bg-white'}`}
-            activeOpacity={0.7}
-          >
-            {isCreating ? (
-              <View className="flex-row items-center justify-center">
-                <ActivityIndicator size="small" color="#000000" style={{ marginRight: 8 }} />
-                <Text className="text-black font-semibold text-base">Creating memory...</Text>
-              </View>
-            ) : (
-              <Text className="text-black font-semibold text-base text-center">Share Memory</Text>
-            )}
-          </TouchableOpacity>
+            onPress={handleSubmit}
+            className="mb-4"
+          />
         </View>
       </KeyboardAwareScrollView>
 

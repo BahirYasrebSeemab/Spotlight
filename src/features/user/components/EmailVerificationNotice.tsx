@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native';
 
-import { PrimaryButton } from '@/src/shared/components/PrimaryButton';
+import { Button } from '@/src/shared/ui';
 import { useResendVerification } from '@/src/features/auth/hooks/useResendVerification';
 
 interface Props {
@@ -18,12 +18,13 @@ export default function EmailVerificationNotice({ email }: Props) {
 
       {message && <Text className="text-center mb-4 text-sm text-muted-foreground">{message}</Text>}
 
-      <PrimaryButton
-        title={loading ? 'Resending...' : 'Resend Verification Email'}
+      <Button
+        title="Resend Verification Email"
         onPress={() => resend(email)}
         disabled={loading}
         loading={loading}
-        px="px-6"
+        fullWidth={false}
+        className="px-6"
       />
     </View>
   );
