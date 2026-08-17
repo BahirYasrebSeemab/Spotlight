@@ -13,7 +13,6 @@ export default function AuthLayout() {
       <Stack.Protected guard={isPasswordResetSession}>
         <Stack.Screen name="reset-password" options={{ headerShown: false }} />
       </Stack.Protected>
-      <Stack.Screen name="callback" options={{ headerShown: false }} />
     </Stack>
   );
 }
