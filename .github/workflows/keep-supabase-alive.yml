@@ -1,9 +1,10 @@
-name: Keep Supabase Alive
+name: Keep Supabase Awake
 
 on:
   schedule:
-    - cron: '0 0 */3 * *'   # runs every 3 days at midnight UTC
-  workflow_dispatch:         # lets you trigger it manually from the Actions tab too
+    # Runs every 3 days at 05:00 UTC — free-tier Supabase projects pause after 7 days of inactivity, so this is a comfortable margin
+    - cron: '0 5 */3 * *'
+  workflow_dispatch: {}   # lets you trigger it manually from the Actions tab to test
 
 jobs:
   ping:
@@ -11,10 +12,14 @@ jobs:
     steps:
       - name: Ping Supabase Project 1
         run: |
-          curl -s "${{ secrets.SUPABASE_URL_1 }}/rest/v1/${{ secrets.SUPABASE_TABLE_1 }}?select=id&limit=1" \
-            -H "apikey: ${{ secrets.SUPABASE_KEY_1 }}"
+          curl -s -o /dev/null -w "Project 1 status: %{http_code}\n" \
+            "${{ secrets.SUPABASE_URL_1 }}/rest/v1/${{ secrets.SUPABASE_TABLE_1 }}?select=*&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_KEY_1 }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY_1 }}"
 
       - name: Ping Supabase Project 2
         run: |
-          curl -s "${{ secrets.SUPABASE_URL_2 }}/rest/v1/${{ secrets.SUPABASE_TABLE_2 }}?select=id&limit=1" \
-            -H "apikey: ${{ secrets.SUPABASE_KEY_2 }}"
+          curl -s -o /dev/null -w "Project 2 status: %{http_code}\n" \
+            "${{ secrets.SUPABASE_URL_2 }}/rest/v1/${{ secrets.SUPABASE_TABLE_2 }}?select=*&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_KEY_2 }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY_2 }}"
