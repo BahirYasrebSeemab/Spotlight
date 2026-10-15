@@ -25,6 +25,13 @@ jobs:
       EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
       NODE_ENV: production
     steps:
+      # The RN build + emulator system image don't fit in the runner's default free space.
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost \
+            /usr/local/lib/node_modules /opt/hostedtoolcache/CodeQL /usr/share/swift /usr/local/julia*
+          df -h /
+
       - uses: actions/checkout@v4
 
       - uses: oven-sh/setup-bun@v2
@@ -73,6 +80,11 @@ jobs:
             echo "::error::Missing repo secrets DEMO_EMAIL / DEMO_PASSWORD — the APK built fine, but the emulator needs a login"
             exit 1
           fi
+
+      - name: Drop build-only files before booting the emulator
+        run: |
+          rm -rf node_modules android/app/build/intermediates android/app/.cxx android/build
+          df -h /
 
       - name: Enable KVM
         run: |
