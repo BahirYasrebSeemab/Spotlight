@@ -24,27 +24,31 @@ appId: com.yasreb.spotlight
 
 # --- Onboarding (shown on first login per install) ---------------------------
 - extendedWaitUntil:
-    visible: 'Your Digital Closet|My Closet|Your Closet is Empty'
+    visible: 'Everything you own\.|Your Closet is Empty|Loading your closet\.\.\.'
     timeout: 60000
 - runFlow:
     when:
-      visible: 'Your Digital Closet'
+      visible: 'Everything you own\.'
     commands:
-      - waitForAnimationToEnd
+      - startRecording: onboarding
+      - waitForAnimationToEnd:
+          timeout: 8000
       - takeScreenshot: 03-onboarding-1-closet
+      - swipe:
+          direction: LEFT
+      - waitForAnimationToEnd:
+          timeout: 8000
+      - takeScreenshot: 04-onboarding-2-verified
       - tapOn: 'Next'
-      - waitForAnimationToEnd
-      - takeScreenshot: 04-onboarding-2-add
+      - waitForAnimationToEnd:
+          timeout: 8000
+      - takeScreenshot: 05-onboarding-3-memory
       - tapOn: 'Next'
-      - waitForAnimationToEnd
-      - takeScreenshot: 05-onboarding-3-discover
-      - tapOn: 'Next'
-      - waitForAnimationToEnd
-      - takeScreenshot: 06-onboarding-4-activity
-      - tapOn: 'Next'
-      - waitForAnimationToEnd
-      - takeScreenshot: 07-onboarding-5-profile
-      - tapOn: 'Get Started'
+      - waitForAnimationToEnd:
+          timeout: 8000
+      - takeScreenshot: 06-onboarding-4-profile
+      - stopRecording
+      - tapOn: 'Get started'
 
 # --- Closet ------------------------------------------------------------------
 - extendedWaitUntil:
@@ -52,6 +56,7 @@ appId: com.yasreb.spotlight
     timeout: 60000
 - waitForAnimationToEnd:
     timeout: 15000
+- startRecording: tour
 - takeScreenshot: 10-closet
 - scroll
 - waitForAnimationToEnd
@@ -150,3 +155,4 @@ appId: com.yasreb.spotlight
 - scroll
 - waitForAnimationToEnd
 - takeScreenshot: 53-memory-detail-scrolled
+- stopRecording
