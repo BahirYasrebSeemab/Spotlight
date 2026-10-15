@@ -1,0 +1,13 @@
+# Step 1 of the capture (see capture.sh): fresh launch, focus the email field.
+# Typing happens via `adb shell input text` — Maestro's inputText stalls on this image.
+appId: com.yasreb.spotlight
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Log in'
+    timeout: 90000
+- waitForAnimationToEnd
+- takeScreenshot: 01-login
+- tapOn:
+    id: 'login-email'

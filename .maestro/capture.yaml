@@ -1,23 +1,8 @@
-# Screenshot tour of Spotlight for the portfolio video.
-# Run via .maestro/capture.sh (needs DEMO_EMAIL / DEMO_PASSWORD).
+# Screenshot tour of Spotlight for the portfolio video — step 3 of capture.sh,
+# which has already launched the app and typed the login.
 # Everything after login is optional so a single miss doesn't lose the rest.
 appId: com.yasreb.spotlight
 ---
-- launchApp:
-    clearState: true
-- extendedWaitUntil:
-    visible: 'Log in'
-    timeout: 90000
-- waitForAnimationToEnd
-- takeScreenshot: 01-login
-
-# --- Login -------------------------------------------------------------------
-- tapOn:
-    id: 'login-email'
-- inputText: ${DEMO_EMAIL}
-- tapOn:
-    id: 'login-password'
-- inputText: ${DEMO_PASSWORD}
 - hideKeyboard
 - takeScreenshot: 02-login-filled
 - tapOn: 'Log in'
