@@ -5,12 +5,11 @@ import { useFonts } from 'expo-font';
 import { Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
-import { useColorScheme } from 'nativewind';
 import { Stack, SplashScreen } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { ThemeProvider, DarkTheme } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
 
 import { supabase } from '@/src/lib/supabase';
 import { useAppDispatch, useAppSelector } from '@/src/shared/hooks/redux';
@@ -23,7 +22,6 @@ export default function AppLayout() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [fontsLoaded] = useFonts({ ...FontAwesome.font });
-  const { colorScheme } = useColorScheme();
   const isNavigatingToReset = useRef(false);
   const isHandlingOAuth = useRef(false);
 
@@ -233,7 +231,9 @@ export default function AppLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    // Dark-only app: following the system scheme gave light-mode phones a light
+    // navigation background under white-on-black screens.
+    <ThemeProvider value={DarkTheme}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="splash" />
         <Stack.Screen name="(tabs)" />
