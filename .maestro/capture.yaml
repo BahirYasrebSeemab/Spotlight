@@ -1,0 +1,152 @@
+# Screenshot tour of Spotlight for the portfolio video.
+# Run via .maestro/capture.sh (needs DEMO_EMAIL / DEMO_PASSWORD).
+# Everything after login is optional so a single miss doesn't lose the rest.
+appId: com.yasreb.spotlight
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Log in'
+    timeout: 90000
+- waitForAnimationToEnd
+- takeScreenshot: 01-login
+
+# --- Login -------------------------------------------------------------------
+- tapOn:
+    id: 'login-email'
+- inputText: ${DEMO_EMAIL}
+- tapOn:
+    id: 'login-password'
+- inputText: ${DEMO_PASSWORD}
+- hideKeyboard
+- takeScreenshot: 02-login-filled
+- tapOn: 'Log in'
+
+# --- Onboarding (shown on first login per install) ---------------------------
+- extendedWaitUntil:
+    visible: 'Your Digital Closet|My Closet|Your Closet is Empty'
+    timeout: 60000
+- runFlow:
+    when:
+      visible: 'Your Digital Closet'
+    commands:
+      - waitForAnimationToEnd
+      - takeScreenshot: 03-onboarding-1-closet
+      - tapOn: 'Next'
+      - waitForAnimationToEnd
+      - takeScreenshot: 04-onboarding-2-add
+      - tapOn: 'Next'
+      - waitForAnimationToEnd
+      - takeScreenshot: 05-onboarding-3-discover
+      - tapOn: 'Next'
+      - waitForAnimationToEnd
+      - takeScreenshot: 06-onboarding-4-activity
+      - tapOn: 'Next'
+      - waitForAnimationToEnd
+      - takeScreenshot: 07-onboarding-5-profile
+      - tapOn: 'Get Started'
+
+# --- Closet ------------------------------------------------------------------
+- extendedWaitUntil:
+    visible: 'My Closet|Your Closet is Empty'
+    timeout: 60000
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: 10-closet
+- scroll
+- waitForAnimationToEnd
+- takeScreenshot: 11-closet-scrolled
+- swipe:
+    direction: DOWN
+- waitForAnimationToEnd
+
+# First closet item -> ownership detail
+- tapOn:
+    point: '27%,32%'
+    optional: true
+    label: 'Open first closet item'
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: 12-ownership-detail
+- scroll
+- waitForAnimationToEnd
+- takeScreenshot: 13-ownership-detail-scrolled
+- back
+- runFlow:
+    when:
+      notVisible: 'Activity'
+    commands:
+      - launchApp
+      - extendedWaitUntil:
+          visible: 'Activity'
+          timeout: 60000
+
+# Explore
+- tapOn:
+    text: 'Explore'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: 14-explore
+- back
+- runFlow:
+    when:
+      notVisible: 'Activity'
+    commands:
+      - launchApp
+      - extendedWaitUntil:
+          visible: 'Activity'
+          timeout: 60000
+
+# --- Search --------------------------------------------------------------------
+- tapOn: 'Search'
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: 20-search-people
+- tapOn:
+    text: '(?i)products'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: 21-search-products
+- tapOn:
+    text: '(?i)brands'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: 22-search-brands
+
+# --- Add ----------------------------------------------------------------------
+- tapOn: 'Add'
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: 30-add
+
+# --- Activity -----------------------------------------------------------------
+- tapOn: 'Activity'
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: 40-activity
+
+# --- Profile ------------------------------------------------------------------
+- tapOn: 'Profile'
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: 50-profile
+- scroll
+- waitForAnimationToEnd
+- takeScreenshot: 51-profile-scrolled
+- swipe:
+    direction: DOWN
+- waitForAnimationToEnd
+
+# First memory tile -> memory detail
+- tapOn:
+    point: '17%,72%'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: 52-memory-detail
+- scroll
+- waitForAnimationToEnd
+- takeScreenshot: 53-memory-detail-scrolled

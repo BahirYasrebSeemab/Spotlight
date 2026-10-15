@@ -27,6 +27,7 @@ export default function LoginScreen() {
 
           {/* Email Input */}
           <Input
+            testID="login-email"
             label="Email"
             placeholderTextColor="#888"
             keyboardType="email-address"
@@ -39,6 +40,7 @@ export default function LoginScreen() {
           {/* Password Input */}
           <Input
             password
+            testID="login-password"
             label="Password"
             placeholderTextColor="#888"
             value={password}
