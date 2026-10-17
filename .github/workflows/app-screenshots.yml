@@ -5,6 +5,9 @@
 # Required repo secrets:
 #   EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY  (inlined into the JS bundle)
 #   DEMO_EMAIL, DEMO_PASSWORD                                (demo account Maestro logs in with)
+#
+# Put [reuse-apk] in the commit message to skip the ~15 min build and reuse the
+# APK from the latest completed run on this branch (for Maestro-only changes).
 name: App screenshots
 
 on:
@@ -16,11 +19,16 @@ concurrency:
   group: app-screenshots-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  actions: read
+  contents: read
+
 jobs:
   screenshots:
     runs-on: ubuntu-latest
     timeout-minutes: 80
     env:
+      REUSE_APK: ${{ contains(github.event.head_commit.message, '[reuse-apk]') }}
       EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
       EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
       NODE_ENV: production
@@ -35,19 +43,23 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: oven-sh/setup-bun@v2
+        if: env.REUSE_APK != 'true'
         with:
           bun-version: latest
 
       - uses: actions/setup-node@v4
+        if: env.REUSE_APK != 'true'
         with:
           node-version: 22
 
       - uses: actions/setup-java@v4
+        if: env.REUSE_APK != 'true'
         with:
           distribution: temurin
           java-version: 17
 
       - uses: gradle/actions/setup-gradle@v4
+        if: env.REUSE_APK != 'true'
 
       - name: Check Supabase secrets
         run: |
@@ -58,18 +70,32 @@ jobs:
           exit $missing
 
       - name: Install dependencies
+        if: env.REUSE_APK != 'true'
         run: bun install
 
       - name: Build release APK (x86_64 only, for the emulator)
+        if: env.REUSE_APK != 'true'
         working-directory: android
         run: chmod +x gradlew && ./gradlew assembleRelease -PreactNativeArchitectures=x86_64 --no-daemon
 
       - name: Upload APK
+        if: env.REUSE_APK != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: spotlight-x86_64-apk
           path: android/app/build/outputs/apk/release/app-release.apk
           retention-days: 7
+
+      - name: Reuse the most recently built APK
+        if: env.REUSE_APK == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run_id=$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=spotlight-x86_64-apk" \
+            --jq '[.artifacts[] | select(.expired | not)][0].workflow_run.id')
+          echo "Reusing APK from run $run_id"
+          gh run download "$run_id" -R "$GITHUB_REPOSITORY" -n spotlight-x86_64-apk -D android/app/build/outputs/apk/release
+          ls -la android/app/build/outputs/apk/release
 
       - name: Check demo account secrets
         env:

@@ -4,6 +4,7 @@
 appId: com.yasreb.spotlight
 ---
 - hideKeyboard
+- runFlow: dismiss-anr.yaml
 - takeScreenshot: 02-login-filled
 - tapOn: 'Log in'
 
@@ -36,6 +37,7 @@ appId: com.yasreb.spotlight
       - tapOn: 'Get started'
 
 # --- Closet ------------------------------------------------------------------
+- runFlow: dismiss-anr.yaml
 - extendedWaitUntil:
     visible: 'My Closet|Your Closet is Empty'
     timeout: 60000
@@ -89,6 +91,7 @@ appId: com.yasreb.spotlight
           timeout: 60000
 
 # --- Search --------------------------------------------------------------------
+- runFlow: dismiss-anr.yaml
 - tapOn: 'Search'
 - waitForAnimationToEnd:
     timeout: 15000
@@ -107,18 +110,21 @@ appId: com.yasreb.spotlight
 - takeScreenshot: 22-search-brands
 
 # --- Add ----------------------------------------------------------------------
+- runFlow: dismiss-anr.yaml
 - tapOn: 'Add'
 - waitForAnimationToEnd:
     timeout: 15000
 - takeScreenshot: 30-add
 
 # --- Activity -----------------------------------------------------------------
+- runFlow: dismiss-anr.yaml
 - tapOn: 'Activity'
 - waitForAnimationToEnd:
     timeout: 15000
 - takeScreenshot: 40-activity
 
 # --- Profile ------------------------------------------------------------------
+- runFlow: dismiss-anr.yaml
 - tapOn: 'Profile'
 - waitForAnimationToEnd:
     timeout: 15000

@@ -1,0 +1,8 @@
+# Slow CI emulators sometimes show "<app> isn't responding" over the app. Tap Wait.
+appId: com.yasreb.spotlight
+---
+- runFlow:
+    when:
+      visible: ".*isn't responding"
+    commands:
+      - tapOn: 'Wait'

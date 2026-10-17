@@ -4,6 +4,7 @@ appId: com.yasreb.spotlight
 ---
 - launchApp:
     clearState: true
+- runFlow: dismiss-anr.yaml
 - extendedWaitUntil:
     visible: 'Log in'
     timeout: 90000

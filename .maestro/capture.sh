@@ -10,6 +10,11 @@ mkdir -p "$OUT/screens"
 
 adb install -r android/app/build/outputs/apk/release/app-release.apk
 
+# Let the freshly booted system settle, and keep its ANR dialogs off our frames.
+adb shell settings put global hide_error_dialogs 1
+sleep 30
+adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS
+
 # Dark system UI (keyboard, dialogs) to match the app, and a clean status bar.
 adb shell cmd uimode night yes
 adb shell settings put global sysui_demo_allowed 1
