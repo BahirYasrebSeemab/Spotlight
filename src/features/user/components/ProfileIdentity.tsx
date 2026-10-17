@@ -151,7 +151,7 @@ export function ProfileIdentity({
 
           {/* Stats using ProfileStats Component */}
           <ProfileStats
-            postsCount={user?.postsCount ?? 0}
+            postsCount={user?.ownershipsCount ?? 0}
             followersCount={user?.followersCount ?? 0}
             followingCount={user?.followingCount ?? 0}
             onPostsPress={undefined}

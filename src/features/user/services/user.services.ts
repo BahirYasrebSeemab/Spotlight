@@ -110,7 +110,9 @@ export async function getUserProfile(userId: string) {
   try {
     const { data, error } = await supabase
       .from('User')
-      .select('id, username, name, avatarUrl, bio, isPrivate, followersCount, followingCount, memoriesCount, createdAt')
+      .select(
+        'id, username, name, avatarUrl, bio, isPrivate, followersCount, followingCount, memoriesCount, ownershipsCount, createdAt',
+      )
       .eq('id', userId)
       .single();
 
