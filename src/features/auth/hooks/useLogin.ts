@@ -31,7 +31,10 @@ export function useLogin() {
       },
       queryKey: ['user-profile', user.id],
     });
-    router.replace('/(tabs)');
+    // Decide here rather than leaving it to the layout's onboarding check, which
+    // raced this replace and lost — so onboarding never showed after login.
+    const onboardingDone = await AsyncStorage.getItem(`onboarding_completed_${user.id}`);
+    router.replace(onboardingDone ? '/(tabs)' : '/onboarding');
   };
 
   const loginMutation = useMutation({
