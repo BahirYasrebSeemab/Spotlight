@@ -1,67 +1,59 @@
-# Fast Expo App CLI
+# Spotlight
 
-[![NPM version][npm-image]][npm-url]
-[![Downloads][downloads-image]][npm-url]
+**A social closet app for the clothes you love.** Catalogue everything you own (sneakers, denim,
+the jacket you'll never sell), post memories of the moments you wore them, and follow friends and
+brands to see what they own.
 
-<p align="center">
-  Get started by running <b><code>npx fast-expo-app@latest</code></b>
-</p>
+![Onboarding, my closet, an item, a memory with tagged items, and a profile](docs/preview.png)
 
-## Simple & Fast Starter for Expo, Nativewind, and TypeScript
+<sub>Real screens from the Android app, captured automatically in CI with Maestro on an emulator.</sub>
 
-![](https://res.cloudinary.com/dw3mwclgk/image/upload/v1748088179/FAST-EXPO-APP.png)
+## Features
 
-<p align="center">
-<b>
-This boilerplate provides a fast and modern setup for building React Native applications with Expo, NativeWind, and TypeScript. It's designed to enhance developer experience and streamline your development process.a
-</b>
-</p>
+- **Closet:** add items you own from a product catalogue or create a community product with
+  photos (compressed on device before upload); browse your closet and explore other people's.
+- **Ownership:** every item in a closet is an ownership record (owner, condition, description),
+  so the same catalogue product can be owned by many people.
+- **Memories:** photo posts that tag the items in them, with likes and comments.
+- **Social graph:** follow people (with follow requests for private profiles) and follow brands;
+  brand pages list their products and followers.
+- **Search and activity:** search across people, brands and products; an activity tab to accept
+  or reject follow requests.
+- **Accounts:** email sign-up with verification, password reset, deep links back into the app
+  (universal links through a small companion web app), and full account deletion.
 
-### Features
+## How it's built
 
-Developer experience first:
+| Layer | What |
+|---|---|
+| App | Expo (React Native, new architecture), Expo Router file-based navigation, TypeScript |
+| UI | NativeWind (Tailwind for React Native), Reanimated, light and dark mode |
+| State and data | TanStack Query for server state, Redux Toolkit for session state, MMKV for fast local storage |
+| Backend | Supabase: Postgres with row-level security, Auth, Storage, and 6 Deno edge functions |
+| Schema | 18 Prisma models (users, followers, brands, products, ownerships, memories, likes, comments, …) |
+| CI | GitHub Actions: an Android emulator run with Maestro that logs in and captures the screens above; a scheduled job that keeps the Supabase project awake |
 
-- ⚡ [Expo](https://expo.dev) for mobile development
-- ⚛️ [React Native](https://reactnative.dev) for building native apps using React
-- 🔥 Type checking [TypeScript](https://www.typescriptlang.org)
-- 💎 Integrate with [NativeWind](https://www.nativewind.dev), Tailwind CSS for React Native
-- 🌜 Light/Dark mode already setup with toggle
-- 📊 MMKV (~30x faster than AsyncStorage and not Async usage)
-- 📁 File-based routing with Expo Router
-- 📏 Linter with [ESLint](https://eslint.org)
-- 💖 Code Formatter with [Prettier](https://prettier.io)
-- 🤡 Unit Testing with Jest
-- 💡 Absolute Imports using `@` prefix
+The code is organised by feature (`src/features/auth`, `closet`, `memories`, `ownerships`,
+`brands`, `search`, `notifications`, …), each with its own screens, hooks and services.
+Work that must not trust the client (creating a user profile on sign-up, creating ownerships and
+community products, cleaning up after account deletion) runs in edge functions with the
+service-role key, which never ships in the app.
 
-### Last Boilerplate Update
+## Run it
 
-- ⚡ Expo SDK 53 (Including Expo Router 3.5, Expo UI...) + update all libraries
-- ⚛️ React Native 0.79 (Including New Arch, Android Edge-to-Edge...)
-- 💎 NativeWind 4.0
-- 🥟 Bun
+Needs [Bun](https://bun.sh) and an Android emulator or device (or Xcode for iOS).
 
-![](https://res.cloudinary.com/dw3mwclgk/image/upload/v1748011077/UPDATE.png)
+```bash
+bun install
+bun run start            # Expo dev server, points at the hosted Supabase project
+bun run android          # build and install the dev client on Android
+```
 
-### Requirements
+To use your own Supabase project, set `EXPO_PUBLIC_SUPABASE_URL` and
+`EXPO_PUBLIC_SUPABASE_ANON_KEY`, apply `supabase/migrations`, and deploy the functions in
+`supabase/functions` with the Supabase CLI.
 
-- Java 17+
-- Node.js 22+ (Recommended LTS)
-- BUN IS VERY RECOMMENDED
+## Credits
 
-### Contributions
-
-Contributions are welcome! If you find a bug or have suggestions for improvements, please open an issue on the [GitHub repository](https://github.com/Teczer/expo-react-native-nativewind-typescript-boilerplate/issues). You can also submit pull requests with enhancements or fixes.
-
-### License
-
-Licensed under the MIT License, Copyright © 2025
-
-See [LICENSE](LICENSE) for more information.
-
----
-
-Made with ♥ by [Teczer](https://mehdihattou.com/)
-
-[downloads-image]: https://img.shields.io/npm/dm/fast-expo-app?color=364fc7&logoColor=364fc7
-[npm-url]: https://www.npmjs.com/package/fast-expo-app
-[npm-image]: https://img.shields.io/npm/v/fast-expo-app?color=0b7285&logoColor=0b7285
+Started from the [fast-expo-app](https://github.com/Teczer/fast-expo-app) boilerplate by Hattou
+Mehdi (MIT). Everything beyond the starter (the app, data model, edge functions and CI) is mine.
