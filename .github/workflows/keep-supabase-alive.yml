@@ -1,25 +1,37 @@
 name: Keep Supabase Awake
 
+# Free Supabase projects pause after 7 days without database activity. This reads one row
+# every 2 days, which leaves room for GitHub delaying or skipping a scheduled run.
 on:
   schedule:
-    # Runs every 3 days at 05:00 UTC — free-tier Supabase projects pause after 7 days of inactivity, so this is a comfortable margin
-    - cron: '0 5 */3 * *'
-  workflow_dispatch: {}   # lets you trigger it manually from the Actions tab to test
+    - cron: '17 5 */2 * *'
+  workflow_dispatch: {}
+
+permissions:
+  actions: write # only to re-enable this workflow (see the last step)
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - name: Ping Supabase Project 1
+      - name: Query the Spotlight database
+        env:
+          SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
         run: |
-          curl -s -o /dev/null -w "Project 1 status: %{http_code}\n" \
-            "${{ secrets.SUPABASE_URL_1 }}/rest/v1/${{ secrets.SUPABASE_TABLE_1 }}?select=*&limit=1" \
-            -H "apikey: ${{ secrets.SUPABASE_KEY_1 }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY_1 }}"
+          # A real table read runs SQL in Postgres, which is what counts as activity.
+          # --fail-with-body turns the run red if the project is paused or the URL is wrong.
+          curl --fail-with-body -sS --retry 3 --retry-delay 15 --max-time 30 \
+            "$SUPABASE_URL/rest/v1/Brand?select=id&limit=1" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY"
+          echo
+          echo "Supabase answered."
 
-      - name: Ping Supabase Project 2
-        run: |
-          curl -s -o /dev/null -w "Project 2 status: %{http_code}\n" \
-            "${{ secrets.SUPABASE_URL_2 }}/rest/v1/${{ secrets.SUPABASE_TABLE_2 }}?select=*&limit=1" \
-            -H "apikey: ${{ secrets.SUPABASE_KEY_2 }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY_2 }}"
+      - name: Keep this schedule from being disabled
+        # GitHub turns off scheduled workflows after 60 days without repo activity.
+        # Re-enabling the workflow through the API resets that timer.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/$GITHUB_REPOSITORY/actions/workflows/keep-supabase-alive.yml/enable"
